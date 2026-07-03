@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/helvetica-neue-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Helvetica Neue";
+  src: url("/fonts/helvetica-neue-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TBC Contractica";
+  src: url("/fonts/tbc-contractica-medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TBC Contractica";
+  src: url("/fonts/tbc-contractica-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --kera-primary: #ef7d00;
+  --kera-primary-light: #fff0e5;
+  --kera-tbc: #00a3e0;
+  --kera-bog: #f5a623;
+  --kera-bog-dark: #e8870e;
+  --kera-slate: #1a1a1a;
+  --kera-zinc: #2d2d2d;
+  --kera-page: #f5f5f5;
+  --background: #f5f5f5;
+  --foreground: #1a1a1a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-kera-primary: var(--kera-primary);
+  --color-kera-primary-light: var(--kera-primary-light);
+  --color-kera-tbc: var(--kera-tbc);
+  --color-kera-bog: var(--kera-bog);
+  --color-kera-bog-dark: var(--kera-bog-dark);
+  --color-kera-slate: var(--kera-slate);
+  --color-kera-zinc: var(--kera-zinc);
+  --color-kera-page: var(--kera-page);
+  --font-sans: "Helvetica Neue", "TBC Contractica", system-ui, sans-serif;
+  --font-display: "TBC Contractica", "Helvetica Neue", system-ui, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .kera-btn {
+    @apply rounded-xl bg-kera-primary px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90;
+  }
+
+  .kera-gradient {
+    background: linear-gradient(135deg, #00a3e0 0%, #ef7d00 100%);
+  }
+
+  .kera-card {
+    @apply rounded-2xl border border-slate-100/80 bg-white shadow-sm transition-shadow hover:shadow-md;
+  }
+
+  .kera-section-title {
+    @apply font-display text-2xl font-bold text-kera-slate sm:text-3xl;
+  }
+
+  .kera-icon-box {
+    @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-kera-primary-light text-kera-primary;
+  }
+}
