@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, Phone, X } from "lucide-react";
 import { LOGO_IMAGE } from "@/lib/brand";
-import { NAV_LINKS, SITE_NAME } from "@/lib/constants";
+import { NAV_LINKS, CONTACT_PHONE_HREF, SITE_NAME } from "@/lib/constants";
 import { CurrencyWidget } from "./CurrencyWidget";
 
 export function Header() {
@@ -53,7 +53,7 @@ export function Header() {
 
           <div className="flex items-center gap-2 lg:hidden">
             <a
-              href="tel:+995555000000"
+              href={CONTACT_PHONE_HREF}
               className="rounded-lg p-2 text-kera-zinc"
               aria-label="დარეკვა"
             >

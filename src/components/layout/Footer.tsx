@@ -1,7 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LOGO_IMAGE } from "@/lib/brand";
-import { SITE_NAME, SITE_NAME_GE } from "@/lib/constants";
+import {
+  CONTACT_ADDRESS,
+  CONTACT_EMAIL,
+  CONTACT_PHONE,
+  CONTACT_PHONE_HREF,
+  SITE_NAME,
+  SITE_NAME_GE,
+} from "@/lib/constants";
 
 export function Footer() {
   return (
@@ -46,8 +53,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/#calculator" className="hover:text-kera-primary">
-                  იპოთეკის კალკულატორი
+                <Link href="/#currency" className="hover:text-kera-primary">
+                  ვალუტის კურსები
+                </Link>
+              </li>
+              <li>
+                <Link href="/admin" className="hover:text-kera-primary">
+                  ადმინ პანელი
                 </Link>
               </li>
             </ul>
@@ -59,16 +71,16 @@ export function Footer() {
             </p>
             <ul className="mt-4 space-y-2.5 text-sm text-slate-600">
               <li>
-                <a href="mailto:info@keragroup.ge" className="hover:text-kera-primary">
-                  info@keragroup.ge
+                <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-kera-primary">
+                  {CONTACT_EMAIL}
                 </a>
               </li>
               <li>
-                <a href="tel:+995555000000" className="hover:text-kera-primary">
-                  +995 555 000 000
+                <a href={CONTACT_PHONE_HREF} className="hover:text-kera-primary">
+                  {CONTACT_PHONE}
                 </a>
               </li>
-              <li>თბილისი, საქართველო</li>
+              <li>{CONTACT_ADDRESS}</li>
             </ul>
           </div>
         </div>

@@ -5,9 +5,11 @@ import Image from "next/image";
 import {
   Archive,
   CheckCircle,
+  EyeOff,
   Loader2,
   LogOut,
   Pencil,
+  Trash2,
   X,
 } from "lucide-react";
 import type { Property, PropertyStatus } from "@/lib/types/property";
@@ -53,6 +55,15 @@ export function AdminDashboard() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
+    });
+    if (res.ok) fetchProperties();
+  }
+
+  async function deleteProperty(id: string) {
+    if (!confirm("ნამდვილად გსურთ განცხადების სრული წაშლა?")) return;
+
+    const res = await fetch(`/api/admin/properties/${id}`, {
+      method: "DELETE",
     });
     if (res.ok) fetchProperties();
   }
@@ -177,19 +188,37 @@ export function AdminDashboard() {
                     className="flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700"
                   >
                     <CheckCircle className="h-3.5 w-3.5" />
-                    Active
+                    გამოქვეყნება
                   </button>
                 )}
-                {property.status !== "archived" && (
+                {property.status === "active" && (
+                  <button
+                    type="button"
+                    onClick={() => updateStatus(property.id, "archived")}
+                    className="flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
+                  >
+                    <EyeOff className="h-3.5 w-3.5" />
+                    დამალვა
+                  </button>
+                )}
+                {property.status !== "archived" && property.status !== "active" && (
                   <button
                     type="button"
                     onClick={() => updateStatus(property.id, "archived")}
                     className="flex items-center gap-1 rounded-lg bg-slate-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700"
                   >
                     <Archive className="h-3.5 w-3.5" />
-                    Archived
+                    არქივი
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={() => deleteProperty(property.id)}
+                  className="flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  წაშლა
+                </button>
               </div>
             </article>
           ))}

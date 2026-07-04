@@ -1,6 +1,11 @@
 export const SITE_NAME = "KERA GROUP";
 export const SITE_NAME_GE = "კერა ჯგუფი";
 
+export const CONTACT_EMAIL = "info@keragroup.ge";
+export const CONTACT_PHONE = "+995 595 157 158";
+export const CONTACT_PHONE_HREF = "tel:+995595157158";
+export const CONTACT_ADDRESS = "თბილისი, საქართველო";
+
 export const NAV_LINKS = [
   { href: "/", label: "მთავარი" },
   { href: "/#services", label: "სერვისები" },

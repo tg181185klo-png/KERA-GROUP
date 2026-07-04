@@ -2,8 +2,7 @@ import { HeroSearch } from "@/components/home/HeroSearch";
 import { QuickActions } from "@/components/home/QuickActions";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { FeaturedProperties } from "@/components/home/FeaturedProperties";
-import { MortgageCalculator } from "@/components/home/MortgageCalculator";
-import { CurrencySection } from "@/components/layout/CurrencyWidget";
+import { ToolsSection } from "@/components/home/ToolsSection";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/utils/supabase";
 import type { Property, PropertySearchParams } from "@/lib/types/property";
@@ -60,8 +59,7 @@ export default async function Home({ searchParams }: HomeProps) {
         initialProperties={properties}
         searchParams={filters}
       />
-      <CurrencySection />
-      <MortgageCalculator />
+      <ToolsSection />
     </>
   );
 }

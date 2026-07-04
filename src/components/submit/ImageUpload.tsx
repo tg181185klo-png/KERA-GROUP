@@ -23,7 +23,7 @@ export function ImageUpload({ images, onChange }: ImageUploadProps) {
       try {
         if (!isSupabaseConfigured()) {
           setError(
-            "Supabase არ არის კონფიგურირებული. დაამატეთ .env.local ფაილი."
+            "Supabase არ არის კონფიგურირებული. .env.local ფაილში ჩაწერეთ NEXT_PUBLIC_SUPABASE_URL და NEXT_PUBLIC_SUPABASE_ANON_KEY (Supabase Dashboard → Settings → API)."
           );
           return;
         }

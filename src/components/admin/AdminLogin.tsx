@@ -11,6 +11,7 @@ interface AdminLoginProps {
 }
 
 export function AdminLogin({ onSuccess }: AdminLoginProps) {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,12 +25,12 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error ?? "არასწორი პაროლი");
+        throw new Error(data.error ?? "არასწორი მომხმარებელი ან პაროლი");
       }
 
       onSuccess();
@@ -54,11 +55,25 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
           ადმინ პანელი
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          შეიყვანეთ ადმინისტრატორის პაროლი სისტემაში შესასვლელად.
+          შეიყვანეთ მომხმარებელი და პაროლი საიტის რედაქტირებისთვის.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            მომხმარებელი
+          </label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            autoComplete="username"
+            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
+          />
+        </div>
+
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
             პაროლი
