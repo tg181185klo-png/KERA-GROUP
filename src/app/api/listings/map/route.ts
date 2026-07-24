@@ -1,5 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
+import { enrichRowWithCadastral } from "@/lib/cadastral-lookup";
 import {
+  getCadastralCode,
   isActiveListing,
   normalizeToMapProperty,
   type PropertyRow,
@@ -18,8 +20,17 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const properties = (data ?? [])
-    .filter((row) => isActiveListing(row as PropertyRow))
+  const activeRows = (data ?? []).filter((row) =>
+    isActiveListing(row as PropertyRow),
+  );
+
+  const enriched = await Promise.all(
+    activeRows.map((row) =>
+      enrichRowWithCadastral(row as PropertyRow, getCadastralCode),
+    ),
+  );
+
+  const properties = enriched
     .map((row) => normalizeToMapProperty(row as PropertyRow))
     .filter((row): row is NonNullable<typeof row> => row != null);
 

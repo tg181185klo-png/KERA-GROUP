@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { canManageListings } from "@/lib/admin-access";
-import { buildMapPersistPayload } from "@/lib/property-normalize";
+import { buildMapPersistPayload } from "@/lib/cadastral-lookup";
+import { getCadastralCode } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
 
 function parseMissingColumn(message: string): string | null {
@@ -114,7 +115,10 @@ export async function PATCH(request: Request, context: RouteContext) {
   let updates: Record<string, unknown> = body;
 
   if (admin && body.status === "active") {
-    updates = buildMapPersistPayload(existing as Record<string, unknown>);
+    updates = await buildMapPersistPayload(
+      existing as Record<string, unknown>,
+      getCadastralCode,
+    );
   } else if (admin && body.status != null) {
     updates = { status: statusForDatabase(body.status) };
   }

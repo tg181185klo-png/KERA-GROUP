@@ -11,7 +11,6 @@ import { MapPicker } from "@/components/dashboard/MapPicker";
 import { ImageUpload } from "@/components/submit/ImageUpload";
 import {
   isValidCadastralCode,
-  simulateCadastralLookup,
   formatPrice,
   formatPricePerSqm,
 } from "@/lib/cadastral";
@@ -42,6 +41,7 @@ export function AddPropertyWizard() {
   const [form, setForm] = useState<PropertyListingFormData>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [cadastralError, setCadastralError] = useState("");
+  const [cadastralLoading, setCadastralLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   function updateField<K extends keyof PropertyListingFormData>(
@@ -51,19 +51,38 @@ export function AddPropertyWizard() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function lookupCadastral() {
+  async function lookupCadastral() {
     setCadastralError("");
     if (!isValidCadastralCode(form.cadastral_code)) {
       setCadastralError("ფორმატი: XX.XX.XX.XXX.XXX (მაგ. 01.10.15.001.002)");
       return;
     }
-    const result = simulateCadastralLookup(form.cadastral_code);
-    setForm((prev) => ({
-      ...prev,
-      latitude: result.latitude,
-      longitude: result.longitude,
-      geojson_polygon: result.geojson_polygon,
-    }));
+
+    setCadastralLoading(true);
+    try {
+      const res = await fetch(
+        `/api/cadastral/lookup?code=${encodeURIComponent(form.cadastral_code)}`,
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        setCadastralError(data.error ?? "კადასტრის ძებნა ვერ მოხერხდა");
+        return;
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        cadastral_code: data.cadastral_code ?? prev.cadastral_code,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        geojson_polygon: data.geojson_polygon,
+        address: prev.address || data.address || prev.address,
+      }));
+    } catch {
+      setCadastralError("კადასტრის სერვისი დროებით მიუწვდომელია");
+    } finally {
+      setCadastralLoading(false);
+    }
   }
 
   async function handleSubmit() {
@@ -226,14 +245,15 @@ export function AddPropertyWizard() {
                 className="flex-1"
               />
               <div className="flex items-end">
-                <Button type="button" onClick={lookupCadastral}>
+                <Button type="button" onClick={lookupCadastral} disabled={cadastralLoading}>
                   <Search className="h-4 w-4" />
-                  ძებნა
+                  {cadastralLoading ? "ძებნა..." : "ძებნა"}
                 </Button>
               </div>
             </div>
             <p className="text-xs text-slate-400">
-              კადასტრის კოდის შეყვანით ავტომატურად определяется მდებარეობა (სიმულაცია)
+              კადასტრის კოდი იღება საჯარო რეესტრის რუკიდან (NAPR) და ზუსტ პოლიგონზე
+              განთავსდება მონიშვნა.
             </p>
             <MapPicker
               latitude={form.latitude}

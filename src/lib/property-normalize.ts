@@ -1,9 +1,5 @@
 import type { MapProperty, ListingType, ListingStatus } from "@/lib/types/property-listing";
-import {
-  coordinatesFromSeed,
-  extractCadastralCode,
-  simulateCadastralLookup,
-} from "@/lib/cadastral";
+import { extractCadastralCode } from "@/lib/cadastral";
 
 /** Raw row from modern or legacy Supabase `properties` table */
 export type PropertyRow = Record<string, unknown>;
@@ -98,30 +94,10 @@ export function getOwnerNames(row: PropertyRow): { first: string; last: string }
 }
 
 export function resolveMapCoordinates(row: PropertyRow) {
-  let lat = toNumber(row.latitude);
-  let lng = toNumber(row.longitude);
-  let geojson = parseGeojson(row.geojson_polygon);
-
+  const lat = toNumber(row.latitude);
+  const lng = toNumber(row.longitude);
+  const geojson = parseGeojson(row.geojson_polygon);
   const cadastral = getCadastralCode(row);
-
-  if (lat == null || lng == null) {
-    if (cadastral !== "—") {
-      const lookup = simulateCadastralLookup(cadastral);
-      lat = lookup.latitude;
-      lng = lookup.longitude;
-      geojson = geojson ?? lookup.geojson_polygon;
-    } else if (row.address) {
-      const lookup = coordinatesFromSeed(String(row.address));
-      lat = lookup.latitude;
-      lng = lookup.longitude;
-      geojson = geojson ?? lookup.geojson_polygon;
-    } else if (row.id) {
-      const lookup = coordinatesFromSeed(String(row.id));
-      lat = lookup.latitude;
-      lng = lookup.longitude;
-      geojson = geojson ?? lookup.geojson_polygon;
-    }
-  }
 
   return { lat, lng, geojson, cadastral };
 }
@@ -178,14 +154,4 @@ export function normalizeToAdminListing(row: PropertyRow) {
 
 export function isActiveListing(row: PropertyRow): boolean {
   return normalizeListingStatus(row.status) === "active";
-}
-
-/** Coordinates payload to persist when admin approves a listing. */
-export function buildMapPersistPayload(row: PropertyRow): Record<string, unknown> {
-  const { lat, lng, geojson } = resolveMapCoordinates(row);
-  const payload: Record<string, unknown> = { status: "active" };
-  if (lat != null) payload.latitude = lat;
-  if (lng != null) payload.longitude = lng;
-  if (geojson) payload.geojson_polygon = geojson;
-  return payload;
 }

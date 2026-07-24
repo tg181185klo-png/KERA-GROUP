@@ -1,5 +1,7 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { canManageListings } from "@/lib/admin-access";
+import { lookupCadastralParcel } from "@/lib/cadastral-lookup";
+import { isValidCadastralCode } from "@/lib/cadastral";
 import { insertPropertyListing } from "@/lib/listings-insert";
 import { normalizeToAdminListing } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
@@ -63,6 +65,19 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
+
+  if (body.cadastral_code && isValidCadastralCode(body.cadastral_code)) {
+    const parcel = await lookupCadastralParcel(body.cadastral_code);
+    if (parcel) {
+      body.cadastral_code = parcel.cadastral_code;
+      body.latitude = parcel.latitude;
+      body.longitude = parcel.longitude;
+      body.geojson_polygon = parcel.geojson_polygon;
+      if (parcel.address && !body.address) {
+        body.address = parcel.address;
+      }
+    }
+  }
 
   const { data, error } = await insertPropertyListing(user, body);
 

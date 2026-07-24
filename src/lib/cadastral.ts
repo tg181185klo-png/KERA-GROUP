@@ -9,50 +9,39 @@ export function extractCadastralCode(text: string): string | null {
   return match?.[0] ?? null;
 }
 
-export function isValidCadastralCode(code: string): boolean {
-  return extractCadastralCode(code) !== null;
+/** Compact NAPR UNIQ_CODE (12 digits) → dotted cadastral code. */
+export function uniqCodeToCadastral(uniqCode: string): string | null {
+  const digits = uniqCode.replace(/\D/g, "");
+  if (digits.length !== 12) return null;
+  return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4, 6)}.${digits.slice(6, 9)}.${digits.slice(9, 12)}`;
 }
 
-/** Deterministic coordinates from any stable string (cadastral, address, id). */
-export function coordinatesFromSeed(seed: string): {
-  latitude: number;
-  longitude: number;
-  geojson_polygon: GeoJSON.Polygon;
-} {
-  const normalized = seed.trim() || "kera-default";
-  let hash = 0;
-  for (let i = 0; i < normalized.length; i++) {
-    hash = (hash * 31 + normalized.charCodeAt(i)) >>> 0;
+/** Dotted or compact cadastral code → NAPR UNIQ_CODE for API queries. */
+export function cadastralToUniqCode(code: string): string | null {
+  const dotted = extractCadastralCode(code);
+  if (dotted) {
+    const parts = dotted.split(".");
+    return parts.join("");
   }
 
-  const latitude = 41.7151 + ((hash % 200) - 100) * 0.0012;
-  const longitude = 44.8271 + (((hash * 7) % 200) - 100) * 0.0012;
-  const size = 0.00035 + (hash % 5) * 0.00008;
+  const digits = code.replace(/\D/g, "");
+  if (digits.length === 12) return digits;
 
-  const geojson_polygon: GeoJSON.Polygon = {
-    type: "Polygon",
-    coordinates: [
-      [
-        [longitude - size, latitude - size],
-        [longitude + size, latitude - size],
-        [longitude + size, latitude + size],
-        [longitude - size, latitude + size],
-        [longitude - size, latitude - size],
-      ],
-    ],
-  };
-
-  return { latitude, longitude, geojson_polygon };
+  return null;
 }
 
-/** Simulates cadastral lookup — generates a deterministic location in Tbilisi area. */
-export function simulateCadastralLookup(cadastralCode: string): {
-  latitude: number;
-  longitude: number;
-  geojson_polygon: GeoJSON.Polygon;
-} {
-  const extracted = extractCadastralCode(cadastralCode) ?? cadastralCode.trim();
-  return coordinatesFromSeed(extracted);
+export function formatCadastralCode(code: string): string {
+  const dotted = extractCadastralCode(code);
+  if (dotted) return dotted;
+
+  const fromUniq = uniqCodeToCadastral(code);
+  if (fromUniq) return fromUniq;
+
+  return code.trim();
+}
+
+export function isValidCadastralCode(code: string): boolean {
+  return cadastralToUniqCode(code) != null;
 }
 
 export function formatPrice(price: number): string {
@@ -66,3 +55,11 @@ export function formatPrice(price: number): string {
 export function formatPricePerSqm(price: number): string {
   return `${formatPrice(price)}/მ²`;
 }
+
+/** @deprecated Use /api/cadastral/lookup — kept for type compatibility */
+export type CadastralLookupResult = {
+  latitude: number;
+  longitude: number;
+  geojson_polygon: GeoJSON.Polygon;
+  address?: string | null;
+};
