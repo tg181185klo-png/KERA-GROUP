@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Loader2, Shield } from "lucide-react";
 import { LOGO_IMAGE } from "@/lib/brand";
-import { ADMIN_USERNAME, SITE_NAME } from "@/lib/constants";
+import { SITE_NAME } from "@/lib/constants";
 
 interface AdminLoginProps {
   onSuccess: () => void;
@@ -25,7 +25,7 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: ADMIN_USERNAME, password }),
+        body: JSON.stringify({ password: password.trim() }),
       });
 
       if (!res.ok) {

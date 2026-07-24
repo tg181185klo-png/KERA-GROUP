@@ -1,30 +1,36 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { ADMIN_COOKIE, ADMIN_USERNAME } from "@/lib/constants";
-import { getAdminPassword, getAdminSessionSecret } from "@/lib/admin-auth";
+import { ADMIN_COOKIE } from "@/lib/constants";
+import {
+  getAdminSessionSecret,
+  isValidAdminPassword,
+} from "@/lib/admin-auth";
 
 export async function POST(request: Request) {
-  const { username, password } = await request.json();
-  const adminUsername = process.env.ADMIN_USERNAME ?? ADMIN_USERNAME;
-  const adminPassword = getAdminPassword();
+  try {
+    const body = await request.json();
+    const password = String(body.password ?? "").trim();
 
-  if (username !== adminUsername || password !== adminPassword) {
-    return NextResponse.json(
-      { error: "არასწორი მომხმარებელი ან პაროლი" },
-      { status: 401 },
-    );
+    if (!isValidAdminPassword(password)) {
+      return NextResponse.json(
+        { error: "არასწორი პაროლი" },
+        { status: 401 },
+      );
+    }
+
+    const cookieStore = await cookies();
+    cookieStore.set(ADMIN_COOKIE, getAdminSessionSecret(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "შეცდომა" }, { status: 500 });
   }
-
-  const cookieStore = await cookies();
-  cookieStore.set(ADMIN_COOKIE, getAdminSessionSecret(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24,
-    path: "/",
-  });
-
-  return NextResponse.json({ success: true });
 }
 
 export async function DELETE() {
