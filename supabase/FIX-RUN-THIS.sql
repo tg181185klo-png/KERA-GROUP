@@ -67,6 +67,12 @@ on conflict (id) do nothing;
 -- აკლია სვეტების დამატება ძველ ცხრილზე
 alter table public.properties add column if not exists area_sqm numeric;
 alter table public.properties add column if not exists currency text default 'USD';
+alter table public.properties add column if not exists latitude double precision;
+alter table public.properties add column if not exists longitude double precision;
+alter table public.properties add column if not exists geojson_polygon jsonb;
+
+-- არსებული pending → active (რუკაზე გამოსაჩენად)
+update public.properties set status = 'active' where status = 'pending';
 
 do $$
 begin

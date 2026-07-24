@@ -3,7 +3,6 @@
 import { useCallback, useState } from "react";
 import Image from "next/image";
 import { ImagePlus, Loader2, X } from "lucide-react";
-import { createClient, isSupabaseConfigured } from "@/utils/supabase";
 
 interface ImageUploadProps {
   images: string[];
@@ -21,16 +20,8 @@ export function ImageUpload({ images, onChange }: ImageUploadProps) {
       setUploading(true);
 
       try {
-        if (!isSupabaseConfigured()) {
-          setError(
-            "Supabase არ არის კონფიგურირებული. .env.local ფაილში ჩაწერეთ NEXT_PUBLIC_SUPABASE_URL და NEXT_PUBLIC_SUPABASE_ANON_KEY (Supabase Dashboard → Settings → API)."
-          );
-          return;
-        }
-
-        const supabase = createClient();
         const fileArray = Array.from(files).filter((f) =>
-          ["image/jpeg", "image/png", "image/webp"].includes(f.type)
+          ["image/jpeg", "image/png", "image/webp"].includes(f.type),
         );
 
         if (fileArray.length === 0) {
@@ -41,20 +32,20 @@ export function ImageUpload({ images, onChange }: ImageUploadProps) {
         const uploaded: string[] = [];
 
         for (const file of fileArray) {
-          const ext = file.name.split(".").pop() ?? "jpg";
-          const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const formData = new FormData();
+          formData.append("file", file);
 
-          const { error: uploadError } = await supabase.storage
-            .from("property-images")
-            .upload(path, file, { cacheControl: "3600", upsert: false });
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
 
-          if (uploadError) throw uploadError;
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error ?? "ატვირთვა ვერ მოხერხდა");
+          }
 
-          const { data } = supabase.storage
-            .from("property-images")
-            .getPublicUrl(path);
-
-          uploaded.push(data.publicUrl);
+          uploaded.push(data.url);
         }
 
         onChange([...images, ...uploaded]);
@@ -62,13 +53,13 @@ export function ImageUpload({ images, onChange }: ImageUploadProps) {
         setError(
           err instanceof Error
             ? err.message
-            : "ატვირთვა ვერ მოხერხდა. შეამოწმეთ Supabase Storage კონფიგურაცია."
+            : "ატვირთვა ვერ მოხერხდა. სცადეთ თავიდან.",
         );
       } finally {
         setUploading(false);
       }
     },
-    [images, onChange]
+    [images, onChange],
   );
 
   function handleDrop(e: React.DragEvent) {
@@ -111,7 +102,7 @@ export function ImageUpload({ images, onChange }: ImageUploadProps) {
           ჩააგდეთ ფოტოები ან აირჩიეთ ფაილები
         </p>
         <p className="mt-1 text-xs text-slate-500">
-          JPG, PNG, WEBP — პირდაპირ Supabase Storage-ში აიტვირთება
+          JPG, PNG, WEBP — ავტომატურად აიტვირთება
         </p>
         {uploading && (
           <div className="mt-3 flex items-center justify-center gap-2 text-sm text-kera-tbc">

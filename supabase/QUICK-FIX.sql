@@ -18,12 +18,28 @@ BEGIN
   END IF;
 END $$;
 
--- B) area_sqm, currency — ძველ ცხრილზე (თუ cadastral_code არ არis)
+-- B) area_sqm, currency, coordinates — ძველ ცხრილზე
 ALTER TABLE public.properties
   ADD COLUMN IF NOT EXISTS area_sqm numeric;
 
 ALTER TABLE public.properties
   ADD COLUMN IF NOT EXISTS currency text DEFAULT 'USD';
+
+ALTER TABLE public.properties
+  ADD COLUMN IF NOT EXISTS latitude double precision;
+
+ALTER TABLE public.properties
+  ADD COLUMN IF NOT EXISTS longitude double precision;
+
+ALTER TABLE public.properties
+  ADD COLUMN IF NOT EXISTS geojson_polygon jsonb;
+
+UPDATE public.properties SET status = 'active' WHERE status = 'pending';
+
+-- Storage bucket
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('property-images', 'property-images', true)
+ON CONFLICT (id) DO NOTHING;
 
 -- C) profiles ცხრილი (რეგისტრაციისთვის)
 CREATE TABLE IF NOT EXISTS public.profiles (

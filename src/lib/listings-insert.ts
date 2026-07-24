@@ -112,13 +112,16 @@ async function insertLegacyListing(
     currency: "USD",
     description: buildLegacyDescription(body),
     images: body.images ?? [],
-    status: "pending",
+    status: "active",
     listing_type: "seller",
   };
 
   if (body.area_sqm && body.area_sqm > 0) {
     payload.area_sqm = body.area_sqm;
   }
+  if (body.latitude != null) payload.latitude = body.latitude;
+  if (body.longitude != null) payload.longitude = body.longitude;
+  if (body.geojson_polygon) payload.geojson_polygon = body.geojson_polygon;
 
   return insertAdaptive(service, payload);
 }
@@ -145,7 +148,7 @@ export async function insertPropertyListing(user: User, body: ListingBody) {
     longitude: body.longitude,
     geojson_polygon: body.geojson_polygon,
     images: body.images ?? [],
-    status: "pending",
+    status: "active",
   };
 
   const modern = await supabase.from("properties").insert(newRow).select().single();

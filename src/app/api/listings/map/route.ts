@@ -1,14 +1,36 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import {
+  isActiveListing,
+  normalizeToMapProperty,
+  type PropertyRow,
+} from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const supabase = await createClient();
+  const service = createServiceClient();
 
-  const { data, error } = await supabase.rpc("get_active_properties_for_map");
+  const { data: rpcData, error: rpcError } = await service.rpc(
+    "get_active_properties_for_map",
+  );
+
+  if (!rpcError && rpcData?.length) {
+    return NextResponse.json(rpcData);
+  }
+
+  const { data, error } = await service
+    .from("properties")
+    .select("*")
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  const properties = (data ?? [])
+    .filter((row) => isActiveListing(row as PropertyRow))
+    .map((row) => normalizeToMapProperty(row as PropertyRow))
+    .filter((row): row is NonNullable<typeof row> => row != null);
+
+  return NextResponse.json(properties);
 }
