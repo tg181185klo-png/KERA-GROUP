@@ -1,5 +1,6 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/auth";
+import { insertPropertyListing } from "@/lib/listings-insert";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -62,32 +63,22 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  const { data, error } = await supabase
-    .from("properties")
-    .insert({
-      user_id: user.id,
-      title: body.title,
-      description: body.description ?? "",
-      cadastral_code: body.cadastral_code,
-      owner_first_name: body.owner_first_name,
-      owner_last_name: body.owner_last_name,
-      address: body.address,
-      phone_number: body.phone_number,
-      total_price: body.total_price,
-      area_sqm: body.area_sqm,
-      listing_type: body.listing_type,
-      latitude: body.latitude,
-      longitude: body.longitude,
-      geojson_polygon: body.geojson_polygon,
-      images: body.images ?? [],
-      status: "pending",
-    })
-    .select()
-    .single();
+  const { data, error } = await insertPropertyListing(user, body);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    const hint = isSchemaHint(error.message)
+      ? " Supabase-ში გაუშვი SQL: supabase/FIX-RUN-THIS.sql"
+      : "";
+    return NextResponse.json(
+      { error: `${error.message}${hint}` },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json(data, { status: 201 });
+}
+
+function isSchemaHint(message: string) {
+  const m = message.toLowerCase();
+  return m.includes("schema cache") || m.includes("could not find");
 }
