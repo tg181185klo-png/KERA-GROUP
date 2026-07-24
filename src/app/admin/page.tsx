@@ -1,36 +1,40 @@
-"use client";
+import { redirect } from "next/navigation";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/auth";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { AdminLoginGate } from "@/components/admin/AdminLoginGate";
+import { AdminListingsPanel } from "@/components/admin/AdminListingsPanel";
 
-import { useEffect, useState } from "react";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import { AdminLogin } from "@/components/admin/AdminLogin";
+export default async function AdminPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export default function AdminPage() {
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const supabaseAdmin = user ? await isAdmin(user.id) : false;
+  const legacyAdmin = await isAdminAuthenticated();
 
-  useEffect(() => {
-    fetch("/api/admin/auth")
-      .then((r) => r.json())
-      .then((d) => setAuthenticated(d.authenticated))
-      .catch(() => setAuthenticated(false));
-  }, []);
-
-  if (authenticated === null) {
-    return (
-      <section className="flex min-h-[60vh] items-center justify-center bg-kera-page">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-kera-primary border-t-transparent" />
-      </section>
-    );
+  if (!supabaseAdmin && !legacyAdmin) {
+    if (!user) {
+      return <AdminLoginGate />;
+    }
+    redirect("/dashboard");
   }
 
+  // Fetch all listings for admin via service client
+  const serviceClient = createServiceClient();
+  const { data: allListings } = await serviceClient
+    .from("properties")
+    .select("*")
+    .order("created_at", { ascending: false });
+
   return (
-    <section className="bg-kera-page py-12 sm:py-16">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        {authenticated ? (
-          <AdminDashboard />
-        ) : (
-          <AdminLogin onSuccess={() => setAuthenticated(true)} />
-        )}
-      </div>
-    </section>
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <h1 className="mb-2 text-2xl font-bold text-slate-900">ადმინ პანელი</h1>
+      <p className="mb-8 text-sm text-slate-500">
+        მომხმარებლებისა და განცხადებების მართვა
+      </p>
+      <AdminListingsPanel initialListings={allListings ?? []} />
+    </div>
   );
 }

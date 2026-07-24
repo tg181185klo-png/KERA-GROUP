@@ -63,7 +63,7 @@ export function HeroSearch() {
                     type="radio"
                     name="deal_type"
                     value={value}
-                    defaultChecked={value === "sale"}
+                    defaultChecked={value === "buy"}
                     className="peer sr-only"
                   />
                   <span className="inline-block rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-colors peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary">

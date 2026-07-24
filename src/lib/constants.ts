@@ -1,20 +1,29 @@
-export const SITE_NAME = "KERA GROUP";
+import {
+  Building2,
+  Camera,
+  ChartLine,
+  Home,
+  KeyRound,
+} from "lucide-react";
+
+export const SITE_NAME = "კერა ჯგუფი";
 export const SITE_NAME_GE = "კერა ჯგუფი";
+export const SITE_TAGLINE = "KERA GROUP";
 
 export const CONTACT_EMAIL = "info@keragroup.ge";
-export const CONTACT_PHONE = "+995 595 157 158";
-export const CONTACT_PHONE_HREF = "tel:+995595157158";
+export const CONTACT_PHONE = "+995 555 00 00 00";
+export const CONTACT_PHONE_HREF = "tel:+995555000000";
 export const CONTACT_ADDRESS = "თბილისი, საქართველო";
 
 export const NAV_LINKS = [
-  { href: "/", label: "მთავარი" },
   { href: "/#services", label: "სერვისები" },
+  { href: "/map", label: "რუკა" },
   { href: "/#featured", label: "ქონება" },
   { href: "/#calculator", label: "კალკულატორი" },
+  { href: "/dashboard/add-property", label: "განთავსება" },
 ] as const;
 
 export const PROPERTY_TYPES = [
-  { value: "", label: "ყველა ტიპი" },
   { value: "apartment", label: "ბინა" },
   { value: "house", label: "სახლი" },
   { value: "commercial", label: "კომერციული" },
@@ -22,7 +31,7 @@ export const PROPERTY_TYPES = [
 ] as const;
 
 export const DEAL_TYPES = [
-  { value: "sale", label: "ყიდვა" },
+  { value: "buy", label: "ყიდვა" },
   { value: "rent", label: "ქირავდება" },
 ] as const;
 
@@ -31,10 +40,57 @@ export const CURRENCIES = [
   { value: "GEL", label: "GEL (₾)" },
 ] as const;
 
+export const STATUS_LABELS: Record<string, string> = {
+  pending: "მოდერაციაში",
+  active: "აქტიური",
+  archived: "არქივი",
+};
+
+export const FALLBACK_RATES = {
+  USD: 2.65,
+  EUR: 2.88,
+  GBP: 3.35,
+};
+
+export const KERA_SERVICES = [
+  {
+    title: "KERA Realty",
+    description: "პრემიუმ უძრავი ქონების შერჩევა, ყიდვა და გაყიდვა საქართველოს ყველა რეგიონში.",
+    icon: Home,
+    accent: "blue" as const,
+  },
+  {
+    title: "KERA Developments",
+    description: "საინვესტიციო და საცხოვრებელი პროექტების განვითარება საერთაშორისო სტანდარტით.",
+    icon: Building2,
+    accent: "amber" as const,
+  },
+  {
+    title: "KERA Invest",
+    description: "საინვესტიციო კონსულტაცია, ROI ანალიზი და პორტფელის მართვა.",
+    icon: ChartLine,
+    accent: "blue" as const,
+  },
+  {
+    title: "KERA Property Management",
+    description: "ქონების სრული მართვა — ქირა, მოვლა, საკონტროლო და ფინანსური ანგარიშგება.",
+    icon: KeyRound,
+    accent: "amber" as const,
+  },
+  {
+    title: "KERA Media",
+    description: "პროფესიული ფოტო/ვიდეო გადაღება, 3D ტურები და მარკეტინგული მასალები.",
+    icon: Camera,
+    accent: "blue" as const,
+  },
+];
+
+export const ADMIN_COOKIE = "kera_admin_session";
+
 export const PROPERTY_FEATURES = [
   { value: "balcony", label: "აივანი" },
   { value: "parking", label: "პარკინგი" },
-  { value: "renovated", label: "რემონტი" },
+  { value: "renovation", label: "რემონტი" },
 ] as const;
 
 export const SERVICES = [
@@ -42,29 +98,29 @@ export const SERVICES = [
     title: "KERA Realty",
     description:
       "პრემიუმ უძრავი ქონების შერჩევა, ყიდვა და გაყიდვა საქართველოს ყველა რეგიონში.",
-    icon: "building",
+    icon: "building" as const,
   },
   {
     title: "KERA Developments",
     description:
       "საინვესტიციო და საცხოვრებელი პროექტების განვითარება საერთაშორისო სტანდარტით.",
-    icon: "crane",
+    icon: "crane" as const,
   },
   {
     title: "KERA Invest",
     description: "საინვესტიციო კონსულტაცია, ROI ანალიზი და პორტფელის მართვა.",
-    icon: "chart",
+    icon: "chart" as const,
   },
   {
     title: "KERA Property Management",
     description:
       "ქონების სრული მართვა — ქირა, მოვლა, საკონტროლო და ფინანსური ანგარიშგება.",
-    icon: "key",
+    icon: "key" as const,
   },
   {
     title: "KERA Media",
     description:
       "პროფესიული ფოტო/ვიდეო გადაღება, 3D ტურები და მარკეტინგული მასალები.",
-    icon: "camera",
+    icon: "camera" as const,
   },
-] as const;
+];
