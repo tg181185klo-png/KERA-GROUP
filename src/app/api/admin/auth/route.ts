@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { ADMIN_COOKIE } from "@/lib/constants";
+import { ADMIN_COOKIE, ADMIN_USERNAME } from "@/lib/constants";
 import { getAdminPassword, getAdminSessionSecret } from "@/lib/admin-auth";
 
 export async function POST(request: Request) {
   const { username, password } = await request.json();
-  const adminUsername = process.env.ADMIN_USERNAME ?? "admin";
+  const adminUsername = process.env.ADMIN_USERNAME ?? ADMIN_USERNAME;
   const adminPassword = getAdminPassword();
 
   if (username !== adminUsername || password !== adminPassword) {

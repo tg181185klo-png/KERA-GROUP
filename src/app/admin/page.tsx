@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/auth";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
@@ -16,10 +15,7 @@ export default async function AdminPage() {
   const legacyAdmin = await isAdminAuthenticated();
 
   if (!supabaseAdmin && !legacyAdmin) {
-    if (!user) {
-      return <AdminLoginGate />;
-    }
-    redirect("/dashboard");
+    return <AdminLoginGate />;
   }
 
   // Fetch all listings for admin via service client

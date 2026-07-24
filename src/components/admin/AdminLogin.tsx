@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Loader2, Shield } from "lucide-react";
 import { LOGO_IMAGE } from "@/lib/brand";
-import { SITE_NAME } from "@/lib/constants";
+import { ADMIN_USERNAME, SITE_NAME } from "@/lib/constants";
 
 interface AdminLoginProps {
   onSuccess: () => void;
 }
 
 export function AdminLogin({ onSuccess }: AdminLoginProps) {
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,12 +25,12 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: ADMIN_USERNAME, password }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error ?? "არასწორი მომხმარებელი ან პაროლი");
+        throw new Error(data.error ?? "არასწორი პაროლი");
       }
 
       onSuccess();
@@ -51,29 +51,18 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
           height={56}
           className="mx-auto h-14 w-14 object-contain"
         />
+        <div className="mx-auto mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-kera-blue/10 text-kera-blue">
+          <Shield className="h-5 w-5" />
+        </div>
         <h1 className="font-display mt-4 text-xl font-bold text-kera-slate">
-          ადმინ პანელი
+          ადმინისტრატორის შესვლა
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          შეიყვანეთ მომხმარებელი და პაროლი საიტის რედაქტირებისთვის.
+          შეიყვანეთ ადმინისტრატორის პაროლი განცხადებების დასადასტურებლად.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            მომხმარებელი
-          </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            autoComplete="username"
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
-          />
-        </div>
-
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
             პაროლი
@@ -83,7 +72,9 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoFocus
             autoComplete="current-password"
+            placeholder="ადმინისტრატორის პაროლი"
             className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
           />
         </div>
@@ -105,10 +96,16 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
               შემოწმება...
             </span>
           ) : (
-            "შესვლა"
+            "შესვლა ადმინ პანელში"
           )}
         </button>
       </form>
+
+      <p className="mt-6 text-center text-sm text-slate-500">
+        <Link href="/" className="text-kera-blue hover:underline">
+          ← მთავარ გვერდზე
+        </Link>
+      </p>
     </div>
   );
 }

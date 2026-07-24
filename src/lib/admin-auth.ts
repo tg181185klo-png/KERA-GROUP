@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { ADMIN_COOKIE } from "@/lib/constants";
+import { ADMIN_COOKIE, ADMIN_DEFAULT_PASSWORD } from "@/lib/constants";
 
 export async function isAdminAuthenticated() {
   const cookieStore = await cookies();
@@ -9,7 +9,7 @@ export async function isAdminAuthenticated() {
 }
 
 export function getAdminPassword() {
-  return process.env.ADMIN_PASSWORD ?? "kera-admin";
+  return process.env.ADMIN_PASSWORD ?? ADMIN_DEFAULT_PASSWORD;
 }
 
 export function getAdminSessionSecret() {

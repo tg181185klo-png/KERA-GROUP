@@ -86,6 +86,8 @@ export const KERA_SERVICES = [
 ];
 
 export const ADMIN_COOKIE = "kera_admin_session";
+export const ADMIN_USERNAME = "admin";
+export const ADMIN_DEFAULT_PASSWORD = "LashaTornike123456!";
 
 export const PROPERTY_FEATURES = [
   { value: "balcony", label: "აივანი" },
