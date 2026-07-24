@@ -1,14 +1,14 @@
-import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { isAdmin } from "@/lib/auth";
+import { createServiceClient } from "@/lib/supabase/server";
+import { canManageListings } from "@/lib/admin-access";
 import { NextResponse } from "next/server";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
   const { id } = await context.params;
-  const supabase = await createClient();
+  const service = createServiceClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from("properties")
     .select("*")
     .eq("id", id)
@@ -23,21 +23,18 @@ export async function GET(_request: Request, context: RouteContext) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
+  const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const admin = await canManageListings(user?.id);
+  const service = createServiceClient();
 
-  const body = await request.json();
-  const admin = await isAdmin(user.id);
-
-  const { data: existing } = await supabase
+  const { data: existing } = await service
     .from("properties")
-    .select("user_id, status")
+    .select("*")
     .eq("id", id)
     .single();
 
@@ -45,22 +42,36 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const isOwner = existing.user_id === user.id;
-  if (!admin && !isOwner) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!admin) {
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const isOwner =
+      existing.user_id === user.id ||
+      existing.owner_email === user.email;
+
+    if (!isOwner) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    if (existing.status !== "pending") {
+      return NextResponse.json(
+        { error: "Only pending listings can be edited" },
+        { status: 403 },
+      );
+    }
   }
 
-  if (!admin && existing.status !== "pending") {
-    return NextResponse.json(
-      { error: "Only pending listings can be edited" },
-      { status: 403 },
-    );
-  }
+  const body = await request.json();
+  const updates =
+    admin && body.status != null
+      ? { status: body.status }
+      : body;
 
-  const client = admin ? createServiceClient() : supabase;
-  const { data, error } = await client
+  const { data, error } = await service
     .from("properties")
-    .update(body)
+    .update(updates)
     .eq("id", id)
     .select()
     .single();
@@ -74,19 +85,40 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(_request: Request, context: RouteContext) {
   const { id } = await context.params;
+  const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  const admin = await canManageListings(user?.id);
+  if (!admin && !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const admin = await isAdmin(user.id);
-  const client = admin ? createServiceClient() : supabase;
+  if (!admin) {
+    const service = createServiceClient();
+    const { data: existing } = await service
+      .from("properties")
+      .select("user_id, owner_email, status")
+      .eq("id", id)
+      .single();
 
-  const { error } = await client.from("properties").delete().eq("id", id);
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const isOwner =
+      existing.user_id === user!.id ||
+      existing.owner_email === user!.email;
+
+    if (!isOwner || existing.status !== "pending") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
+  const service = createServiceClient();
+  const { error } = await service.from("properties").delete().eq("id", id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });

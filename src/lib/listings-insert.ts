@@ -112,7 +112,7 @@ async function insertLegacyListing(
     currency: "USD",
     description: buildLegacyDescription(body),
     images: body.images ?? [],
-    status: "active",
+    status: "pending",
     listing_type: "seller",
   };
 
@@ -148,7 +148,7 @@ export async function insertPropertyListing(user: User, body: ListingBody) {
     longitude: body.longitude,
     geojson_polygon: body.geojson_polygon,
     images: body.images ?? [],
-    status: "active",
+    status: "pending",
   };
 
   const modern = await supabase.from("properties").insert(newRow).select().single();

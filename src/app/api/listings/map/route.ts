@@ -14,7 +14,12 @@ export async function GET() {
   );
 
   if (!rpcError && rpcData?.length) {
-    return NextResponse.json(rpcData);
+    const fromRpc = (rpcData as PropertyRow[])
+      .map((row) => normalizeToMapProperty(row))
+      .filter((row): row is NonNullable<typeof row> => row != null);
+    if (fromRpc.length) {
+      return NextResponse.json(fromRpc);
+    }
   }
 
   const { data, error } = await service

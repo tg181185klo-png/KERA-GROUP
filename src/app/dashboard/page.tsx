@@ -22,7 +22,12 @@ function statusLabel(status: string) {
   );
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ submitted?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -75,6 +80,13 @@ export default async function DashboardPage() {
           <LogoutButton />
         </div>
       </div>
+
+      {params.submitted === "pending" && (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          განცხადება მიღებულია და მოდერაციაშია. ადმინის დამტკიცების შემდეგ
+          გამოჩნდება რუკაზე და მთავარ გვერდზე.
+        </div>
+      )}
 
       <Card className="overflow-hidden">
         <div className="border-b border-slate-100 px-6 py-4">

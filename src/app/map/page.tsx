@@ -2,8 +2,10 @@ import { PropertyMapClient } from "@/components/map/PropertyMapClient";
 
 export default function MapPage() {
   return (
-    <div className="fixed inset-0 top-[57px] z-30">
-      <PropertyMapClient />
+    <div className="h-[calc(100vh-57px)] min-h-[480px]">
+      <PropertyMapClient
+        emptyMessage="დამტკიცებული განცხადებები ჯერ არ არის. შედით ადმინ პანელში და დააჭირეთ «რუკაზე გამოჩენა»."
+      />
     </div>
   );
 }

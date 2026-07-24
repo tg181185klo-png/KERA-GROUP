@@ -109,6 +109,11 @@ export function AdminListingsPanel({
 
       {tab === "listings" ? (
         <Card className="overflow-x-auto">
+          {listings.length === 0 ? (
+            <p className="px-4 py-8 text-center text-slate-500">
+              განცხადებები არ მოიძებნა
+            </p>
+          ) : (
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-slate-500">
               <tr>
@@ -148,7 +153,15 @@ export function AdminListingsPanel({
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
-                      {item.status !== "active" && (
+                      {item.status === "pending" && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateStatus(item.id, "active")}
+                        >
+                          რუკაზე გამოჩენა
+                        </Button>
+                      )}
+                      {item.status !== "active" && item.status !== "pending" && (
                         <Button
                           size="sm"
                           variant="ghost"
@@ -179,6 +192,7 @@ export function AdminListingsPanel({
               ))}
             </tbody>
           </table>
+          )}
         </Card>
       ) : (
         <Card className="overflow-x-auto">

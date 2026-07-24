@@ -1,22 +1,22 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-
-const COOKIE_NAME = "kera_admin_session";
+import { ADMIN_COOKIE } from "@/lib/constants";
+import { getAdminPassword, getAdminSessionSecret } from "@/lib/admin-auth";
 
 export async function POST(request: Request) {
   const { username, password } = await request.json();
   const adminUsername = process.env.ADMIN_USERNAME ?? "admin";
-  const adminPassword = process.env.ADMIN_PASSWORD ?? "kera2024";
+  const adminPassword = getAdminPassword();
 
   if (username !== adminUsername || password !== adminPassword) {
     return NextResponse.json(
       { error: "არასწორი მომხმარებელი ან პაროლი" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
   const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, "authenticated", {
+  cookieStore.set(ADMIN_COOKIE, getAdminSessionSecret(), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -29,14 +29,14 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  cookieStore.delete(ADMIN_COOKIE);
   return NextResponse.json({ success: true });
 }
 
 export async function GET() {
   const cookieStore = await cookies();
-  const session = cookieStore.get(COOKIE_NAME);
+  const session = cookieStore.get(ADMIN_COOKIE);
   return NextResponse.json({
-    authenticated: session?.value === "authenticated",
+    authenticated: session?.value === getAdminSessionSecret(),
   });
 }

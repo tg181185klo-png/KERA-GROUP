@@ -3,6 +3,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/auth";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { AdminLoginGate } from "@/components/admin/AdminLoginGate";
+import { normalizeToAdminListing } from "@/lib/property-normalize";
 import { AdminListingsPanel } from "@/components/admin/AdminListingsPanel";
 
 export default async function AdminPage() {
@@ -34,7 +35,9 @@ export default async function AdminPage() {
       <p className="mb-8 text-sm text-slate-500">
         მომხმარებლებისა და განცხადებების მართვა
       </p>
-      <AdminListingsPanel initialListings={allListings ?? []} />
+      <AdminListingsPanel
+        initialListings={(allListings ?? []).map(normalizeToAdminListing)}
+      />
     </div>
   );
 }

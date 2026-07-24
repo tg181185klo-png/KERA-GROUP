@@ -83,7 +83,7 @@ export function AddPropertyWizard() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/dashboard?submitted=pending");
     router.refresh();
   }
 

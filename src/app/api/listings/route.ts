@@ -1,6 +1,7 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { isAdmin } from "@/lib/auth";
+import { canManageListings } from "@/lib/admin-access";
 import { insertPropertyListing } from "@/lib/listings-insert";
+import { normalizeToAdminListing } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
 
   if (adminAll) {
-    if (!user || !(await isAdmin(user.id))) {
+    if (!(await canManageListings(user?.id))) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const serviceClient = createServiceClient();
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json(data);
+    return NextResponse.json((data ?? []).map(normalizeToAdminListing));
   }
 
   let query = supabase.from("properties").select("*").order("created_at", {
