@@ -28,8 +28,17 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-4 lg:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <CurrencyWidget compact />
+          <Link
+            href="/login"
+            className="text-sm font-medium text-slate-600 transition hover:text-kera-blue"
+          >
+            შესვლა
+          </Link>
+          <LinkButton href="/signup" variant="secondary" size="sm">
+            რეგისტრაცია
+          </LinkButton>
           <LinkButton href="/dashboard/add-property" size="sm">
             ქონების განთავსება
           </LinkButton>
@@ -57,7 +66,13 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <LinkButton href="/dashboard/add-property" className="mt-2 w-full">
+            <LinkButton href="/signup" variant="secondary" className="mt-2 w-full">
+              რეგისტრაცია
+            </LinkButton>
+            <LinkButton href="/login" variant="ghost" className="w-full">
+              შესვლა
+            </LinkButton>
+            <LinkButton href="/dashboard/add-property" className="w-full">
               ქონების განთავსება
             </LinkButton>
           </nav>

@@ -18,9 +18,12 @@ BEGIN
   END IF;
 END $$;
 
--- B) area_sqm-ის დამატება (თუ ძველი ცხრილი დარჩა)
+-- B) area_sqm, currency — ძველ ცხრილზე (თუ cadastral_code არ არis)
 ALTER TABLE public.properties
   ADD COLUMN IF NOT EXISTS area_sqm numeric;
+
+ALTER TABLE public.properties
+  ADD COLUMN IF NOT EXISTS currency text DEFAULT 'USD';
 
 -- C) profiles ცხრილი (რეგისტრაციისთვის)
 CREATE TABLE IF NOT EXISTS public.profiles (

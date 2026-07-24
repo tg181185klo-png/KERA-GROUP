@@ -63,6 +63,11 @@ where not exists (select 1 from public.profiles p where p.id = u.id)
 on conflict (id) do nothing;
 
 -- 3. Properties — ძველი ცხრილის გადატანა (თუ ახალი სქემა არ არის)
+
+-- აკლია სვეტების დამატება ძველ ცხრილზე
+alter table public.properties add column if not exists area_sqm numeric;
+alter table public.properties add column if not exists currency text default 'USD';
+
 do $$
 begin
   if exists (

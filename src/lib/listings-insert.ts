@@ -54,6 +54,44 @@ function buildLegacyDescription(body: ListingBody) {
   return parts.join("\n") || body.address;
 }
 
+function parseMissingColumn(message: string): string | null {
+  const match = message.match(/Could not find the '([^']+)' column/i);
+  return match?.[1] ?? null;
+}
+
+async function insertAdaptive(
+  service: SupabaseClient,
+  payload: Record<string, unknown>,
+) {
+  let current = { ...payload };
+  let lastError: { message: string } | null = null;
+
+  for (let attempt = 0; attempt < 15; attempt++) {
+    const { data, error } = await service
+      .from("properties")
+      .insert(current)
+      .select()
+      .single();
+
+    if (!error) {
+      return { data, error: null };
+    }
+
+    lastError = error;
+    const missing = parseMissingColumn(error.message);
+    if (!missing || !isSchemaMismatch(error.message)) {
+      return { data: null, error };
+    }
+
+    delete current[missing];
+    if (Object.keys(current).length === 0) {
+      break;
+    }
+  }
+
+  return { data: null, error: lastError };
+}
+
 async function insertLegacyListing(
   service: SupabaseClient,
   user: User,
@@ -63,7 +101,7 @@ async function insertLegacyListing(
     [body.owner_first_name, body.owner_last_name].filter(Boolean).join(" ").trim() ||
     "მომხმარებელი";
 
-  const base = {
+  const payload: Record<string, unknown> = {
     owner_name: ownerName,
     owner_phone: body.phone_number ?? "",
     owner_email: user.email ?? null,
@@ -78,22 +116,11 @@ async function insertLegacyListing(
     listing_type: "seller",
   };
 
-  const withArea =
-    body.area_sqm && body.area_sqm > 0
-      ? { ...base, area_sqm: body.area_sqm }
-      : base;
-
-  let result = await service
-    .from("properties")
-    .insert(withArea)
-    .select()
-    .single();
-
-  if (result.error && isSchemaMismatch(result.error.message) && "area_sqm" in withArea) {
-    result = await service.from("properties").insert(base).select().single();
+  if (body.area_sqm && body.area_sqm > 0) {
+    payload.area_sqm = body.area_sqm;
   }
 
-  return result;
+  return insertAdaptive(service, payload);
 }
 
 export async function insertPropertyListing(user: User, body: ListingBody) {
