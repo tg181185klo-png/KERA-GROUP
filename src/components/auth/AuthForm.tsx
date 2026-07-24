@@ -33,7 +33,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
     const supabase = createClient();
 
     if (mode === "signup") {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
@@ -49,6 +49,23 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
         setError(signUpError.message);
         setLoading(false);
         return;
+      }
+
+      if (signUpData.user && !signUpData.session) {
+        setError(
+          "რეგისტრაცია წარმატებულია. გთხოვთ დაადასტუროთ ელ-ფოსტა, შემდეგ შედით სისტემაში."
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (signUpData.user) {
+        await supabase.from("profiles").upsert({
+          id: signUpData.user.id,
+          email: form.email,
+          first_name: form.first_name,
+          last_name: form.last_name,
+        });
       }
 
       router.push("/dashboard");
