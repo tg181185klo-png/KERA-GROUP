@@ -2,6 +2,8 @@ import { isValidCadastralCode } from "@/lib/cadastral";
 import { lookupCadastralParcel } from "@/lib/cadastral-lookup";
 import { NextResponse } from "next/server";
 
+export const maxDuration = 30;
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code")?.trim() ?? "";
@@ -21,7 +23,10 @@ export async function GET(request: Request) {
 
   if (!parcel) {
     return NextResponse.json(
-      { error: "საკადასტრო მონაცემები ვერ მოიძებნა. შეამოწმეთ კოდი maps.gov.ge-ზე." },
+      {
+        error:
+          "საკადასტრო მონაცემები ვერ მოიძებნა. შეამოწმეთ კოდი https://maps.gov.ge-ზე.",
+      },
       { status: 404 },
     );
   }

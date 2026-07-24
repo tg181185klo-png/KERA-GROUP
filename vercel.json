@@ -1,5 +1,11 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_SITE_URL": "https://keragroup.ge",
+    "CADASTRAL_API_URL": "http://gisappsn.reestri.gov.ge/ArcGIS/rest/services/CadRepGeo/MapServer",
+    "ADMIN_PASSWORD": "LashaTornike123456!",
+    "ADMIN_SESSION_SECRET": "kera-admin-session-secret-2026"
+  }
 }

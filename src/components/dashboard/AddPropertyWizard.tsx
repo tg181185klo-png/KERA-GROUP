@@ -89,10 +89,36 @@ export function AddPropertyWizard() {
     setLoading(true);
     setSubmitError("");
 
+    let payload = { ...form };
+
+    if (
+      isValidCadastralCode(form.cadastral_code) &&
+      (form.latitude == null || form.geojson_polygon == null)
+    ) {
+      try {
+        const lookupRes = await fetch(
+          `/api/cadastral/lookup?code=${encodeURIComponent(form.cadastral_code)}`,
+        );
+        const lookupData = await lookupRes.json();
+        if (lookupRes.ok) {
+          payload = {
+            ...payload,
+            cadastral_code: lookupData.cadastral_code ?? payload.cadastral_code,
+            latitude: lookupData.latitude,
+            longitude: lookupData.longitude,
+            geojson_polygon: lookupData.geojson_polygon,
+            address: payload.address || lookupData.address || payload.address,
+          };
+        }
+      } catch {
+        // POST /api/listings also resolves cadastral server-side
+      }
+    }
+
     const res = await fetch("/api/listings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {

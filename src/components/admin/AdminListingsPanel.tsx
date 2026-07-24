@@ -34,6 +34,7 @@ export function AdminListingsPanel({
   const [listings, setListings] = useState<ListingRow[]>(initialListings);
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(!initialListings.length);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -80,6 +81,30 @@ export function AdminListingsPanel({
     await loadData();
   }
 
+  async function syncAllCadastral() {
+    if (!confirm("ყველა განცხადების კადასტრი განახლდება NAPR-იდან. გავაგრძელოთ?")) {
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/admin/sync-cadastral", { method: "POST" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error ?? "სინქრონიზაცია ვერ მოხერხდა");
+        return;
+      }
+
+      alert(
+        `განახლდა: ${data.updated}, გამოტოვებული: ${data.skipped}, ვერ მოიძებნა: ${data.failed}`,
+      );
+      await loadData();
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   async function deleteListing(id: string) {
     if (!confirm("ნამდვილად გსურთ წაშლა?")) return;
     await fetch(`/api/listings/${id}`, { method: "DELETE" });
@@ -101,7 +126,8 @@ export function AdminListingsPanel({
 
   return (
     <div>
-      <div className="mb-6 flex gap-2">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-2">
         <Button
           variant={tab === "listings" ? "primary" : "ghost"}
           size="sm"
@@ -116,6 +142,17 @@ export function AdminListingsPanel({
         >
           მომხმარებლები ({users.length})
         </Button>
+        </div>
+        {tab === "listings" && (
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={syncing}
+            onClick={syncAllCadastral}
+          >
+            {syncing ? "სინქრონიზაცია..." : "კადასტრის განახლება (NAPR)"}
+          </Button>
+        )}
       </div>
 
       {tab === "listings" ? (

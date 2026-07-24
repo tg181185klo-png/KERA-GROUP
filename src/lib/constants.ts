@@ -90,6 +90,14 @@ export const ADMIN_USERNAME = "admin";
 export const ADMIN_DEFAULT_PASSWORD = "LashaTornike123456!";
 export const ADMIN_SESSION_SECRET_DEFAULT = "kera-admin-session-secret-2026";
 
+/** NAPR public cadastral ArcGIS MapServer (maps.gov.ge data source) */
+export const CADASTRAL_API_BASE =
+  process.env.CADASTRAL_API_URL ??
+  "http://gisappsn.reestri.gov.ge/ArcGIS/rest/services/CadRepGeo/MapServer";
+
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://keragroup.ge";
+
 export const PROPERTY_FEATURES = [
   { value: "balcony", label: "აივანი" },
   { value: "parking", label: "პარკინგი" },

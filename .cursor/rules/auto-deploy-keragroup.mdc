@@ -29,6 +29,7 @@ These must be set in Vercel → Project → Settings → Environment Variables:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `NEXT_PUBLIC_SITE_URL` = `https://keragroup.ge`
+- `CADASTRAL_API_URL` = `http://gisappsn.reestri.gov.ge/ArcGIS/rest/services/CadRepGeo/MapServer`
 - `ADMIN_PASSWORD`
 - `ADMIN_SESSION_SECRET`
 

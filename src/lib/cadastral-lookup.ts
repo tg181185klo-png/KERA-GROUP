@@ -1,12 +1,12 @@
 import type { GeoJSON } from "geojson";
 import { cadastralToUniqCode, formatCadastralCode } from "@/lib/cadastral";
-
-const CADASTRAL_API_BASE =
-  process.env.CADASTRAL_API_URL ??
-  "http://gisappsn.reestri.gov.ge/ArcGIS/rest/services/CadRepGeo/MapServer";
+import { CADASTRAL_API_BASE } from "@/lib/constants";
 
 /** Parcel (ნაკვეთი) layer IDs — one per Georgian region in CadRepGeo */
 const PARCEL_LAYER_IDS = [10, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59];
+
+/** Tbilisi layer — queried first (most listings) */
+const TBILISI_LAYER_ID = 10;
 
 export type CadastralParcel = {
   cadastral_code: string;
@@ -40,7 +40,10 @@ function ringsToGeoJson(rings: number[][][]): GeoJSON.Polygon {
   };
 }
 
-function polygonCentroid(polygon: GeoJSON.Polygon): { latitude: number; longitude: number } {
+function polygonCentroid(polygon: GeoJSON.Polygon): {
+  latitude: number;
+  longitude: number;
+} {
   const ring = polygon.coordinates[0];
   if (!ring?.length) {
     return { latitude: 41.7151, longitude: 44.8271 };
@@ -61,6 +64,13 @@ function polygonCentroid(polygon: GeoJSON.Polygon): { latitude: number; longitud
     latitude: sumLat / count,
     longitude: sumLng / count,
   };
+}
+
+/** Real NAPR parcels usually have many vertices; old simulated squares had ~5. */
+export function isLikelyRealParcel(geojson: unknown): boolean {
+  if (!geojson || typeof geojson !== "object") return false;
+  const ring = (geojson as GeoJSON.Polygon).coordinates?.[0];
+  return Array.isArray(ring) && ring.length >= 8;
 }
 
 async function queryLayer(
@@ -121,11 +131,20 @@ export async function lookupCadastralParcel(
     return cache.get(uniqCode) ?? null;
   }
 
+  const tbilisi = await queryLayer(TBILISI_LAYER_ID, uniqCode);
+  if (tbilisi) {
+    cache.set(uniqCode, tbilisi);
+    cacheTimestamps.set(uniqCode, Date.now());
+    return tbilisi;
+  }
+
+  const otherLayers = PARCEL_LAYER_IDS.filter((id) => id !== TBILISI_LAYER_ID);
   const results = await Promise.all(
-    PARCEL_LAYER_IDS.map((layerId) => queryLayer(layerId, uniqCode)),
+    otherLayers.map((layerId) => queryLayer(layerId, uniqCode)),
   );
 
-  const parcel = results.find((item): item is CadastralParcel => item != null) ?? null;
+  const parcel =
+    results.find((item): item is CadastralParcel => item != null) ?? null;
 
   cache.set(uniqCode, parcel);
   cacheTimestamps.set(uniqCode, Date.now());
@@ -163,25 +182,36 @@ export async function buildMapPersistPayload(
 export async function enrichRowWithCadastral(
   row: Record<string, unknown>,
   getCadastralCode: (row: Record<string, unknown>) => string,
+  options?: { force?: boolean },
 ): Promise<Record<string, unknown>> {
+  const cadastral = getCadastralCode(row);
+  if (cadastral === "—") return row;
+
   const hasLat =
     typeof row.latitude === "number" ||
     (typeof row.latitude === "string" && row.latitude !== "");
-  const hasGeo = row.geojson_polygon != null;
+  const hasRealParcel =
+    hasLat && isLikelyRealParcel(row.geojson_polygon);
 
-  if (hasLat && hasGeo) return row;
-
-  const cadastral = getCadastralCode(row);
-  if (cadastral === "—") return row;
+  if (!options?.force && hasRealParcel) return row;
 
   const parcel = await lookupCadastralParcel(cadastral);
   if (!parcel) return row;
 
   return {
     ...row,
+    cadastral_code: parcel.cadastral_code,
     latitude: parcel.latitude,
     longitude: parcel.longitude,
     geojson_polygon: parcel.geojson_polygon,
     address: row.address ?? parcel.address ?? row.address,
+  };
+}
+
+export function cadastralCoordsPayload(parcel: CadastralParcel) {
+  return {
+    latitude: parcel.latitude,
+    longitude: parcel.longitude,
+    geojson_polygon: parcel.geojson_polygon,
   };
 }

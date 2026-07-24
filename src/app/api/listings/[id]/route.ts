@@ -4,6 +4,8 @@ import { buildMapPersistPayload } from "@/lib/cadastral-lookup";
 import { getCadastralCode } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
 
+export const maxDuration = 60;
+
 function parseMissingColumn(message: string): string | null {
   const match = message.match(/Could not find the '([^']+)' column/i);
   return match?.[1] ?? null;
