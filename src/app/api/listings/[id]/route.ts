@@ -1,6 +1,52 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { canManageListings } from "@/lib/admin-access";
+import { buildMapPersistPayload } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
+
+function parseMissingColumn(message: string): string | null {
+  const match = message.match(/Could not find the '([^']+)' column/i);
+  return match?.[1] ?? null;
+}
+
+function statusForDatabase(status: string): string {
+  if (status === "blocked") return "archived";
+  return status;
+}
+
+async function updateAdaptive(
+  service: ReturnType<typeof createServiceClient>,
+  id: string,
+  payload: Record<string, unknown>,
+) {
+  let current = { ...payload };
+  let lastError: { message: string } | null = null;
+
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const { data, error } = await service
+      .from("properties")
+      .update(current)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (!error) {
+      return { data, error: null };
+    }
+
+    lastError = error;
+    const missing = parseMissingColumn(error.message);
+    if (!missing) {
+      return { data: null, error };
+    }
+
+    delete current[missing];
+    if (Object.keys(current).length === 0) {
+      break;
+    }
+  }
+
+  return { data: null, error: lastError };
+}
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -64,17 +110,16 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   const body = await request.json();
-  const updates =
-    admin && body.status != null
-      ? { status: body.status }
-      : body;
 
-  const { data, error } = await service
-    .from("properties")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single();
+  let updates: Record<string, unknown> = body;
+
+  if (admin && body.status === "active") {
+    updates = buildMapPersistPayload(existing as Record<string, unknown>);
+  } else if (admin && body.status != null) {
+    updates = { status: statusForDatabase(body.status) };
+  }
+
+  const { data, error } = await updateAdaptive(service, id, updates);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });

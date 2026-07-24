@@ -9,23 +9,9 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const service = createServiceClient();
 
-  const { data: rpcData, error: rpcError } = await service.rpc(
-    "get_active_properties_for_map",
-  );
-
-  if (!rpcError && rpcData?.length) {
-    const fromRpc = (rpcData as PropertyRow[])
-      .map((row) => normalizeToMapProperty(row))
-      .filter((row): row is NonNullable<typeof row> => row != null);
-    if (fromRpc.length) {
-      return NextResponse.json(fromRpc);
-    }
-  }
-
   const { data, error } = await service
     .from("properties")
     .select("*")
-    .eq("status", "active")
     .order("created_at", { ascending: false });
 
   if (error) {

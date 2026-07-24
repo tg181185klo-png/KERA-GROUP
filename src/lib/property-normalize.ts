@@ -1,8 +1,36 @@
 import type { MapProperty, ListingType, ListingStatus } from "@/lib/types/property-listing";
-import { isValidCadastralCode, simulateCadastralLookup } from "@/lib/cadastral";
+import {
+  coordinatesFromSeed,
+  extractCadastralCode,
+  simulateCadastralLookup,
+} from "@/lib/cadastral";
 
 /** Raw row from modern or legacy Supabase `properties` table */
 export type PropertyRow = Record<string, unknown>;
+
+function toNumber(value: unknown): number | null {
+  if (typeof value === "number" && !Number.isNaN(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const n = Number(value);
+    return Number.isNaN(n) ? null : n;
+  }
+  return null;
+}
+
+function parseGeojson(value: unknown): MapProperty["geojson_polygon"] | null {
+  if (!value) return null;
+  if (typeof value === "object" && value !== null && "type" in value) {
+    return value as MapProperty["geojson_polygon"];
+  }
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as MapProperty["geojson_polygon"];
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
 
 export function getListingTitle(row: PropertyRow): string {
   if (typeof row.title === "string" && row.title) return row.title;
@@ -14,12 +42,24 @@ export function getListingTitle(row: PropertyRow): string {
 
 export function getCadastralCode(row: PropertyRow): string {
   if (typeof row.cadastral_code === "string" && row.cadastral_code) {
-    return row.cadastral_code;
+    const fromField = extractCadastralCode(row.cadastral_code);
+    if (fromField) return fromField;
+    if (!row.cadastral_code.startsWith("TEMP-")) return row.cadastral_code.trim();
   }
-  if (typeof row.description === "string") {
-    const match = row.description.match(/კადასტრი:\s*(\S+)/);
-    if (match) return match[1];
+
+  const searchIn = [row.description, row.title, row.address]
+    .filter((v): v is string => typeof v === "string")
+    .join("\n");
+
+  const fromText = extractCadastralCode(searchIn);
+  if (fromText) return fromText;
+
+  const georgianMatch = searchIn.match(/კადასტრი:\s*(\S+)/);
+  if (georgianMatch?.[1]) {
+    const fromLabel = extractCadastralCode(georgianMatch[1]) ?? georgianMatch[1].trim();
+    if (fromLabel && !fromLabel.startsWith("TEMP-")) return fromLabel;
   }
+
   return "—";
 }
 
@@ -57,32 +97,38 @@ export function getOwnerNames(row: PropertyRow): { first: string; last: string }
   };
 }
 
-function resolveCoordinates(row: PropertyRow) {
-  let lat = row.latitude as number | null | undefined;
-  let lng = row.longitude as number | null | undefined;
-  let geojson =
-    (row.geojson_polygon as MapProperty["geojson_polygon"] | null) ?? null;
+export function resolveMapCoordinates(row: PropertyRow) {
+  let lat = toNumber(row.latitude);
+  let lng = toNumber(row.longitude);
+  let geojson = parseGeojson(row.geojson_polygon);
 
   const cadastral = getCadastralCode(row);
-  if (
-    (lat == null || lng == null) &&
-    cadastral !== "—" &&
-    isValidCadastralCode(cadastral)
-  ) {
-    const lookup = simulateCadastralLookup(cadastral);
-    lat = lookup.latitude;
-    lng = lookup.longitude;
-    geojson = geojson ?? lookup.geojson_polygon;
+
+  if (lat == null || lng == null) {
+    if (cadastral !== "—") {
+      const lookup = simulateCadastralLookup(cadastral);
+      lat = lookup.latitude;
+      lng = lookup.longitude;
+      geojson = geojson ?? lookup.geojson_polygon;
+    } else if (row.address) {
+      const lookup = coordinatesFromSeed(String(row.address));
+      lat = lookup.latitude;
+      lng = lookup.longitude;
+      geojson = geojson ?? lookup.geojson_polygon;
+    } else if (row.id) {
+      const lookup = coordinatesFromSeed(String(row.id));
+      lat = lookup.latitude;
+      lng = lookup.longitude;
+      geojson = geojson ?? lookup.geojson_polygon;
+    }
   }
 
   return { lat, lng, geojson, cadastral };
 }
 
 export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
-  const { lat, lng, geojson } = resolveCoordinates(row);
-  if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
-    return null;
-  }
+  const { lat, lng, geojson } = resolveMapCoordinates(row);
+  if (lat == null || lng == null) return null;
 
   const owners = getOwnerNames(row);
   const area =
@@ -132,4 +178,14 @@ export function normalizeToAdminListing(row: PropertyRow) {
 
 export function isActiveListing(row: PropertyRow): boolean {
   return normalizeListingStatus(row.status) === "active";
+}
+
+/** Coordinates payload to persist when admin approves a listing. */
+export function buildMapPersistPayload(row: PropertyRow): Record<string, unknown> {
+  const { lat, lng, geojson } = resolveMapCoordinates(row);
+  const payload: Record<string, unknown> = { status: "active" };
+  if (lat != null) payload.latitude = lat;
+  if (lng != null) payload.longitude = lng;
+  if (geojson) payload.geojson_polygon = geojson;
+  return payload;
 }

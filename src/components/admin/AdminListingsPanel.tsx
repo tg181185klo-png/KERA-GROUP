@@ -61,12 +61,23 @@ export function AdminListingsPanel({
   }
 
   async function updateStatus(id: string, status: ListingStatus) {
-    await fetch(`/api/listings/${id}`, {
+    const res = await fetch(`/api/listings/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    loadData();
+
+    if (!res.ok) {
+      const data = await res.json();
+      alert(data.error ?? "სტატუსის განახლება ვერ მოხერხდა");
+      return;
+    }
+
+    if (status === "active") {
+      alert("განცხადება დამტკიცდა და რუკაზე გამოჩნდება.");
+    }
+
+    await loadData();
   }
 
   async function deleteListing(id: string) {
