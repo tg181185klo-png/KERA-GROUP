@@ -21,7 +21,7 @@ export function Input({
       <input
         id={inputId}
         className={cn(
-          "w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-kera-blue focus:ring-2 focus:ring-kera-blue/20",
+          "kera-input",
           error && "border-red-400",
           className,
         )}

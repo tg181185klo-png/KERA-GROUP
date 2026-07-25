@@ -17,11 +17,10 @@ const ICONS = {
 
 export function ServicesSection() {
   return (
-    <section id="services" className="bg-white py-14 sm:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-10 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-kera-primary">
+    <section id="services" className="kera-section bg-white">
+      <div className="kera-container">
+        <div className="mb-10 max-w-2xl">
+            <p className="kera-eyebrow">
               KERA Ecosystem
             </p>
             <h2 className="kera-section-title mt-2">
@@ -32,7 +31,6 @@ export function ServicesSection() {
               განვითარება.
             </p>
           </div>
-        </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {SERVICES.map(({ title, description, icon }) => {

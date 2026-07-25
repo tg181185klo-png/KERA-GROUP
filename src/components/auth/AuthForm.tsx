@@ -89,7 +89,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
 
   return (
     <Card className="mx-auto w-full max-w-md p-8">
-      <h1 className="mb-2 text-2xl font-bold text-slate-900">
+      <h1 className="kera-page-header mb-2">
         {mode === "login" ? "შესვლა" : "რეგისტრაცია"}
       </h1>
       <p className="mb-6 text-sm text-slate-500">
@@ -160,14 +160,14 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
         {mode === "login" ? (
           <>
             არ გაქვთ ანგარიში?{" "}
-            <Link href="/signup" className="font-medium text-kera-blue hover:underline">
+            <Link href="/signup" className="kera-link">
               რეგისტრაცია
             </Link>
           </>
         ) : (
           <>
             უკვე გაქვთ ანგარიში?{" "}
-            <Link href="/login" className="font-medium text-kera-blue hover:underline">
+            <Link href="/login" className="kera-link">
               შესვლა
             </Link>
           </>

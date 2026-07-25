@@ -60,10 +60,10 @@ export default async function DashboardPage({
   const listings = Array.from(merged.values());
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+    <div className="kera-container py-10 sm:py-12 lg:py-14">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">ჩემი პანელი</h1>
+          <h1 className="kera-page-header">ჩემი პანელი</h1>
           <p className="text-sm text-slate-500">
             {profile?.first_name} {profile?.last_name} · {profile?.email}
           </p>

@@ -105,8 +105,8 @@ export function FeaturedPropertiesGrid({
       <div className="kera-card mx-auto max-w-xl p-10 text-center">
         <p className="text-slate-600">{emptyMessage}</p>
         <Link
-          href="/submit"
-          className="mt-4 inline-block kera-btn px-6 py-2.5"
+          href="/dashboard/add-property"
+          className="kera-btn mt-4 inline-flex px-6 py-2.5"
         >
           ქონების განთავსება
         </Link>

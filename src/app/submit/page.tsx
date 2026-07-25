@@ -9,16 +9,12 @@ export const metadata: Metadata = {
 
 export default function SubmitPage() {
   return (
-    <section className="bg-kera-page py-12 sm:py-16">
+    <section className="kera-section bg-kera-page">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-kera-primary">
-            Property Listing
-          </p>
-          <h1 className="font-display mt-3 text-2xl font-bold text-kera-slate sm:text-3xl">
-            ქონების განთავსება
-          </h1>
-          <p className="mt-3 text-slate-600">
+          <p className="kera-eyebrow">Property Listing</p>
+          <h1 className="kera-section-title mt-3">ქონების განთავსება</h1>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-slate-600 sm:text-base">
             განათავსეთ თქვენი უძრავი ქონება KERA GROUP-ის პრემიუმ პლატფორმაზე.
             განცხადება მოდერაციის შემდეგ გამოჩნდება საიტზე.
           </p>

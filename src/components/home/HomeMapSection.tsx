@@ -66,23 +66,18 @@ export function HomeMapSection() {
   }, [cadastralCode]);
 
   return (
-    <section id="map" className="bg-white py-14 sm:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="map" className="kera-section bg-white">
+      <div className="kera-container">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-kera-primary">
-              Cadastral Map
-            </p>
+          <div className="max-w-2xl">
+            <p className="kera-eyebrow">Cadastral Map</p>
             <h2 className="kera-section-title mt-2">ინტერაქტიული რუკა</h2>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+            <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
               შეიყვანეთ საკადასტრო კოდი — მონაკვეთი მაშინვე გამოჩნდება რუკაზე.
               დამტკიცებული განცხადებები ასევე ჩანს აქ.
             </p>
           </div>
-          <Link
-            href="/map"
-            className="text-sm font-medium text-kera-blue hover:underline"
-          >
+          <Link href="/map" className="kera-link shrink-0 text-sm">
             სრული ეკრანი →
           </Link>
         </div>
@@ -92,7 +87,7 @@ export function HomeMapSection() {
             htmlFor="home-cadastral-search"
             className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700"
           >
-            <MapPin className="h-4 w-4 text-kera-primary" />
+            <MapPin className="h-4 w-4 shrink-0 text-kera-primary" />
             საკადასტრო კოდის ძებნა
           </label>
           <div className="relative">
@@ -103,7 +98,7 @@ export function HomeMapSection() {
               value={cadastralCode}
               onChange={(e) => setCadastralCode(e.target.value)}
               placeholder="მაგ: 01.10.15.001.002"
-              className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-12 text-sm outline-none transition focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
+              className="kera-input py-3 pl-10 pr-12"
               autoComplete="off"
               spellCheck={false}
             />
@@ -125,7 +120,7 @@ export function HomeMapSection() {
           </p>
         </div>
 
-        <div className="h-[420px] overflow-hidden rounded-2xl border border-slate-200 shadow-sm sm:h-[520px]">
+        <div className="kera-map-shell h-[min(60vh,520px)] min-h-[360px] sm:min-h-[420px]">
           <PropertyMapClient preview={preview} alwaysShowMap showAdminHint />
         </div>
       </div>

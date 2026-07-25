@@ -10,12 +10,21 @@ import {
   SITE_NAME_GE,
 } from "@/lib/constants";
 
+const FOOTER_LINKS = [
+  { href: "/", label: "მთავარი" },
+  { href: "/#services", label: "სერვისები" },
+  { href: "/#map", label: "რუკა" },
+  { href: "/#featured", label: "ქონება" },
+  { href: "/dashboard/add-property", label: "განთავსება" },
+  { href: "/#calculator", label: "კალკულატორი" },
+] as const;
+
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-3">
-          <div>
+    <footer className="mt-auto border-t border-slate-200 bg-white">
+      <div className="kera-container py-12 lg:py-14">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+          <div className="max-w-sm">
             <Link href="/" className="inline-flex items-center gap-3">
               <Image
                 src={LOGO_IMAGE}
@@ -41,24 +50,16 @@ export function Footer() {
             <p className="font-display text-sm font-bold uppercase tracking-wide text-kera-slate">
               ნავიგაცია
             </p>
-            <ul className="mt-4 space-y-2.5 text-sm text-slate-600">
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm text-slate-600 sm:grid-cols-1">
+              {FOOTER_LINKS.map(({ href, label }) => (
+                <li key={href}>
+                  <Link href={href} className="transition hover:text-kera-primary">
+                    {label}
+                  </Link>
+                </li>
+              ))}
               <li>
-                <Link href="/" className="hover:text-kera-primary">
-                  მთავარი
-                </Link>
-              </li>
-              <li>
-                <Link href="/submit" className="hover:text-kera-primary">
-                  ქონების განთავსება
-                </Link>
-              </li>
-              <li>
-                <Link href="/#currency" className="hover:text-kera-primary">
-                  ვალუტის კურსები
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin" className="hover:text-kera-primary">
+                <Link href="/admin" className="transition hover:text-kera-primary">
                   ადმინ პანელი
                 </Link>
               </li>
@@ -71,12 +72,18 @@ export function Footer() {
             </p>
             <ul className="mt-4 space-y-2.5 text-sm text-slate-600">
               <li>
-                <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-kera-primary">
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="transition hover:text-kera-primary"
+                >
                   {CONTACT_EMAIL}
                 </a>
               </li>
               <li>
-                <a href={CONTACT_PHONE_HREF} className="hover:text-kera-primary">
+                <a
+                  href={CONTACT_PHONE_HREF}
+                  className="transition hover:text-kera-primary"
+                >
                   {CONTACT_PHONE}
                 </a>
               </li>

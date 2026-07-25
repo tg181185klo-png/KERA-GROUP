@@ -8,13 +8,6 @@ export function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-slate-200 bg-white shadow-sm",
-        className,
-      )}
-    >
-      {children}
-    </div>
+    <div className={cn("kera-card overflow-hidden", className)}>{children}</div>
   );
 }

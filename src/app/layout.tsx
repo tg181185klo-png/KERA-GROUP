@@ -32,9 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ka" className="h-full scroll-smooth">
-      <body className="flex min-h-full flex-col bg-kera-page font-sans text-kera-slate antialiased">
+      <body className="flex min-h-full flex-col overflow-x-hidden bg-kera-page font-sans text-kera-slate antialiased">
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="flex min-h-0 flex-1 flex-col">{children}</main>
         <Footer />
       </body>
     </html>

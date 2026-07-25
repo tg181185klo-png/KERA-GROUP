@@ -43,11 +43,11 @@ export function FeaturedProperties({
   );
 
   return (
-    <section id="featured" className="bg-kera-page py-14 sm:py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="featured" className="kera-section bg-kera-page">
+      <div className="kera-container">
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-kera-primary">
+            <p className="kera-eyebrow">
               Featured
             </p>
             <h2 className="kera-section-title mt-2">გამორჩეული ქონება</h2>
@@ -74,8 +74,8 @@ export function FeaturedProperties({
               ))}
             </div>
             <Link
-              href="/submit"
-              className="hidden text-sm font-bold text-kera-primary hover:underline sm:block"
+              href="/dashboard/add-property"
+              className="hidden kera-link text-sm sm:block"
             >
               ყველა განცხადება →
             </Link>

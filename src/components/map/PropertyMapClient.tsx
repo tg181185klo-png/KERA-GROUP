@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import type {
   CadastralMapPreview,
@@ -40,8 +41,9 @@ export function PropertyMapClient({
 
   if (loading) {
     return (
-      <div className="flex h-full min-h-[320px] items-center justify-center bg-slate-50 text-slate-500">
-        რუკა იტვირთება...
+      <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-3 bg-slate-50 text-slate-500">
+        <Loader2 className="h-6 w-6 animate-spin text-kera-primary" />
+        <p className="text-sm">რუკა იტვირთება...</p>
       </div>
     );
   }
@@ -49,7 +51,7 @@ export function PropertyMapClient({
   if (error) {
     return (
       <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-2 bg-red-50 px-6 text-center text-red-600">
-        <p>{error}</p>
+        <p className="text-sm">{error}</p>
       </div>
     );
   }
@@ -59,12 +61,9 @@ export function PropertyMapClient({
   if (!hasContent && !alwaysShowMap) {
     return (
       <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-3 bg-slate-50 px-6 text-center text-slate-500">
-        <p className="max-w-md text-sm">{emptyMessage}</p>
+        <p className="max-w-md text-sm leading-relaxed">{emptyMessage}</p>
         {showAdminHint && (
-          <Link
-            href="/admin"
-            className="text-sm font-medium text-kera-blue hover:underline"
-          >
+          <Link href="/admin" className="kera-link text-sm">
             ადმინ პანელი → განცხადების დამტკიცება
           </Link>
         )}
@@ -76,8 +75,8 @@ export function PropertyMapClient({
     <div className="relative h-full min-h-[320px]">
       <PropertyMap properties={properties} preview={preview} />
       {!properties.length && !preview && alwaysShowMap && (
-        <div className="pointer-events-none absolute inset-x-0 top-3 z-[500] flex justify-center px-4">
-          <p className="rounded-xl bg-white/90 px-4 py-2 text-center text-xs text-slate-600 shadow-sm backdrop-blur sm:text-sm">
+        <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center px-4">
+          <p className="max-w-md rounded-xl border border-slate-200/80 bg-white/95 px-4 py-2.5 text-center text-xs leading-relaxed text-slate-600 shadow-sm backdrop-blur sm:text-sm">
             {emptyMessage}
           </p>
         </div>

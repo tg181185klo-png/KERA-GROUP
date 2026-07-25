@@ -220,7 +220,7 @@ export function PropertyMap({ properties, preview = null }: PropertyMapProps) {
   }, [properties, preview, ready]);
 
   return (
-    <div className="relative h-full min-h-[320px] w-full">
+    <div className="relative isolate h-full min-h-[320px] w-full overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 z-0" />
       {selected && (
         <PropertySidebar
