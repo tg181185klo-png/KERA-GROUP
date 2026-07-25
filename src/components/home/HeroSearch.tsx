@@ -47,20 +47,6 @@ export function HeroSearch() {
             Real Estate · Development · Investment · Property Management ·
             Media — ერთი პრემიუმ პლატფორმა.
           </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <a
-              href="/signup"
-              className="inline-flex items-center rounded-xl bg-kera-amber px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-amber-600"
-            >
-              რეგისტრაცია
-            </a>
-            <a
-              href="/login"
-              className="inline-flex items-center rounded-xl border border-white/40 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
-            >
-              შესვლა
-            </a>
-          </div>
         </div>
       </section>
 

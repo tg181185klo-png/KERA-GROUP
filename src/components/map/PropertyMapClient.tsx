@@ -3,16 +3,23 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PropertyMap } from "@/components/map/PropertyMap";
-import type { MapProperty } from "@/lib/types/property-listing";
+import type {
+  CadastralMapPreview,
+  MapProperty,
+} from "@/lib/types/property-listing";
 
 interface PropertyMapClientProps {
   emptyMessage?: string;
   showAdminHint?: boolean;
+  preview?: CadastralMapPreview | null;
+  alwaysShowMap?: boolean;
 }
 
 export function PropertyMapClient({
   emptyMessage = "დამტკიცებული განცხადებები რუკაზე ჯერ არ არის. ადმინის დამტკიცების შემდეგ კადასტრის კოდები აქ გამოჩნდება.",
   showAdminHint = true,
+  preview = null,
+  alwaysShowMap = false,
 }: PropertyMapClientProps) {
   const [properties, setProperties] = useState<MapProperty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +54,9 @@ export function PropertyMapClient({
     );
   }
 
-  if (!properties.length) {
+  const hasContent = properties.length > 0 || preview != null;
+
+  if (!hasContent && !alwaysShowMap) {
     return (
       <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-3 bg-slate-50 px-6 text-center text-slate-500">
         <p className="max-w-md text-sm">{emptyMessage}</p>
@@ -63,5 +72,16 @@ export function PropertyMapClient({
     );
   }
 
-  return <PropertyMap properties={properties} />;
+  return (
+    <div className="relative h-full min-h-[320px]">
+      <PropertyMap properties={properties} preview={preview} />
+      {!properties.length && !preview && alwaysShowMap && (
+        <div className="pointer-events-none absolute inset-x-0 top-3 z-[500] flex justify-center px-4">
+          <p className="rounded-xl bg-white/90 px-4 py-2 text-center text-xs text-slate-600 shadow-sm backdrop-blur sm:text-sm">
+            {emptyMessage}
+          </p>
+        </div>
+      )}
+    </div>
+  );
 }

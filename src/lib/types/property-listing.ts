@@ -42,6 +42,14 @@ export interface PropertyListingFormData {
   images: string[];
 }
 
+export interface CadastralMapPreview {
+  cadastral_code: string;
+  address?: string;
+  latitude: number;
+  longitude: number;
+  geojson_polygon: GeoJSON.Polygon | null;
+}
+
 export interface MapProperty {
   id: string;
   title: string;
