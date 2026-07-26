@@ -155,4 +155,71 @@ body {
       height: calc(100dvh - var(--header-height-lg));
     }
   }
+
+  .kera-cluster-marker {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .kera-cluster-icon {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 3px solid #fff;
+    background: linear-gradient(135deg, #00aeef 0%, #0077b6 100%);
+    box-shadow: 0 4px 14px rgb(0 119 182 / 35%);
+    color: #fff;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .kera-cluster-icon span {
+    font-size: 15px;
+  }
+
+  .kera-cluster-icon small {
+    font-size: 8px;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+
+  .kera-listing-marker {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .kera-listing-pin {
+    height: 18px;
+    width: 18px;
+    border-radius: 9999px;
+    border: 3px solid #fff;
+    background: var(--pin-color, #00aeef);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+  }
+
+  .kera-listing-pin.is-selected {
+    height: 22px;
+    width: 22px;
+    border-color: #ef7d00;
+    box-shadow: 0 0 0 4px rgb(239 125 0 / 25%);
+  }
+
+  .kera-cadastral-label {
+    background: rgb(255 255 255 / 92%) !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 12%) !important;
+    color: #0f172a !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    padding: 2px 6px !important;
+  }
+
+  .leaflet-popup.kera-map-popup .leaflet-popup-content-wrapper {
+    border-radius: 12px;
+  }
 }

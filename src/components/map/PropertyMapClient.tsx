@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { enrichPropertiesCadastral } from "@/lib/client-cadastral-enrich";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import type {
   CadastralMapPreview,
@@ -35,7 +36,9 @@ export function PropertyMapClient({
       if (!res.ok) {
         throw new Error(data.error ?? "რუკის ჩატვირთვა ვერ მოხერხდა");
       }
-      setProperties(Array.isArray(data) ? data : []);
+      const raw = Array.isArray(data) ? data : [];
+      const enriched = await enrichPropertiesCadastral(raw);
+      setProperties(enriched);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "შეცდომა");

@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Hash, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, Hash, Loader2, MapPin, Phone } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
+import { fetchCadastralForProperty } from "@/lib/client-cadastral-enrich";
 import type { MapProperty } from "@/lib/types/property-listing";
 import {
   formatPrice,
@@ -16,7 +18,31 @@ interface PropertyDetailClientProps {
   property: MapProperty;
 }
 
-export function PropertyDetailClient({ property }: PropertyDetailClientProps) {
+export function PropertyDetailClient({
+  property: initialProperty,
+}: PropertyDetailClientProps) {
+  const [property, setProperty] = useState(initialProperty);
+  const [mapLoading, setMapLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCadastral() {
+      setMapLoading(true);
+      const enriched = await fetchCadastralForProperty(initialProperty);
+      if (!cancelled) {
+        setProperty(enriched);
+        setMapLoading(false);
+      }
+    }
+
+    loadCadastral();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialProperty]);
+
   const ownerName = `${property.owner_first_name} ${property.owner_last_name}`;
   const images =
     property.images.length > 0
@@ -68,12 +94,18 @@ export function PropertyDetailClient({ property }: PropertyDetailClientProps) {
               </div>
             )}
 
-            <div className="kera-map-shell mt-6 h-[min(50vh,420px)] min-h-[280px]">
+            <div className="kera-map-shell relative mt-6 h-[min(50vh,420px)] min-h-[280px]">
+              {mapLoading && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
+                  <Loader2 className="h-6 w-6 animate-spin text-kera-primary" />
+                </div>
+              )}
               <PropertyMap
                 properties={[property]}
                 selectedId={property.id}
                 fitOnLoad
                 showSidebarOnSelect={false}
+                forcePolygons
               />
             </div>
           </div>

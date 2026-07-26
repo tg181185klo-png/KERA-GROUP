@@ -6,8 +6,17 @@ import type {
   MapProperty,
 } from "@/lib/types/property-listing";
 import { PropertySidebar } from "@/components/map/PropertySidebar";
-import { buildMapPopupHtml, getPropertyBounds } from "@/lib/map-popup";
+import { buildMapPopupHtml } from "@/lib/map-popup";
+import {
+  getPropertyBounds,
+  getPropertyCenter,
+  POLYGON_MIN_ZOOM,
+  shouldShowPolygons,
+} from "@/lib/map-geometry";
+import { isMappableProperty } from "@/lib/property-normalize";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 interface PropertyMapProps {
   properties: MapProperty[];
@@ -16,6 +25,8 @@ interface PropertyMapProps {
   onSelect?: (property: MapProperty | null) => void;
   fitOnLoad?: boolean;
   showSidebarOnSelect?: boolean;
+  /** Always draw cadastral polygons (property detail page). */
+  forcePolygons?: boolean;
 }
 
 function collectBounds(
@@ -50,10 +61,10 @@ function polygonStyle(
   const isHovered = property.id === hoveredId;
 
   return {
-    color: isSelected ? "#ef7d00" : baseColor,
+    color: isSelected ? "#ef7d00" : "#1e40af",
     fillColor: isSelected ? "#ef7d00" : baseColor,
-    fillOpacity: isSelected ? 0.45 : isHovered ? 0.4 : 0.28,
-    weight: isSelected ? 3 : isHovered ? 2.5 : 2,
+    fillOpacity: isSelected ? 0.5 : isHovered ? 0.42 : 0.3,
+    weight: isSelected ? 3.5 : isHovered ? 2.5 : 2,
   };
 }
 
@@ -64,18 +75,24 @@ export function PropertyMap({
   onSelect,
   fitOnLoad = true,
   showSidebarOnSelect = true,
+  forcePolygons = false,
 }: PropertyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
-  const layersRef = useRef<import("leaflet").LayerGroup | null>(null);
+  const clusterRef = useRef<import("leaflet").MarkerClusterGroup | null>(null);
+  const polygonLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const previewLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
   const layerByIdRef = useRef<Map<string, import("leaflet").Layer>>(new Map());
+  const propertiesRef = useRef(properties);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [sidebarProperty, setSidebarProperty] = useState<MapProperty | null>(
     null,
   );
   const [ready, setReady] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(12);
   const initialFitDone = useRef(false);
+
+  propertiesRef.current = properties;
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -84,23 +101,46 @@ export function PropertyMap({
 
     async function init() {
       const L = (await import("leaflet")).default;
+      await import("leaflet.markercluster");
+
       if (cancelled || !containerRef.current) return;
 
       const map = L.map(containerRef.current, { zoomControl: true }).setView(
         [41.7151, 44.8271],
-        12,
+        7,
       );
       mapRef.current = map;
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
+        attribution: "© OpenStreetMap · NAPR cadastral",
+        maxZoom: 19,
       }).addTo(map);
 
-      layersRef.current = L.layerGroup().addTo(map);
+      clusterRef.current = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        maxClusterRadius: 56,
+        spiderfyOnMaxZoom: true,
+        disableClusteringAtZoom: POLYGON_MIN_ZOOM,
+        iconCreateFunction: (cluster) => {
+          const count = cluster.getChildCount();
+          const size = count < 10 ? 40 : count < 50 ? 48 : 56;
+          return L.divIcon({
+            html: `<div class="kera-cluster-icon"><span>${count}</span><small>განცხადება</small></div>`,
+            className: "kera-cluster-marker",
+            iconSize: [size, size],
+          });
+        },
+      });
+      map.addLayer(clusterRef.current);
+
+      polygonLayerRef.current = L.layerGroup().addTo(map);
       previewLayerRef.current = L.layerGroup().addTo(map);
+
+      map.on("zoomend", () => setZoomLevel(map.getZoom()));
+      setZoomLevel(map.getZoom());
       setReady(true);
 
-      setTimeout(() => map.invalidateSize(), 100);
+      setTimeout(() => map.invalidateSize(), 150);
     }
 
     init();
@@ -109,7 +149,8 @@ export function PropertyMap({
       cancelled = true;
       mapRef.current?.remove();
       mapRef.current = null;
-      layersRef.current = null;
+      clusterRef.current = null;
+      polygonLayerRef.current = null;
       previewLayerRef.current = null;
       layerByIdRef.current.clear();
       setReady(false);
@@ -117,21 +158,42 @@ export function PropertyMap({
   }, []);
 
   useEffect(() => {
-    if (!ready || !mapRef.current || !layersRef.current) return;
+    if (!ready || !mapRef.current || !clusterRef.current || !polygonLayerRef.current)
+      return;
 
     let cancelled = false;
 
-    async function drawMarkers() {
+    async function drawLayers() {
       const L = (await import("leaflet")).default;
-      if (cancelled || !layersRef.current || !mapRef.current) return;
+      if (
+        cancelled ||
+        !clusterRef.current ||
+        !polygonLayerRef.current ||
+        !mapRef.current
+      ) {
+        return;
+      }
 
-      layersRef.current.clearLayers();
+      const showPolygons =
+        forcePolygons || shouldShowPolygons(mapRef.current.getZoom());
+
+      clusterRef.current.clearLayers();
+      polygonLayerRef.current.clearLayers();
       layerByIdRef.current.clear();
 
-      properties.forEach((property) => {
-        const style = polygonStyle(property, selectedId, hoveredId);
+      const mappable = properties.filter(isMappableProperty);
 
-        if (property.geojson_polygon?.coordinates?.[0]?.length) {
+      mappable.forEach((property) => {
+        const style = polygonStyle(property, selectedId, hoveredId);
+        const center = getPropertyCenter(property);
+        if (!center) return;
+
+        const handleSelect = () => {
+          onSelect?.(property);
+          if (showSidebarOnSelect) setSidebarProperty(property);
+        };
+
+        if (showPolygons && property.geojson_polygon?.coordinates?.[0]?.length) {
           const poly = L.polygon(
             property.geojson_polygon.coordinates[0].map(([lng, lat]) => [
               lat,
@@ -145,44 +207,42 @@ export function PropertyMap({
             className: "kera-map-popup",
           });
 
+          poly.bindTooltip(property.cadastral_code, {
+            permanent: mapRef.current!.getZoom() >= 16,
+            direction: "center",
+            className: "kera-cadastral-label",
+          });
+
           poly.on("mouseover", () => setHoveredId(property.id));
           poly.on("mouseout", () =>
             setHoveredId((current) =>
               current === property.id ? null : current,
             ),
           );
-          poly.on("click", () => {
-            onSelect?.(property);
-            if (showSidebarOnSelect) setSidebarProperty(property);
+          poly.on("click", handleSelect);
+
+          poly.addTo(polygonLayerRef.current!);
+          layerByIdRef.current.set(property.id, poly);
+        } else if (!showPolygons || !property.geojson_polygon) {
+          const marker = L.marker(center, {
+            icon: L.divIcon({
+              className: "kera-listing-marker",
+              html: `<div class="kera-listing-pin ${property.id === selectedId ? "is-selected" : ""}" style="--pin-color:${style.fillColor}"></div>`,
+              iconSize: [28, 28],
+              iconAnchor: [14, 14],
+            }),
           });
 
-          poly.addTo(layersRef.current!);
-          layerByIdRef.current.set(property.id, poly);
-        } else if (property.latitude && property.longitude) {
-          const marker = L.circleMarker(
-            [property.latitude, property.longitude],
-            {
-              radius: style.weight === 3 ? 12 : 10,
-              color: style.color,
-              fillColor: style.fillColor,
-              fillOpacity: style.fillOpacity + 0.2,
-              weight: style.weight,
-            },
-          );
-
           marker.bindPopup(buildMapPopupHtml(property), { maxWidth: 280 });
+          marker.on("click", handleSelect);
           marker.on("mouseover", () => setHoveredId(property.id));
           marker.on("mouseout", () =>
             setHoveredId((current) =>
               current === property.id ? null : current,
             ),
           );
-          marker.on("click", () => {
-            onSelect?.(property);
-            if (showSidebarOnSelect) setSidebarProperty(property);
-          });
 
-          marker.addTo(layersRef.current!);
+          clusterRef.current!.addLayer(marker);
           layerByIdRef.current.set(property.id, marker);
         }
       });
@@ -190,12 +250,21 @@ export function PropertyMap({
       mapRef.current.invalidateSize();
     }
 
-    drawMarkers();
+    drawLayers();
 
     return () => {
       cancelled = true;
     };
-  }, [properties, ready, selectedId, hoveredId, onSelect, showSidebarOnSelect]);
+  }, [
+    properties,
+    ready,
+    selectedId,
+    hoveredId,
+    onSelect,
+    showSidebarOnSelect,
+    forcePolygons,
+    zoomLevel,
+  ]);
 
   useEffect(() => {
     if (!ready || !mapRef.current || !previewLayerRef.current) return;
@@ -219,17 +288,16 @@ export function PropertyMap({
           {
             color: "#EA580C",
             fillColor: "#FB923C",
-            fillOpacity: 0.35,
+            fillOpacity: 0.4,
             weight: 3,
-            dashArray: "8 6",
+            dashArray: "6 4",
           },
         );
-        poly.bindTooltip(
-          preview.address
-            ? `${preview.cadastral_code} — ${preview.address}`
-            : preview.cadastral_code,
-          { permanent: false, direction: "top" },
-        );
+        poly.bindTooltip(preview.cadastral_code, {
+          permanent: true,
+          direction: "center",
+          className: "kera-cadastral-label",
+        });
         poly.addTo(previewLayerRef.current);
       } else if (preview.latitude && preview.longitude) {
         const marker = L.circleMarker(
@@ -242,7 +310,7 @@ export function PropertyMap({
             weight: 3,
           },
         );
-        marker.bindTooltip(preview.cadastral_code);
+        marker.bindTooltip(preview.cadastral_code, { permanent: true });
         marker.addTo(previewLayerRef.current);
       }
     }
@@ -257,37 +325,35 @@ export function PropertyMap({
   useEffect(() => {
     if (!ready || !mapRef.current) return;
 
-    if (fitOnLoad && !initialFitDone.current && properties.length > 0) {
+    if (fitOnLoad && !initialFitDone.current) {
       const bounds = collectBounds(properties, preview);
       if (bounds.length === 1) {
-        mapRef.current.setView(bounds[0], 16);
+        mapRef.current.setView(bounds[0], forcePolygons ? 17 : 15);
+        initialFitDone.current = true;
       } else if (bounds.length > 1) {
-        mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+        mapRef.current.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
+        initialFitDone.current = true;
+      } else if (properties.length === 0 && !preview) {
+        mapRef.current.setView([41.7151, 44.8271], 7);
       }
-      initialFitDone.current = true;
-      return;
-    }
-
-    if (preview?.latitude && preview?.longitude && !selectedId) {
-      mapRef.current.setView([preview.latitude, preview.longitude], 16);
     }
 
     mapRef.current.invalidateSize();
-  }, [properties, preview, ready, fitOnLoad, selectedId]);
+  }, [properties, preview, ready, fitOnLoad, forcePolygons]);
 
   useEffect(() => {
     if (!ready || !mapRef.current || !selectedId) return;
 
-    const property = properties.find((item) => item.id === selectedId);
-    if (!property) return;
+    const property = propertiesRef.current.find((item) => item.id === selectedId);
+    if (!property || !isMappableProperty(property)) return;
 
     const bounds = getPropertyBounds(property);
     if (bounds.length === 1) {
       mapRef.current.setView(bounds[0], 17, { animate: true });
     } else if (bounds.length > 1) {
       mapRef.current.fitBounds(bounds, {
-        padding: [48, 48],
-        maxZoom: 17,
+        padding: [56, 56],
+        maxZoom: 18,
         animate: true,
       });
     }
@@ -295,13 +361,20 @@ export function PropertyMap({
     if (showSidebarOnSelect) {
       setSidebarProperty(property);
     }
-  }, [selectedId, properties, ready, showSidebarOnSelect]);
+  }, [selectedId, ready, showSidebarOnSelect]);
 
   const activeSidebar = showSidebarOnSelect ? sidebarProperty : null;
+  const showZoomHint =
+    !forcePolygons && properties.some(isMappableProperty) && zoomLevel < POLYGON_MIN_ZOOM;
 
   return (
     <div className="relative isolate h-full min-h-[320px] w-full overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 z-0" />
+      {showZoomHint && (
+        <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-xl border border-slate-200/90 bg-white/95 px-4 py-2 text-center text-xs text-slate-600 shadow-sm backdrop-blur">
+          გადიდეთ რუკა კადასტრის საზღვრების სანახავად · კластერი = რამდენი განცხადებაა ზონაში
+        </div>
+      )}
       {activeSidebar && (
         <PropertySidebar
           property={activeSidebar}

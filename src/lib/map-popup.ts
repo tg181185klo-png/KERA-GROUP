@@ -1,6 +1,9 @@
 import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { LISTING_TYPE_LABELS } from "@/lib/types/property-listing";
+import { getPropertyBounds } from "@/lib/map-geometry";
+
+export { getPropertyBounds };
 
 export function buildMapPopupHtml(property: MapProperty): string {
   const image = property.images[0]
@@ -42,18 +45,4 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-export function getPropertyBounds(property: MapProperty): [number, number][] {
-  const bounds: [number, number][] = [];
-
-  if (property.geojson_polygon?.coordinates?.[0]?.length) {
-    property.geojson_polygon.coordinates[0].forEach(([lng, lat]) => {
-      bounds.push([lat, lng]);
-    });
-  } else if (property.latitude && property.longitude) {
-    bounds.push([property.latitude, property.longitude]);
-  }
-
-  return bounds;
 }

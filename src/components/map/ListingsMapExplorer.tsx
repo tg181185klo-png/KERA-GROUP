@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import { ListingMapCard } from "@/components/map/ListingMapCard";
+import { enrichPropertiesCadastral } from "@/lib/client-cadastral-enrich";
 import { isMappableProperty } from "@/lib/property-normalize";
 import type { MapProperty } from "@/lib/types/property-listing";
 
@@ -36,7 +37,9 @@ export function ListingsMapExplorer({
         throw new Error(data.error ?? "განცხადებების ჩატვირთვა ვერ მოხერხდა");
       }
 
-      setProperties(Array.isArray(data) ? data : []);
+      const raw = Array.isArray(data) ? data : [];
+      const enriched = await enrichPropertiesCadastral(raw);
+      setProperties(enriched);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "შეცდომა");
@@ -99,7 +102,7 @@ export function ListingsMapExplorer({
   const mapPanel = (
     <div className="kera-map-shell min-h-[360px] flex-1 lg:min-h-0">
       <PropertyMap
-        properties={mapProperties}
+        properties={mapProperties.length > 0 ? mapProperties : properties}
         selectedId={selectedId}
         onSelect={handleSelect}
         fitOnLoad={!selectedId}

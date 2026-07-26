@@ -1,12 +1,43 @@
 import type { GeoJSON } from "geojson";
-import { cadastralToUniqCode, formatCadastralCode } from "@/lib/cadastral";
+import { cadastralToUniqCode, extractCadastralCode, formatCadastralCode } from "@/lib/cadastral";
 import { CADASTRAL_API_BASE } from "@/lib/constants";
 
 /** Parcel (ნაკვეთი) layer IDs — one per Georgian region in CadRepGeo */
 const PARCEL_LAYER_IDS = [10, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59];
 
-/** Tbilisi layer — queried first (most listings) */
-const TBILISI_LAYER_ID = 10;
+/** Cadastral region prefix (first segment) → NAPR CadRepGeo layer ID */
+const REGION_LAYER_MAP: Record<string, number> = {
+  "01": 10, // თბილისი
+  "02": 14, // აჭარა
+  "03": 19, // გურია
+  "04": 19, // იმერეთი (alternate)
+  "05": 29, // კახეთი
+  "06": 34, // მცხეთა-მთიანეთი
+  "07": 39, // რაჭა-ლეჩხუმი
+  "08": 44, // სამეგრelo-ზemo სvaneti
+  "09": 49, // სამtskheto-javakheti
+  "10": 54, // ქვემო kartli
+  "11": 59, // შida kartli
+  "30": 24, // იმერეთი / ბაღდათი
+  "31": 24,
+  "32": 24,
+  "33": 24,
+};
+
+function layerOrderForCadastral(cadastralCode: string): number[] {
+  const dotted = extractCadastralCode(cadastralCode);
+  const region = dotted?.split(".")[0];
+  const preferred = region ? REGION_LAYER_MAP[region] : undefined;
+
+  if (preferred) {
+    return [
+      preferred,
+      ...PARCEL_LAYER_IDS.filter((id) => id !== preferred),
+    ];
+  }
+
+  return [...PARCEL_LAYER_IDS];
+}
 
 export type CadastralParcel = {
   cadastral_code: string;
@@ -131,25 +162,21 @@ export async function lookupCadastralParcel(
     return cache.get(uniqCode) ?? null;
   }
 
-  const tbilisi = await queryLayer(TBILISI_LAYER_ID, uniqCode);
-  if (tbilisi) {
-    cache.set(uniqCode, tbilisi);
-    cacheTimestamps.set(uniqCode, Date.now());
-    return tbilisi;
+  const layers = layerOrderForCadastral(cadastralCode);
+
+  for (const layerId of layers) {
+    const parcel = await queryLayer(layerId, uniqCode);
+    if (parcel) {
+      cache.set(uniqCode, parcel);
+      cacheTimestamps.set(uniqCode, Date.now());
+      return parcel;
+    }
   }
 
-  const otherLayers = PARCEL_LAYER_IDS.filter((id) => id !== TBILISI_LAYER_ID);
-  const results = await Promise.all(
-    otherLayers.map((layerId) => queryLayer(layerId, uniqCode)),
-  );
-
-  const parcel =
-    results.find((item): item is CadastralParcel => item != null) ?? null;
-
-  cache.set(uniqCode, parcel);
+  cache.set(uniqCode, null);
   cacheTimestamps.set(uniqCode, Date.now());
 
-  return parcel;
+  return null;
 }
 
 export async function buildMapPersistPayload(
