@@ -14,6 +14,7 @@ import {
   shouldShowPolygons,
 } from "@/lib/map-geometry";
 import { isMappableProperty } from "@/lib/property-normalize";
+import { priceMarkerIconOptions } from "@/lib/map-markers";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
@@ -56,15 +57,14 @@ function polygonStyle(
   hoveredId: string | null,
 ) {
   const isSale = property.listing_type === "sale";
-  const baseColor = isSale ? "#00AEEF" : "#F59E0B";
   const isSelected = property.id === selectedId;
   const isHovered = property.id === hoveredId;
 
   return {
-    color: isSelected ? "#ef7d00" : "#1e40af",
-    fillColor: isSelected ? "#ef7d00" : baseColor,
-    fillOpacity: isSelected ? 0.5 : isHovered ? 0.42 : 0.3,
-    weight: isSelected ? 3.5 : isHovered ? 2.5 : 2,
+    color: "#ffffff",
+    fillColor: isSelected ? "#ef4444" : isSale ? "#f97316" : "#3b82f6",
+    fillOpacity: isSelected ? 0.55 : isHovered ? 0.5 : 0.42,
+    weight: isSelected ? 3 : 2,
   };
 }
 
@@ -111,21 +111,32 @@ export function PropertyMap({
       );
       mapRef.current = map;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap · NAPR cadastral",
-        maxZoom: 19,
-      }).addTo(map);
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "© Esri · NAPR",
+          maxZoom: 19,
+        },
+      ).addTo(map);
+
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+        {
+          maxZoom: 19,
+          opacity: 0.75,
+        },
+      ).addTo(map);
 
       clusterRef.current = L.markerClusterGroup({
         showCoverageOnHover: false,
-        maxClusterRadius: 56,
+        maxClusterRadius: 64,
         spiderfyOnMaxZoom: true,
         disableClusteringAtZoom: POLYGON_MIN_ZOOM,
         iconCreateFunction: (cluster) => {
           const count = cluster.getChildCount();
-          const size = count < 10 ? 40 : count < 50 ? 48 : 56;
+          const size = count < 10 ? 44 : count < 100 ? 52 : 60;
           return L.divIcon({
-            html: `<div class="kera-cluster-icon"><span>${count}</span><small>განცხადება</small></div>`,
+            html: `<div class="kera-cluster-icon"><span>${count}</span></div>`,
             className: "kera-cluster-marker",
             iconSize: [size, size],
           });
@@ -225,12 +236,7 @@ export function PropertyMap({
           layerByIdRef.current.set(property.id, poly);
         } else if (!showPolygons || !property.geojson_polygon) {
           const marker = L.marker(center, {
-            icon: L.divIcon({
-              className: "kera-listing-marker",
-              html: `<div class="kera-listing-pin ${property.id === selectedId ? "is-selected" : ""}" style="--pin-color:${style.fillColor}"></div>`,
-              iconSize: [28, 28],
-              iconAnchor: [14, 14],
-            }),
+            icon: L.divIcon(priceMarkerIconOptions(property, selectedId)),
           });
 
           marker.bindPopup(buildMapPopupHtml(property), { maxWidth: 280 });
@@ -371,8 +377,8 @@ export function PropertyMap({
     <div className="relative isolate h-full min-h-[320px] w-full overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 z-0" />
       {showZoomHint && (
-        <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-xl border border-slate-200/90 bg-white/95 px-4 py-2 text-center text-xs text-slate-600 shadow-sm backdrop-blur">
-          გადიდეთ რუკა კადასტრის საზღვრების სანახავად · კластერი = რამდენი განცხადებაა ზონაში
+        <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-white/20 bg-slate-900/75 px-4 py-2 text-center text-xs text-white shadow-lg backdrop-blur">
+          გადიდეთ რუკა კადასტრის ზომების სანახავად
         </div>
       )}
       {activeSidebar && (

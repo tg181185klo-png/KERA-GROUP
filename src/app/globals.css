@@ -165,47 +165,75 @@ body {
     display: flex;
     height: 100%;
     width: 100%;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
     border: 3px solid #fff;
-    background: linear-gradient(135deg, #00aeef 0%, #0077b6 100%);
-    box-shadow: 0 4px 14px rgb(0 119 182 / 35%);
+    background: #2563eb;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
     color: #fff;
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1;
   }
 
   .kera-cluster-icon span {
-    font-size: 15px;
+    font-size: 16px;
   }
 
-  .kera-cluster-icon small {
-    font-size: 8px;
-    font-weight: 600;
-    opacity: 0.9;
-  }
-
-  .kera-listing-marker {
+  .kera-price-marker-wrap {
     background: transparent !important;
     border: none !important;
   }
 
-  .kera-listing-pin {
-    height: 18px;
-    width: 18px;
+  .kera-price-marker {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
     border-radius: 9999px;
-    border: 3px solid #fff;
-    background: var(--pin-color, #00aeef);
-    box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+    box-shadow: 0 3px 12px rgb(0 0 0 / 45%);
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    padding: 6px 11px;
+    transform: translate(-50%, -100%);
+    white-space: nowrap;
   }
 
-  .kera-listing-pin.is-selected {
-    height: 22px;
-    width: 22px;
-    border-color: #ef7d00;
-    box-shadow: 0 0 0 4px rgb(239 125 0 / 25%);
+  .kera-price-marker::after {
+    position: absolute;
+    bottom: -7px;
+    left: 50%;
+    height: 0;
+    width: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 8px solid #fff;
+    content: "";
+    transform: translateX(-50%);
+  }
+
+  .kera-price-marker--sale {
+    background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
+  }
+
+  .kera-price-marker--rent {
+    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+  }
+
+  .kera-price-marker.is-selected {
+    background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+    box-shadow: 0 0 0 4px rgb(239 68 68 / 35%), 0 4px 16px rgb(0 0 0 / 50%);
+    transform: translate(-50%, -100%) scale(1.06);
+    z-index: 1000 !important;
+  }
+
+  .kera-price-marker.is-selected::after {
+    border-top-color: #dc2626;
   }
 
   .kera-cadastral-label {
