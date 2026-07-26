@@ -1,5 +1,6 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { canManageListings } from "@/lib/admin-access";
+import { publicStatusFilter } from "@/lib/listing-status";
 import { lookupCadastralParcel } from "@/lib/cadastral-lookup";
 import { isValidCadastralCode } from "@/lib/cadastral";
 import { insertPropertyListing } from "@/lib/listings-insert";
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
     }
     query = query.eq("user_id", user.id);
   } else {
-    query = query.eq("status", "active");
+    query = query.in("status", publicStatusFilter());
   }
 
   const { data, error } = await query;

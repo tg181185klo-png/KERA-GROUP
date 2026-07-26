@@ -2,31 +2,29 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import type { Property, PropertySearchParams } from "@/lib/types/property";
+import type { PropertySearchParams } from "@/lib/types/property";
+import type { MapProperty } from "@/lib/types/property-listing";
 import { FeaturedPropertiesGrid } from "./PropertyCard";
 
 interface FeaturedPropertiesProps {
-  initialProperties: Property[];
+  initialProperties: MapProperty[];
   searchParams: PropertySearchParams;
 }
 
 function filterProperties(
-  properties: Property[],
+  properties: MapProperty[],
   params: PropertySearchParams
-): Property[] {
+): MapProperty[] {
   return properties.filter((p) => {
-    if (params.deal_type && p.deal_type !== params.deal_type) return false;
-    if (params.property_type && p.property_type !== params.property_type)
-      return false;
+    const dealType = p.listing_type === "rent" ? "rent" : "sale";
+    if (params.deal_type && dealType !== params.deal_type) return false;
     if (
       params.location &&
       !p.address.toLowerCase().includes(params.location.toLowerCase())
     )
       return false;
-    if (params.bedrooms != null && (p.bedrooms ?? 0) < params.bedrooms)
-      return false;
-    if (params.min_price != null && p.price < params.min_price) return false;
-    if (params.max_price != null && p.price > params.max_price) return false;
+    if (params.min_price != null && p.total_price < params.min_price) return false;
+    if (params.max_price != null && p.total_price > params.max_price) return false;
     return true;
   });
 }
@@ -73,10 +71,7 @@ export function FeaturedProperties({
                 </button>
               ))}
             </div>
-            <Link
-              href="/dashboard/add-property"
-              className="hidden kera-link text-sm sm:block"
-            >
+            <Link href="/properties" className="hidden kera-link text-sm sm:block">
               ყველა განცხადება →
             </Link>
           </div>

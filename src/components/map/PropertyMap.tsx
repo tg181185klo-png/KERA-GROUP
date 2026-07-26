@@ -6,11 +6,16 @@ import type {
   MapProperty,
 } from "@/lib/types/property-listing";
 import { PropertySidebar } from "@/components/map/PropertySidebar";
+import { buildMapPopupHtml, getPropertyBounds } from "@/lib/map-popup";
 import "leaflet/dist/leaflet.css";
 
 interface PropertyMapProps {
   properties: MapProperty[];
   preview?: CadastralMapPreview | null;
+  selectedId?: string | null;
+  onSelect?: (property: MapProperty | null) => void;
+  fitOnLoad?: boolean;
+  showSidebarOnSelect?: boolean;
 }
 
 function collectBounds(
@@ -20,13 +25,7 @@ function collectBounds(
   const bounds: [number, number][] = [];
 
   properties.forEach((property) => {
-    if (property.geojson_polygon?.coordinates?.[0]?.length) {
-      property.geojson_polygon.coordinates[0].forEach(([lng, lat]) => {
-        bounds.push([lat, lng]);
-      });
-    } else if (property.latitude && property.longitude) {
-      bounds.push([property.latitude, property.longitude]);
-    }
+    bounds.push(...getPropertyBounds(property));
   });
 
   if (preview?.geojson_polygon?.coordinates?.[0]?.length) {
@@ -40,13 +39,43 @@ function collectBounds(
   return bounds;
 }
 
-export function PropertyMap({ properties, preview = null }: PropertyMapProps) {
+function polygonStyle(
+  property: MapProperty,
+  selectedId: string | null,
+  hoveredId: string | null,
+) {
+  const isSale = property.listing_type === "sale";
+  const baseColor = isSale ? "#00AEEF" : "#F59E0B";
+  const isSelected = property.id === selectedId;
+  const isHovered = property.id === hoveredId;
+
+  return {
+    color: isSelected ? "#ef7d00" : baseColor,
+    fillColor: isSelected ? "#ef7d00" : baseColor,
+    fillOpacity: isSelected ? 0.45 : isHovered ? 0.4 : 0.28,
+    weight: isSelected ? 3 : isHovered ? 2.5 : 2,
+  };
+}
+
+export function PropertyMap({
+  properties,
+  preview = null,
+  selectedId = null,
+  onSelect,
+  fitOnLoad = true,
+  showSidebarOnSelect = true,
+}: PropertyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const layersRef = useRef<import("leaflet").LayerGroup | null>(null);
   const previewLayerRef = useRef<import("leaflet").LayerGroup | null>(null);
-  const [selected, setSelected] = useState<MapProperty | null>(null);
+  const layerByIdRef = useRef<Map<string, import("leaflet").Layer>>(new Map());
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [sidebarProperty, setSidebarProperty] = useState<MapProperty | null>(
+    null,
+  );
   const [ready, setReady] = useState(false);
+  const initialFitDone = useRef(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -82,6 +111,7 @@ export function PropertyMap({ properties, preview = null }: PropertyMapProps) {
       mapRef.current = null;
       layersRef.current = null;
       previewLayerRef.current = null;
+      layerByIdRef.current.clear();
       setReady(false);
     };
   }, []);
@@ -96,43 +126,64 @@ export function PropertyMap({ properties, preview = null }: PropertyMapProps) {
       if (cancelled || !layersRef.current || !mapRef.current) return;
 
       layersRef.current.clearLayers();
+      layerByIdRef.current.clear();
 
       properties.forEach((property) => {
+        const style = polygonStyle(property, selectedId, hoveredId);
+
         if (property.geojson_polygon?.coordinates?.[0]?.length) {
           const poly = L.polygon(
             property.geojson_polygon.coordinates[0].map(([lng, lat]) => [
               lat,
               lng,
             ]),
-            {
-              color: property.listing_type === "sale" ? "#00AEEF" : "#F59E0B",
-              fillColor:
-                property.listing_type === "sale" ? "#00AEEF" : "#F59E0B",
-              fillOpacity: 0.3,
-              weight: 2,
-            },
+            style,
           );
-          poly.bindTooltip(property.cadastral_code, {
-            permanent: false,
-            direction: "top",
+
+          poly.bindPopup(buildMapPopupHtml(property), {
+            maxWidth: 280,
+            className: "kera-map-popup",
           });
-          poly.on("click", () => setSelected(property));
+
+          poly.on("mouseover", () => setHoveredId(property.id));
+          poly.on("mouseout", () =>
+            setHoveredId((current) =>
+              current === property.id ? null : current,
+            ),
+          );
+          poly.on("click", () => {
+            onSelect?.(property);
+            if (showSidebarOnSelect) setSidebarProperty(property);
+          });
+
           poly.addTo(layersRef.current!);
+          layerByIdRef.current.set(property.id, poly);
         } else if (property.latitude && property.longitude) {
           const marker = L.circleMarker(
             [property.latitude, property.longitude],
             {
-              radius: 10,
-              color: property.listing_type === "sale" ? "#00AEEF" : "#F59E0B",
-              fillColor:
-                property.listing_type === "sale" ? "#00AEEF" : "#F59E0B",
-              fillOpacity: 0.85,
-              weight: 2,
+              radius: style.weight === 3 ? 12 : 10,
+              color: style.color,
+              fillColor: style.fillColor,
+              fillOpacity: style.fillOpacity + 0.2,
+              weight: style.weight,
             },
           );
-          marker.bindTooltip(property.cadastral_code);
-          marker.on("click", () => setSelected(property));
+
+          marker.bindPopup(buildMapPopupHtml(property), { maxWidth: 280 });
+          marker.on("mouseover", () => setHoveredId(property.id));
+          marker.on("mouseout", () =>
+            setHoveredId((current) =>
+              current === property.id ? null : current,
+            ),
+          );
+          marker.on("click", () => {
+            onSelect?.(property);
+            if (showSidebarOnSelect) setSidebarProperty(property);
+          });
+
           marker.addTo(layersRef.current!);
+          layerByIdRef.current.set(property.id, marker);
         }
       });
 
@@ -144,7 +195,7 @@ export function PropertyMap({ properties, preview = null }: PropertyMapProps) {
     return () => {
       cancelled = true;
     };
-  }, [properties, ready]);
+  }, [properties, ready, selectedId, hoveredId, onSelect, showSidebarOnSelect]);
 
   useEffect(() => {
     if (!ready || !mapRef.current || !previewLayerRef.current) return;
@@ -206,26 +257,58 @@ export function PropertyMap({ properties, preview = null }: PropertyMapProps) {
   useEffect(() => {
     if (!ready || !mapRef.current) return;
 
-    const bounds = collectBounds(properties, preview);
+    if (fitOnLoad && !initialFitDone.current && properties.length > 0) {
+      const bounds = collectBounds(properties, preview);
+      if (bounds.length === 1) {
+        mapRef.current.setView(bounds[0], 16);
+      } else if (bounds.length > 1) {
+        mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+      }
+      initialFitDone.current = true;
+      return;
+    }
 
-    if (bounds.length === 1) {
-      mapRef.current.setView(bounds[0], 16);
-    } else if (bounds.length > 1) {
-      mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-    } else if (preview?.latitude && preview?.longitude) {
+    if (preview?.latitude && preview?.longitude && !selectedId) {
       mapRef.current.setView([preview.latitude, preview.longitude], 16);
     }
 
     mapRef.current.invalidateSize();
-  }, [properties, preview, ready]);
+  }, [properties, preview, ready, fitOnLoad, selectedId]);
+
+  useEffect(() => {
+    if (!ready || !mapRef.current || !selectedId) return;
+
+    const property = properties.find((item) => item.id === selectedId);
+    if (!property) return;
+
+    const bounds = getPropertyBounds(property);
+    if (bounds.length === 1) {
+      mapRef.current.setView(bounds[0], 17, { animate: true });
+    } else if (bounds.length > 1) {
+      mapRef.current.fitBounds(bounds, {
+        padding: [48, 48],
+        maxZoom: 17,
+        animate: true,
+      });
+    }
+
+    if (showSidebarOnSelect) {
+      setSidebarProperty(property);
+    }
+  }, [selectedId, properties, ready, showSidebarOnSelect]);
+
+  const activeSidebar = showSidebarOnSelect ? sidebarProperty : null;
 
   return (
     <div className="relative isolate h-full min-h-[320px] w-full overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 z-0" />
-      {selected && (
+      {activeSidebar && (
         <PropertySidebar
-          property={selected}
-          onClose={() => setSelected(null)}
+          property={activeSidebar}
+          onClose={() => {
+            setSidebarProperty(null);
+            onSelect?.(null);
+          }}
         />
       )}
     </div>

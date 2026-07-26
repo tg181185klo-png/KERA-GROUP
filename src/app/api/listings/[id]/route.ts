@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { canManageListings } from "@/lib/admin-access";
 import { buildMapPersistPayload } from "@/lib/cadastral-lookup";
+import { isPubliclyVisibleListing } from "@/lib/listing-status";
 import { getCadastralCode } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
 
@@ -67,6 +68,17 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: error.message }, { status: 404 });
   }
 
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const admin = await canManageListings(user?.id);
+
+  if (!admin && !isPubliclyVisibleListing(data.status)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   return NextResponse.json(data);
 }
 
@@ -116,7 +128,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   let updates: Record<string, unknown> = body;
 
-  if (admin && body.status === "active") {
+  if (admin && (body.status === "active" || body.status === "approved")) {
     updates = await buildMapPersistPayload(
       existing as Record<string, unknown>,
       getCadastralCode,

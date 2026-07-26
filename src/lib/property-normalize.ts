@@ -1,5 +1,9 @@
 import type { MapProperty, ListingType, ListingStatus } from "@/lib/types/property-listing";
 import { extractCadastralCode } from "@/lib/cadastral";
+import {
+  isPubliclyVisibleListing,
+  normalizePublicStatus,
+} from "@/lib/listing-status";
 
 /** Raw row from modern or legacy Supabase `properties` table */
 export type PropertyRow = Record<string, unknown>;
@@ -71,10 +75,9 @@ export function getListingType(row: PropertyRow): ListingType {
 }
 
 export function normalizeListingStatus(status: unknown): ListingStatus {
-  if (status === "active" || status === "pending" || status === "blocked") {
-    return status;
-  }
-  if (status === "archived") return "blocked";
+  const normalized = normalizePublicStatus(status);
+  if (normalized === "active") return "active";
+  if (normalized === "blocked") return "blocked";
   return "pending";
 }
 
@@ -93,19 +96,49 @@ export function getOwnerNames(row: PropertyRow): { first: string; last: string }
   };
 }
 
+function centroidFromGeojson(
+  geojson: MapProperty["geojson_polygon"],
+): { lat: number; lng: number } | null {
+  const ring = geojson?.coordinates?.[0];
+  if (!ring?.length) return null;
+
+  let sumLat = 0;
+  let sumLng = 0;
+  let count = 0;
+
+  for (let i = 0; i < ring.length - 1; i++) {
+    const [lng, lat] = ring[i];
+    sumLng += lng;
+    sumLat += lat;
+    count++;
+  }
+
+  if (count === 0) return null;
+  return { lat: sumLat / count, lng: sumLng / count };
+}
+
 export function resolveMapCoordinates(row: PropertyRow) {
-  const lat = toNumber(row.latitude);
-  const lng = toNumber(row.longitude);
   const geojson = parseGeojson(row.geojson_polygon);
+  let lat = toNumber(row.latitude);
+  let lng = toNumber(row.longitude);
+
+  if ((lat == null || lng == null) && geojson) {
+    const centroid = centroidFromGeojson(geojson);
+    if (centroid) {
+      lat = lat ?? centroid.lat;
+      lng = lng ?? centroid.lng;
+    }
+  }
+
   const cadastral = getCadastralCode(row);
 
   return { lat, lng, geojson, cadastral };
 }
 
 export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
-  const { lat, lng, geojson } = resolveMapCoordinates(row);
-  if (lat == null || lng == null) return null;
+  if (row.id == null) return null;
 
+  const { lat, lng, geojson } = resolveMapCoordinates(row);
   const owners = getOwnerNames(row);
   const area =
     typeof row.area_sqm === "number" && row.area_sqm > 0 ? row.area_sqm : 1;
@@ -136,6 +169,12 @@ export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
   };
 }
 
+/** Listings that can be drawn on the map (polygon or point). */
+export function isMappableProperty(property: MapProperty): boolean {
+  if (property.geojson_polygon?.coordinates?.[0]?.length) return true;
+  return property.latitude != null && property.longitude != null;
+}
+
 export function normalizeToAdminListing(row: PropertyRow) {
   const owners = getOwnerNames(row);
   return {
@@ -153,5 +192,5 @@ export function normalizeToAdminListing(row: PropertyRow) {
 }
 
 export function isActiveListing(row: PropertyRow): boolean {
-  return normalizeListingStatus(row.status) === "active";
+  return isPubliclyVisibleListing(row.status);
 }

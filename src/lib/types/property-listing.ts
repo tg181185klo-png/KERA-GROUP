@@ -62,8 +62,8 @@ export interface MapProperty {
   area_sqm: number;
   price_per_sqm: number | null;
   listing_type: ListingType;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   geojson_polygon: GeoJSON.Polygon | null;
   images: string[];
 }

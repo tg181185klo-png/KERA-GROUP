@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { X, Phone, MapPin, Hash, DollarSign } from "lucide-react";
 import type { MapProperty } from "@/lib/types/property-listing";
 import {
@@ -74,6 +75,13 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
                   : "—"}
               </p>
             </div>
+
+            <Link
+              href={`/properties/${property.id}`}
+              className="kera-btn mt-2 inline-flex w-full justify-center py-2.5 text-sm"
+            >
+              სრული გვერდი →
+            </Link>
           </div>
         </div>
       </div>

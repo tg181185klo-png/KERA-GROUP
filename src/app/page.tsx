@@ -4,9 +4,10 @@ import { QuickActions } from "@/components/home/QuickActions";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { FeaturedProperties } from "@/components/home/FeaturedProperties";
 import { ToolsSection } from "@/components/home/ToolsSection";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { fetchActiveMapListings } from "@/lib/active-listings";
 import { isSupabaseConfigured } from "@/utils/supabase";
-import type { Property, PropertySearchParams } from "@/lib/types/property";
+import type { PropertySearchParams } from "@/lib/types/property";
+import type { MapProperty } from "@/lib/types/property-listing";
 
 interface HomeProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -34,18 +35,11 @@ export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
   const filters = getSearchParams(params);
 
-  let properties: Property[] = [];
+  let properties: MapProperty[] = [];
 
   if (isSupabaseConfigured()) {
     try {
-      const supabase = await createServerSupabaseClient();
-      const { data } = await supabase
-        .from("properties")
-        .select("*")
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
-
-      properties = (data as Property[]) ?? [];
+      properties = await fetchActiveMapListings({ enrich: false });
     } catch {
       properties = [];
     }

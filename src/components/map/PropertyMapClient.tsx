@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
@@ -26,18 +26,37 @@ export function PropertyMapClient({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/api/listings/map")
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error ?? "რუკის ჩატვირთვა ვერ მოხერხდა");
-        }
-        setProperties(Array.isArray(data) ? data : []);
-      })
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
+  const loadMapListings = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+
+    try {
+      const res = await fetch("/api/listings/map", { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error ?? "რუკის ჩატვირთვა ვერ მოხერხდა");
+      }
+      setProperties(Array.isArray(data) ? data : []);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "შეცდომა");
+    } finally {
+      if (!silent) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadMapListings();
+  }, [loadMapListings]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => loadMapListings(true), 30_000);
+    const onFocus = () => loadMapListings(true);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [loadMapListings]);
 
   if (loading) {
     return (
