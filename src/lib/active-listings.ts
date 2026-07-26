@@ -93,7 +93,7 @@ export async function fetchActiveMapListings(options?: { enrich?: boolean }) {
   const enrich = options?.enrich ?? true;
   const rows = await fetchActiveRows();
 
-  const enriched = enrich ? await enrichRows(rows, false) : rows;
+  const enriched = enrich ? await enrichRows(rows, true) : rows;
 
   return enriched
     .map((row) => normalizeToMapProperty(row))

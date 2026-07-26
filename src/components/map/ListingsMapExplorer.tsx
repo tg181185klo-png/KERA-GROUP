@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import { ListingMapCard } from "@/components/map/ListingMapCard";
-import { enrichPropertiesCadastral } from "@/lib/client-cadastral-enrich";
+import { enrichPropertiesCadastral, fetchCadastralForProperty } from "@/lib/client-cadastral-enrich";
 import { isMappableProperty } from "@/lib/property-normalize";
 import type { MapProperty } from "@/lib/types/property-listing";
 
@@ -49,6 +49,22 @@ export function ListingsMapExplorer({
     }
   }, []);
 
+  async function handleSelect(property: MapProperty | null) {
+    if (!property) {
+      setSelectedId(null);
+      return;
+    }
+
+    setSelectedId(property.id);
+
+    if (!isMappableProperty(property)) {
+      const enriched = await fetchCadastralForProperty(property);
+      setProperties((current) =>
+        current.map((item) => (item.id === enriched.id ? enriched : item)),
+      );
+    }
+  }
+
   useEffect(() => {
     loadListings();
   }, [loadListings]);
@@ -73,9 +89,16 @@ export function ListingsMapExplorer({
     setSelectedId(initialSelectedId);
   }, [initialSelectedId]);
 
-  function handleSelect(property: MapProperty | null) {
-    setSelectedId(property?.id ?? null);
-  }
+  useEffect(() => {
+    if (!initialSelectedId || properties.length === 0) return;
+    const property = properties.find((item) => item.id === initialSelectedId);
+    if (property && !isMappableProperty(property)) {
+      void handleSelect(property);
+    } else if (property) {
+      setSelectedId(property.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSelectedId, properties.length]);
 
   if (loading) {
     return (
@@ -102,7 +125,7 @@ export function ListingsMapExplorer({
   const mapPanel = (
     <div className="kera-map-shell min-h-[360px] flex-1 lg:min-h-0">
       <PropertyMap
-        properties={mapProperties.length > 0 ? mapProperties : properties}
+        properties={mapProperties}
         selectedId={selectedId}
         onSelect={handleSelect}
         fitOnLoad={!selectedId}
