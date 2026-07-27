@@ -1,8 +1,8 @@
-/** SVG logo mark only (no photo/raster). Used for favicon metadata and static paths. */
-export const LOGO_SVG = "/kera-logo.svg";
+/** Transparent logo mark (extracted from brand image, no background). */
+export const LOGO_MARK = "/kera-logo-mark.png";
 
-export const LOGO_IMAGE = LOGO_SVG;
-export const LOGO_ICON = LOGO_SVG;
+export const LOGO_IMAGE = LOGO_MARK;
+export const LOGO_ICON = LOGO_MARK;
 
 export const BRAND_COLORS = {
   primary: "#EF7D00",
