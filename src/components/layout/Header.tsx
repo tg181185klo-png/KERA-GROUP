@@ -9,11 +9,19 @@ import { LinkButton } from "@/components/ui/Button";
 import { CurrencyWidget } from "@/components/layout/CurrencyWidget";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { UserMenu, useAuthUser } from "@/components/layout/UserMenu";
-import { useT } from "@/i18n/LocaleProvider";
+import { useT, useLocale } from "@/i18n/LocaleProvider";
 import { getNavLinks } from "@/i18n/nav";
 import { cn } from "@/lib/utils";
 
-function NavLink({ href, label }: { href: string; label: string }) {
+function NavLink({
+  href,
+  label,
+  compact,
+}: {
+  href: string;
+  label: string;
+  compact?: boolean;
+}) {
   const pathname = usePathname();
   const pathOnly = href.split("#")[0];
   const active =
@@ -25,7 +33,8 @@ function NavLink({ href, label }: { href: string; label: string }) {
     <Link
       href={href}
       className={cn(
-        "whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition",
+        "whitespace-nowrap rounded-lg py-2 font-medium transition",
+        compact ? "px-2 text-xs xl:px-2.5 xl:text-sm" : "px-3 text-sm",
         active
           ? "bg-kera-primary-light text-kera-primary"
           : "text-slate-600 hover:bg-slate-50 hover:text-kera-slate",
@@ -38,6 +47,7 @@ function NavLink({ href, label }: { href: string; label: string }) {
 
 export function Header() {
   const t = useT();
+  const { locale } = useLocale();
   const navLinks = getNavLinks(t);
   const { isLoggedIn, loading: authLoading } = useAuthUser();
   const [open, setOpen] = useState(false);
@@ -57,20 +67,25 @@ export function Header() {
             <KeraLogo size="header" priority />
           </div>
 
-          <nav className="hidden items-center justify-center gap-0.5 md:flex lg:gap-1">
+          <nav className="hidden items-center justify-center gap-0.5 md:flex lg:gap-0.5 xl:gap-1">
             {navLinks.map((link) => (
-              <NavLink key={link.href} href={link.href} label={link.label} />
+              <NavLink
+                key={link.href}
+                href={link.href}
+                label={link.label}
+                compact={locale === "en"}
+              />
             ))}
           </nav>
 
-          <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
-            <div className="hidden lg:block">
+          <div className="flex min-w-0 items-center justify-end gap-1 sm:gap-1.5 xl:gap-2">
+            <div className="hidden xl:block">
               <CurrencyWidget variant="header" />
             </div>
 
-            <div className="hidden h-6 w-px bg-slate-200 lg:block" aria-hidden />
+            <div className="hidden h-6 w-px bg-slate-200 xl:block" aria-hidden />
 
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden items-center gap-1.5 md:flex xl:gap-2">
               {authLoading ? (
                 <div className="h-10 w-24 animate-pulse rounded-xl bg-slate-100" aria-hidden />
               ) : isLoggedIn ? (
@@ -79,7 +94,7 @@ export function Header() {
                 <>
                   <Link
                     href="/login"
-                    className="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-kera-blue"
+                    className="whitespace-nowrap rounded-lg px-2 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-kera-blue xl:px-3 xl:text-sm"
                   >
                     {t.header.login}
                   </Link>

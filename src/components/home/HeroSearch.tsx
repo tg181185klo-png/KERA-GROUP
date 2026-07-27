@@ -67,16 +67,17 @@ export function HeroSearch() {
                     defaultChecked={value === "buy"}
                     className="peer sr-only"
                   />
-                  <span className="inline-block rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-colors peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary">
+                  <span className="inline-flex min-w-[5.5rem] items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-colors peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary">
                     {label}
                   </span>
                 </label>
               ))}
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+              <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
                   {t.hero.propertyType}
                 </label>
                 <select name="property_type" className="kera-input">
@@ -90,7 +91,7 @@ export function HeroSearch() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
                   {t.hero.location}
                 </label>
                 <input
@@ -102,7 +103,7 @@ export function HeroSearch() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
                   {t.hero.bedrooms}
                 </label>
                 <input
@@ -115,7 +116,7 @@ export function HeroSearch() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
                   {t.hero.minPrice}
                 </label>
                 <input
@@ -128,7 +129,7 @@ export function HeroSearch() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-500">
+                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
                   {t.hero.maxPrice}
                 </label>
                 <input
@@ -139,15 +140,16 @@ export function HeroSearch() {
                   className="kera-input"
                 />
               </div>
-            </div>
+              </div>
 
-            <button
-              type="submit"
-              className="kera-btn mt-5 flex w-full items-center justify-center gap-2 py-3 sm:w-auto sm:px-8"
-            >
-              <Search className="h-4 w-4" />
-              {t.hero.search}
-            </button>
+              <button
+                type="submit"
+                className="kera-btn flex w-full shrink-0 items-center justify-center gap-2 px-6 py-2.5 lg:min-w-[7.5rem] lg:w-auto"
+              >
+                <Search className="h-4 w-4" />
+                {t.hero.search}
+              </button>
+            </div>
           </form>
         </div>
       </section>

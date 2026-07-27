@@ -59,7 +59,7 @@ export function FeaturedProperties({
                   key={c}
                   type="button"
                   onClick={() => setCurrency(c)}
-                  className={`rounded-lg px-4 py-1.5 text-sm font-bold transition-colors ${
+                  className={`min-w-[3.5rem] rounded-lg px-4 py-1.5 text-center text-sm font-bold transition-colors ${
                     currency === c
                       ? "bg-kera-primary text-white"
                       : "text-slate-600 hover:text-kera-primary"

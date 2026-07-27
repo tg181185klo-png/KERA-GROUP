@@ -34,7 +34,7 @@ export const ka = {
     rights: "ყველა უფლება დაცულია.",
   },
   lang: {
-    ka: "ქართ",
+    ka: "GEO",
     en: "ENG",
     switchTo: "ენის შეცვლა",
   },

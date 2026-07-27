@@ -49,16 +49,16 @@ export function MortgageCalculator() {
         </div>
       </div>
 
-      <div className="mb-5 flex gap-2">
+      <div className="mb-5 flex gap-1 rounded-xl border border-slate-200 bg-white p-1">
         {(["USD", "GEL"] as const).map((c) => (
           <button
             key={c}
             type="button"
             onClick={() => handleCurrencyChange(c)}
-            className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${
+            className={`min-w-[3.5rem] flex-1 rounded-lg px-4 py-1.5 text-center text-sm font-semibold transition-colors ${
               currency === c
                 ? "bg-kera-primary text-white"
-                : "bg-kera-page text-slate-600 hover:text-kera-primary"
+                : "bg-transparent text-slate-600 hover:text-kera-primary"
             }`}
           >
             {c}

@@ -95,8 +95,10 @@ export function LanguageSwitcher({
             type="button"
             onClick={() => setLocale(loc)}
             className={cn(
-              "flex items-center gap-1 rounded-md font-bold transition",
-              compact ? "px-1.5 py-1 text-[10px]" : "px-2 py-1 text-xs",
+              "flex flex-1 items-center justify-center gap-1 rounded-md font-bold transition",
+              compact
+                ? "min-w-[3.25rem] px-1.5 py-1 text-[10px]"
+                : "min-w-[3.5rem] px-2 py-1 text-xs",
               active
                 ? "bg-kera-primary text-white shadow-sm"
                 : "text-slate-600 hover:bg-slate-50 hover:text-kera-slate",
