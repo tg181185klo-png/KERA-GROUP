@@ -1,46 +1,29 @@
-import Image from "next/image";
 import Link from "next/link";
-import { LOGO_IMAGE } from "@/lib/brand";
+import { KeraLogoMark } from "@/components/brand/KeraLogoMark";
 import { SITE_NAME, SITE_NAME_GE, SITE_TAGLINE } from "@/lib/constants";
 
-const SIZES = {
-  sm: { w: 36, h: 40 },
-  md: { w: 44, h: 48 },
-  lg: { w: 56, h: 62 },
+const MARK_SIZE = {
+  sm: 38,
+  md: 46,
+  lg: 58,
 } as const;
 
 export function KeraLogo({
   size = "md",
-  priority = false,
   showText = true,
   href = "/",
   className = "",
 }: {
-  size?: keyof typeof SIZES;
+  size?: keyof typeof MARK_SIZE;
+  /** @deprecated priority is ignored — inline SVG needs no preload */
   priority?: boolean;
-  /** Show brand name beside the mark. */
   showText?: boolean;
   href?: string;
   className?: string;
 }) {
-  const { w, h } = SIZES[size];
+  const markSize = MARK_SIZE[size];
 
-  const mark = (
-    <span
-      className="relative inline-flex shrink-0 items-center justify-center"
-      style={{ width: w, height: h }}
-    >
-      <Image
-        src={LOGO_IMAGE}
-        alt={SITE_NAME}
-        width={w}
-        height={h}
-        priority={priority}
-        className="object-contain drop-shadow-sm"
-        style={{ width: w, height: h }}
-      />
-    </span>
-  );
+  const mark = <KeraLogoMark size={markSize} />;
 
   if (!showText) {
     return (
@@ -51,13 +34,16 @@ export function KeraLogo({
   }
 
   return (
-    <Link href={href} className={`inline-flex items-center gap-3 ${className}`}>
+    <Link
+      href={href}
+      className={`group inline-flex items-center gap-2.5 sm:gap-3 ${className}`}
+    >
       {mark}
-      <div className="leading-tight">
-        <p className="font-display text-sm font-bold text-kera-slate sm:text-base">
+      <div className="leading-none">
+        <p className="font-display text-[15px] font-bold tracking-tight text-kera-slate transition group-hover:text-kera-blue sm:text-base">
           {SITE_NAME_GE}
         </p>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 sm:text-xs">
+        <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400 sm:text-[11px]">
           {SITE_TAGLINE}
         </p>
       </div>

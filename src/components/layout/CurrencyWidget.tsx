@@ -39,14 +39,43 @@ async function fetchNbgRates(): Promise<Rate[]> {
   }
 }
 
-export function CurrencyWidget({ compact = false }: { compact?: boolean }) {
+export function CurrencyWidget({
+  compact = false,
+  variant = compact ? "compact" : "default",
+}: {
+  compact?: boolean;
+  variant?: "default" | "compact" | "header";
+}) {
   const [rates, setRates] = useState<Rate[]>(FALLBACK_RATES);
 
   useEffect(() => {
     fetchNbgRates().then(setRates);
   }, []);
 
-  if (compact) {
+  if (variant === "header") {
+    return (
+      <div
+        className="flex items-center gap-2.5 rounded-full border border-slate-200/90 bg-slate-50/90 px-3 py-1.5"
+        title="NBG ოფიციალური კურსი"
+      >
+        {rates.map(({ code, rate }, index) => (
+          <div key={code} className="flex items-center gap-2.5">
+            {index > 0 && (
+              <span className="h-3 w-px bg-slate-300/80" aria-hidden />
+            )}
+            <span className="flex items-baseline gap-1 text-xs">
+              <span className="font-bold text-kera-primary">{code}</span>
+              <span className="font-semibold tabular-nums text-slate-600">
+                {rate.toFixed(2)} ₾
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (variant === "compact" || compact) {
     return (
       <div className="flex flex-wrap items-center gap-2">
         {rates.map(({ code, rate }) => (

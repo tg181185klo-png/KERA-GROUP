@@ -1,5 +1,5 @@
-/** Primary logo — crisp SVG for UI (transparent background). */
-export const LOGO_IMAGE = "/kera-logo.svg";
+/** Primary logo for metadata / OG (PNG). UI uses inline SVG via KeraLogoMark. */
+export const LOGO_IMAGE = "/kera-logo.png";
 
 /** Raster logo for social / OG previews. */
 export const LOGO_IMAGE_PNG = "/kera-logo.png";
