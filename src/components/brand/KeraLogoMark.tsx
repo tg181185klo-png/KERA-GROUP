@@ -1,25 +1,32 @@
-import { LOGO_MARK } from "@/lib/brand";
+import Image from "next/image";
+import logoMark from "@/assets/logo-mark.png";
 import { cn } from "@/lib/utils";
 
-/** Logo mark extracted from brand asset — transparent PNG, reliable everywhere. */
+const ASPECT = 752 / 439;
+
+/** Logo mark — bundled PNG, always loads (no broken public path). */
 export function KeraLogoMark({
   className,
-  size = 40,
+  height = 36,
+  priority = false,
 }: {
   className?: string;
-  size?: number;
+  /** Display height in px; width follows logo aspect ratio. */
+  height?: number;
+  priority?: boolean;
 }) {
-  const height = Math.round(size * (439 / 752));
+  const width = Math.round(height * ASPECT);
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={LOGO_MARK}
+    <Image
+      src={logoMark}
       alt=""
-      width={size}
+      width={width}
       height={height}
+      priority={priority}
       draggable={false}
-      className={cn("shrink-0 object-contain", className)}
+      className={cn("h-auto w-auto shrink-0 object-contain", className)}
+      style={{ height, width }}
     />
   );
 }

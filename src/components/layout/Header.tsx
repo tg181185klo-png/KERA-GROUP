@@ -46,25 +46,28 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_1px_3px_rgba(15,23,42,0.04)] backdrop-blur-md supports-[backdrop-filter]:bg-white/92">
       <div className="kera-container">
-        <div className="grid h-[var(--header-height)] grid-cols-[auto_1fr_auto] items-center gap-3 lg:h-[var(--header-height-lg)] lg:gap-6">
-          <div className="shrink-0">
-            <KeraLogo size="sm" />
+        <div className="grid h-[var(--header-height)] grid-cols-[1fr_auto_1fr] items-center gap-2 lg:h-[var(--header-height-lg)] lg:gap-4">
+          {/* Logo */}
+          <div className="flex items-center justify-start">
+            <KeraLogo size="sm" priority />
           </div>
 
+          {/* Navigation — centered */}
           <nav className="hidden items-center justify-center gap-0.5 md:flex lg:gap-1">
             {NAV_LINKS.map((link) => (
               <NavLink key={link.href} href={link.href} label={link.label} />
             ))}
           </nav>
 
-          <div className="flex items-center justify-end gap-2 sm:gap-2.5">
-            <div className="hidden xl:block">
+          {/* Actions — right aligned, balanced with logo column */}
+          <div className="flex items-center justify-end gap-2 sm:gap-3">
+            <div className="hidden lg:block">
               <CurrencyWidget variant="header" />
             </div>
 
-            <div className="hidden h-7 w-px bg-slate-200 xl:block" aria-hidden />
+            <div className="hidden h-6 w-px bg-slate-200 lg:block" aria-hidden />
 
-            <div className="hidden items-center gap-2 lg:flex">
+            <div className="hidden items-center gap-2 md:flex">
               <Link
                 href="/login"
                 className="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-kera-blue"
@@ -74,14 +77,11 @@ export function Header() {
               <LinkButton href="/signup" variant="secondary" size="sm">
                 რეგისტრაცია
               </LinkButton>
-              <LinkButton href="/dashboard/add-property" size="sm">
-                ქონების განთავსება
-              </LinkButton>
             </div>
 
             <button
               type="button"
-              className="rounded-xl p-2.5 text-slate-700 transition hover:bg-slate-100 lg:hidden"
+              className="rounded-xl p-2.5 text-slate-700 transition hover:bg-slate-100 md:hidden"
               onClick={() => setOpen((value) => !value)}
               aria-expanded={open}
               aria-label="მენიუ"
@@ -96,11 +96,11 @@ export function Header() {
         <>
           <button
             type="button"
-            className="fixed inset-0 top-[var(--header-height)] z-40 bg-slate-900/20 backdrop-blur-[1px] lg:hidden"
+            className="fixed inset-0 top-[var(--header-height)] z-40 bg-slate-900/20 backdrop-blur-[1px] md:hidden"
             aria-label="მენიუს დახურვა"
             onClick={() => setOpen(false)}
           />
-          <div className="relative z-50 border-t border-slate-100 bg-white px-4 py-4 shadow-lg lg:hidden">
+          <div className="relative z-50 border-t border-slate-100 bg-white px-4 py-4 shadow-lg md:hidden">
             <nav className="flex flex-col gap-0.5">
               {NAV_LINKS.map((link) => (
                 <Link
@@ -117,9 +117,6 @@ export function Header() {
               <CurrencyWidget variant="header" />
             </div>
             <div className="mt-4 flex flex-col gap-2">
-              <LinkButton href="/dashboard/add-property" className="w-full">
-                ქონების განთავსება
-              </LinkButton>
               <LinkButton href="/signup" variant="secondary" className="w-full">
                 რეგისტრაცია
               </LinkButton>

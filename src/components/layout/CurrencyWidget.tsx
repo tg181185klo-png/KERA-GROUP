@@ -55,15 +55,15 @@ export function CurrencyWidget({
   if (variant === "header") {
     return (
       <div
-        className="flex items-center gap-2.5 rounded-full border border-slate-200/90 bg-slate-50/90 px-3 py-1.5"
+        className="flex items-center gap-2 rounded-full border border-slate-200/90 bg-slate-50/90 px-3 py-1.5 whitespace-nowrap"
         title="NBG ოფიციალური კურსი"
       >
         {rates.map(({ code, rate }, index) => (
-          <div key={code} className="flex items-center gap-2.5">
+          <div key={code} className="flex items-center gap-2">
             {index > 0 && (
               <span className="h-3 w-px bg-slate-300/80" aria-hidden />
             )}
-            <span className="flex items-baseline gap-1 text-xs">
+            <span className="flex items-center gap-1 text-[11px] sm:text-xs">
               <span className="font-bold text-kera-primary">{code}</span>
               <span className="font-semibold tabular-nums text-slate-600">
                 {rate.toFixed(2)} ₾
