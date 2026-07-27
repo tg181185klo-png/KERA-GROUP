@@ -3,10 +3,14 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Search } from "lucide-react";
-import { DEAL_TYPES, PROPERTY_TYPES } from "@/lib/constants";
+import { useT } from "@/i18n/LocaleProvider";
+import { getDealTypes, getPropertyTypes } from "@/i18n/nav";
 
 export function HeroSearch() {
+  const t = useT();
   const router = useRouter();
+  const dealTypes = getDealTypes(t);
+  const propertyTypes = getPropertyTypes(t);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,7 +32,7 @@ export function HeroSearch() {
       <section className="relative h-[min(52vh,420px)] min-h-[280px] overflow-hidden sm:min-h-[340px] lg:min-h-[420px]">
         <Image
           src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80"
-          alt="Premium Real Estate"
+          alt={t.hero.imageAlt}
           fill
           className="object-cover object-center"
           priority
@@ -37,15 +41,12 @@ export function HeroSearch() {
         <div className="absolute inset-0 bg-gradient-to-r from-kera-slate/85 via-kera-slate/55 to-kera-slate/20" />
 
         <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-10 sm:px-6 sm:pb-14 lg:px-8">
-          <p className="kera-eyebrow mb-2 sm:tracking-[0.25em]">
-            Premium Real Estate Ecosystem
-          </p>
+          <p className="kera-eyebrow mb-2 sm:tracking-[0.25em]">{t.hero.eyebrow}</p>
           <h1 className="font-display max-w-3xl text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
-            კერა ჯგუფი — უძრავი ქონების სრული სერვისი
+            {t.hero.title}
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
-            Real Estate · Development · Investment · Property Management ·
-            Media — ერთი პრემიუმ პლატფორმა.
+            {t.hero.subtitle}
           </p>
         </div>
       </section>
@@ -57,7 +58,7 @@ export function HeroSearch() {
             className="kera-card -mt-6 p-4 shadow-lg sm:p-6 lg:-mt-10"
           >
             <div className="mb-4 flex flex-wrap gap-2">
-              {DEAL_TYPES.map(({ value, label }) => (
+              {dealTypes.map(({ value, label }) => (
                 <label key={value} className="cursor-pointer">
                   <input
                     type="radio"
@@ -76,14 +77,12 @@ export function HeroSearch() {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-500">
-                  ქონების ტიპი
+                  {t.hero.propertyType}
                 </label>
-                <select
-                  name="property_type"
-                  className="kera-input"
-                >
-                  {PROPERTY_TYPES.map(({ value, label }) => (
-                    <option key={value || "all"} value={value}>
+                <select name="property_type" className="kera-input">
+                  <option value="">{t.hero.propertyType}</option>
+                  {propertyTypes.map(({ value, label }) => (
+                    <option key={value} value={value}>
                       {label}
                     </option>
                   ))}
@@ -92,19 +91,19 @@ export function HeroSearch() {
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-500">
-                  ლოკაცია
+                  {t.hero.location}
                 </label>
                 <input
                   name="location"
                   type="text"
-                  placeholder="მაგ: ვაკე, ბათუმი..."
+                  placeholder={t.hero.locationPlaceholder}
                   className="kera-input"
                 />
               </div>
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-500">
-                  ოთახების რაოდენობა
+                  {t.hero.bedrooms}
                 </label>
                 <input
                   name="bedrooms"
@@ -117,7 +116,7 @@ export function HeroSearch() {
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-500">
-                  მინ. ფასი
+                  {t.hero.minPrice}
                 </label>
                 <input
                   name="min_price"
@@ -130,7 +129,7 @@ export function HeroSearch() {
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-500">
-                  მაქს. ფასი
+                  {t.hero.maxPrice}
                 </label>
                 <input
                   name="max_price"
@@ -147,7 +146,7 @@ export function HeroSearch() {
               className="kera-btn mt-5 flex w-full items-center justify-center gap-2 py-3 sm:w-auto sm:px-8"
             >
               <Search className="h-4 w-4" />
-              ძებნა
+              {t.hero.search}
             </button>
           </form>
         </div>

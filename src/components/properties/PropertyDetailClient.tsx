@@ -6,12 +6,10 @@ import Link from "next/link";
 import { ArrowLeft, Hash, Loader2, MapPin, Phone } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import { fetchCadastralForProperty } from "@/lib/client-cadastral-enrich";
+import { useT } from "@/i18n/LocaleProvider";
+import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
-import {
-  formatPrice,
-  formatPricePerSqm,
-} from "@/lib/cadastral";
-import { LISTING_TYPE_LABELS } from "@/lib/types/property-listing";
+import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { Badge } from "@/components/ui/Badge";
 
 interface PropertyDetailClientProps {
@@ -21,6 +19,7 @@ interface PropertyDetailClientProps {
 export function PropertyDetailClient({
   property: initialProperty,
 }: PropertyDetailClientProps) {
+  const t = useT();
   const [property, setProperty] = useState(initialProperty);
   const [mapLoading, setMapLoading] = useState(true);
 
@@ -59,7 +58,7 @@ export function PropertyDetailClient({
           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-kera-primary"
         >
           <ArrowLeft className="h-4 w-4" />
-          ყველა განცხადება
+          {t.properties.allListings}
         </Link>
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
@@ -112,7 +111,7 @@ export function PropertyDetailClient({
 
           <div>
             <Badge variant={property.listing_type === "sale" ? "blue" : "amber"}>
-              {LISTING_TYPE_LABELS[property.listing_type]}
+              {getListingTypeLabel(t, property.listing_type)}
             </Badge>
 
             <h1 className="mt-3 font-display text-2xl font-bold text-kera-slate sm:text-3xl">
@@ -123,17 +122,21 @@ export function PropertyDetailClient({
               {formatPrice(property.total_price)}
             </p>
             <p className="mt-1 text-sm text-slate-500">
-              {property.area_sqm} მ²
+              {property.area_sqm} {t.common.sqm}
               {property.price_per_sqm
                 ? ` · ${formatPricePerSqm(property.price_per_sqm)}`
                 : ""}
             </p>
 
             <dl className="mt-8 space-y-4">
-              <DetailItem icon={Hash} label="საკადასტრო კოდი" value={property.cadastral_code} />
-              <DetailItem icon={MapPin} label="მისამართი" value={property.address} />
-              <DetailItem icon={MapPin} label="მფლობელი" value={ownerName} />
-              <DetailItem icon={Phone} label="ტელეფონი" value={property.phone_number} />
+              <DetailItem
+                icon={Hash}
+                label={t.properties.cadastralCode}
+                value={property.cadastral_code}
+              />
+              <DetailItem icon={MapPin} label={t.map.address} value={property.address} />
+              <DetailItem icon={MapPin} label={t.map.owner} value={ownerName} />
+              <DetailItem icon={Phone} label={t.map.phone} value={property.phone_number} />
             </dl>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -141,13 +144,13 @@ export function PropertyDetailClient({
                 href={`tel:${property.phone_number.replace(/\s/g, "")}`}
                 className="kera-btn inline-flex px-6 py-3"
               >
-                დაუკავშირდით
+                {t.properties.contact}
               </a>
               <Link
                 href={`/map?selected=${property.id}`}
                 className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
-                რუკაზე ნახვა
+                {t.properties.viewOnMap}
               </Link>
             </div>
           </div>

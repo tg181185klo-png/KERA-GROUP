@@ -1,13 +1,18 @@
+"use client";
+
 import { Suspense } from "react";
 import { ListingsMapExplorerClient } from "@/components/map/ListingsMapExplorerClient";
+import { useT } from "@/i18n/LocaleProvider";
 
-export default function MapPage() {
+function MapPageInner() {
+  const t = useT();
+
   return (
     <div className="kera-map-viewport flex flex-col bg-white p-3 sm:p-4">
       <Suspense
         fallback={
           <div className="flex h-full items-center justify-center text-slate-500">
-            იტვირთება...
+            {t.common.loading}
           </div>
         }
       >
@@ -15,4 +20,8 @@ export default function MapPage() {
       </Suspense>
     </div>
   );
+}
+
+export default function MapPage() {
+  return <MapPageInner />;
 }

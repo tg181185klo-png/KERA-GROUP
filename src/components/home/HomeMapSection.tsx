@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, MapPin, Search } from "lucide-react";
 import { PropertyMapClient } from "@/components/map/PropertyMapClient";
+import { useLocale } from "@/i18n/LocaleProvider";
 import { isValidCadastralCode } from "@/lib/cadastral";
 import type { CadastralMapPreview } from "@/lib/types/property-listing";
 
 export function HomeMapSection() {
+  const { t, fmt } = useLocale();
   const [cadastralCode, setCadastralCode] = useState("");
   const [preview, setPreview] = useState<CadastralMapPreview | null>(null);
   const [lookupError, setLookupError] = useState("");
@@ -42,7 +44,7 @@ export function HomeMapSection() {
 
         if (!res.ok) {
           setPreview(null);
-          setLookupError(data.error ?? "კადასტრის ძებნა ვერ მოხერხდა");
+          setLookupError(data.error ?? t.map.lookupFailed);
           return;
         }
 
@@ -56,29 +58,28 @@ export function HomeMapSection() {
         setLookupError("");
       } catch {
         setPreview(null);
-        setLookupError("კადასტრის სერვისი დროებით მიუწვდომელია");
+        setLookupError(t.map.serviceUnavailable);
       } finally {
         setLookupLoading(false);
       }
     }, 450);
 
     return () => window.clearTimeout(timer);
-  }, [cadastralCode]);
+  }, [cadastralCode, t.map.lookupFailed, t.map.serviceUnavailable]);
 
   return (
     <section id="map" className="kera-section bg-white">
       <div className="kera-container">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-2xl">
-            <p className="kera-eyebrow">Cadastral Map</p>
-            <h2 className="kera-section-title mt-2">ინტერაქტიული რუკა</h2>
+            <p className="kera-eyebrow">{t.map.eyebrow}</p>
+            <h2 className="kera-section-title mt-2">{t.map.title}</h2>
             <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
-              შეიყვანეთ საკადასტრო კოდი — მონაკვეთი მაშინვე გამოჩნდება რუკაზე.
-              დამტკიცებული განცხადებები ასევე ჩანს აქ.
+              {t.map.subtitle}
             </p>
           </div>
           <Link href="/map" className="kera-link shrink-0 text-sm">
-            სრული ეკრანი →
+            {t.map.fullScreen}
           </Link>
         </div>
 
@@ -88,7 +89,7 @@ export function HomeMapSection() {
             className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700"
           >
             <MapPin className="h-4 w-4 shrink-0 text-kera-primary" />
-            საკადასტრო კოდის ძებნა
+            {t.map.cadastralSearch}
           </label>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -97,7 +98,7 @@ export function HomeMapSection() {
               type="text"
               value={cadastralCode}
               onChange={(e) => setCadastralCode(e.target.value)}
-              placeholder="მაგ: 01.10.15.001.002"
+              placeholder={t.map.cadastralPlaceholder}
               className="kera-input py-3 pl-10 pr-12"
               autoComplete="off"
               spellCheck={false}
@@ -111,13 +112,13 @@ export function HomeMapSection() {
           )}
           {preview && !lookupError && (
             <p className="mt-2 text-sm text-emerald-700">
-              ნაპოვნია: {preview.cadastral_code}
-              {preview.address ? ` — ${preview.address}` : ""}
+              {fmt(t.map.found, {
+                code: preview.cadastral_code,
+                address: preview.address ? ` — ${preview.address}` : "",
+              })}
             </p>
           )}
-          <p className="mt-2 text-xs text-slate-500">
-            ფორმატი: XX.XX.XX.XXX.XXX · ნარიყვლის პოლიგონი ნარინჯისფერია
-          </p>
+          <p className="mt-2 text-xs text-slate-500">{t.map.cadastralHint}</p>
         </div>
 
         <div className="kera-map-shell h-[min(60vh,520px)] min-h-[360px] sm:min-h-[420px]">

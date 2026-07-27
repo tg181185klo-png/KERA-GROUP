@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import { ListingMapCard } from "@/components/map/ListingMapCard";
+import { useLocale } from "@/i18n/LocaleProvider";
 import { enrichPropertiesCadastral, fetchCadastralForProperty } from "@/lib/client-cadastral-enrich";
 import { isMappableProperty } from "@/lib/property-normalize";
 import type { MapProperty } from "@/lib/types/property-listing";
@@ -19,6 +20,7 @@ export function ListingsMapExplorer({
   layout = "split",
   className = "",
 }: ListingsMapExplorerProps) {
+  const { t, fmt } = useLocale();
   const [properties, setProperties] = useState<MapProperty[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
   const [loading, setLoading] = useState(true);
@@ -34,7 +36,7 @@ export function ListingsMapExplorer({
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error ?? "განცხადებების ჩატვირთვა ვერ მოხერხდა");
+        throw new Error(data.error ?? t.map.loadFailed);
       }
 
       const raw = Array.isArray(data) ? data : [];
@@ -42,12 +44,12 @@ export function ListingsMapExplorer({
       setProperties(enriched);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "შეცდომა");
+      setError(err instanceof Error ? err.message : t.common.error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t.common.error, t.map.loadFailed]);
 
   async function handleSelect(property: MapProperty | null) {
     if (!property) {
@@ -104,7 +106,7 @@ export function ListingsMapExplorer({
     return (
       <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 text-slate-500">
         <Loader2 className="h-7 w-7 animate-spin text-kera-primary" />
-        <p className="text-sm">დამტკიცებული განცხადებები იტვირთება...</p>
+        <p className="text-sm">{t.map.loading}</p>
       </div>
     );
   }
@@ -114,7 +116,7 @@ export function ListingsMapExplorer({
       <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-3 px-6 text-center">
         <p className="text-sm text-red-600">{error}</p>
         <button type="button" onClick={() => loadListings()} className="kera-btn">
-          თავიდან ცდა
+          {t.map.retry}
         </button>
       </div>
     );
@@ -140,7 +142,7 @@ export function ListingsMapExplorer({
         {properties.length === 0 && (
           <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center px-4">
             <p className="rounded-xl border border-slate-200 bg-white/95 px-4 py-2 text-sm text-slate-600 shadow-sm">
-              დამტკიცებული განცხადებები ჯერ არ არის.
+              {t.map.noListings}
             </p>
           </div>
         )}
@@ -161,10 +163,13 @@ export function ListingsMapExplorer({
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-lg font-bold text-kera-slate">
-              აქტიური განცხადებები
+              {t.map.activeListings}
             </h2>
             <p className="text-xs text-slate-500">
-              {properties.length} დამტკიცებული · რუკაზე {mapProperties.length}
+              {fmt(t.map.approvedCount, {
+                total: properties.length,
+                onMap: mapProperties.length,
+              })}
             </p>
           </div>
           <button
@@ -172,18 +177,17 @@ export function ListingsMapExplorer({
             onClick={() => loadListings(true)}
             disabled={refreshing}
             className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
-            aria-label="განახლება"
+            aria-label={t.map.refresh}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
-            განახლება
+            {t.map.refresh}
           </button>
         </div>
 
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1 lg:max-h-[calc(100dvh-var(--header-height)-10rem)]">
           {properties.length === 0 ? (
             <div className="kera-card p-6 text-center text-sm text-slate-500">
-              დამტკიცებული განცხადებები ჯერ არ არის. ადმინის დამტკიცების შემდეგ აქ
-              გამოჩნდება.
+              {t.map.noListingsHint}
             </div>
           ) : (
             properties.map((property) => (

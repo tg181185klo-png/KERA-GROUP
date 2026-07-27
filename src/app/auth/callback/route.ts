@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { getSiteUrl, safeRedirectPath } from "@/lib/site-url";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = safeRedirectPath(searchParams.get("next"));
+  const siteUrl = getSiteUrl();
 
   if (code) {
     const supabase = await createClient();
@@ -19,11 +21,11 @@ export async function GET(request: Request) {
           last_name:
             (data.user.user_metadata?.last_name as string | undefined) ?? "",
         },
-        { onConflict: "id" }
+        { onConflict: "id" },
       );
-      return NextResponse.redirect(`${origin}${next}`);
+      return NextResponse.redirect(`${siteUrl}${next}`);
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  return NextResponse.redirect(`${siteUrl}/login?error=auth`);
 }

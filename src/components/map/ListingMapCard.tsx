@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
+import { useT } from "@/i18n/LocaleProvider";
+import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
-import { LISTING_TYPE_LABELS } from "@/lib/types/property-listing";
 import { cn } from "@/lib/utils";
 
 interface ListingMapCardProps {
@@ -19,6 +20,7 @@ export function ListingMapCard({
   selected = false,
   onSelect,
 }: ListingMapCardProps) {
+  const t = useT();
   const imageUrl =
     property.images[0] ??
     "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80";
@@ -44,7 +46,7 @@ export function ListingMapCard({
           sizes="320px"
         />
         <span className="absolute left-2 top-2 rounded-lg bg-kera-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-          {LISTING_TYPE_LABELS[property.listing_type]}
+          {getListingTypeLabel(t, property.listing_type)}
         </span>
       </div>
 
@@ -60,7 +62,7 @@ export function ListingMapCard({
           <span className="line-clamp-2">{property.address}</span>
         </p>
         <p className="mt-2 text-xs text-slate-400">
-          {property.cadastral_code} · {property.area_sqm} მ²
+          {property.cadastral_code} · {property.area_sqm} {t.common.sqm}
           {property.price_per_sqm
             ? ` · ${formatPricePerSqm(property.price_per_sqm)}`
             : ""}
@@ -70,7 +72,7 @@ export function ListingMapCard({
           onClick={(e) => e.stopPropagation()}
           className="kera-link mt-2 inline-block text-xs"
         >
-          სრული გვერდი →
+          {t.properties.fullPage}
         </Link>
       </div>
     </button>

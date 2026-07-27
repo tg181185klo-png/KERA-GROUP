@@ -96,7 +96,7 @@ export const CADASTRAL_API_BASE =
   "http://gisappsn.reestri.gov.ge/ArcGIS/rest/services/CadRepGeo/MapServer";
 
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://keragroup.ge";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.keragroup.ge";
 
 export const PROPERTY_FEATURES = [
   { value: "balcony", label: "აივანი" },

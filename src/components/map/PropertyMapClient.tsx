@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { enrichPropertiesCadastral } from "@/lib/client-cadastral-enrich";
 import { PropertyMap } from "@/components/map/PropertyMap";
+import { useT } from "@/i18n/LocaleProvider";
 import type {
   CadastralMapPreview,
   MapProperty,
@@ -18,11 +19,13 @@ interface PropertyMapClientProps {
 }
 
 export function PropertyMapClient({
-  emptyMessage = "დამტკიცებული განცხადებები რუკაზე ჯერ არ არის. ადმინის დამტკიცების შემდეგ კადასტრის კოდები აქ გამოჩნდება.",
+  emptyMessage,
   showAdminHint = true,
   preview = null,
   alwaysShowMap = false,
 }: PropertyMapClientProps) {
+  const t = useT();
+  const resolvedEmptyMessage = emptyMessage ?? t.map.emptyOnMap;
   const [properties, setProperties] = useState<MapProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,18 +37,18 @@ export function PropertyMapClient({
       const res = await fetch("/api/listings/map", { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error ?? "რუკის ჩატვირთვა ვერ მოხერხდა");
+        throw new Error(data.error ?? t.map.mapLoadFailed);
       }
       const raw = Array.isArray(data) ? data : [];
       const enriched = await enrichPropertiesCadastral(raw);
       setProperties(enriched);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "შეცდომა");
+      setError(err instanceof Error ? err.message : t.common.error);
     } finally {
       if (!silent) setLoading(false);
     }
-  }, []);
+  }, [t.common.error, t.map.mapLoadFailed]);
 
   useEffect(() => {
     loadMapListings();
@@ -65,7 +68,7 @@ export function PropertyMapClient({
     return (
       <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-3 bg-slate-50 text-slate-500">
         <Loader2 className="h-6 w-6 animate-spin text-kera-primary" />
-        <p className="text-sm">რუკა იტვირთება...</p>
+        <p className="text-sm">{t.map.loadingMap}</p>
       </div>
     );
   }
@@ -83,10 +86,10 @@ export function PropertyMapClient({
   if (!hasContent && !alwaysShowMap) {
     return (
       <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-3 bg-slate-50 px-6 text-center text-slate-500">
-        <p className="max-w-md text-sm leading-relaxed">{emptyMessage}</p>
+        <p className="max-w-md text-sm leading-relaxed">{resolvedEmptyMessage}</p>
         {showAdminHint && (
           <Link href="/admin" className="kera-link text-sm">
-            ადმინ პანელი → განცხადების დამტკიცება
+            {t.map.adminHint}
           </Link>
         )}
       </div>
@@ -99,7 +102,7 @@ export function PropertyMapClient({
       {!properties.length && !preview && alwaysShowMap && (
         <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center px-4">
           <p className="max-w-md rounded-xl border border-slate-200/80 bg-white/95 px-4 py-2.5 text-center text-xs leading-relaxed text-slate-600 shadow-sm backdrop-blur sm:text-sm">
-            {emptyMessage}
+            {resolvedEmptyMessage}
           </p>
         </div>
       )}

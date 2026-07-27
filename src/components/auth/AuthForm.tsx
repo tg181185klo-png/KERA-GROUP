@@ -3,22 +3,29 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { authCallbackUrl } from "@/lib/site-url";
 import { KeraLogo } from "@/components/brand/KeraLogo";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
+import { useT } from "@/i18n/LocaleProvider";
 
-type Mode = "login" | "signup";
+type Mode = "login" | "signup" | "forgot";
 
-export function AuthForm({ mode: initialMode }: { mode: Mode }) {
+export function AuthForm({ mode: initialMode }: { mode: "login" | "signup" }) {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/dashboard";
+  const resetSuccess = searchParams.get("reset") === "success";
+  const authFailed = searchParams.get("error") === "auth";
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -30,8 +37,28 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
 
     const supabase = createClient();
+
+    if (mode === "forgot") {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        form.email,
+        {
+          redirectTo: authCallbackUrl("/reset-password"),
+        },
+      );
+
+      if (resetError) {
+        setError(resetError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSuccess(t.auth.resetSent);
+      setLoading(false);
+      return;
+    }
 
     if (mode === "signup") {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -42,7 +69,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
             first_name: form.first_name,
             last_name: form.last_name,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${redirect}`,
+          emailRedirectTo: authCallbackUrl(redirect),
         },
       });
 
@@ -53,9 +80,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
       }
 
       if (signUpData.user && !signUpData.session) {
-        setError(
-          "რეგისტრაცია წარმატებულია. გთხოვთ დაადასტუროთ ელ-ფოსტა, შემდეგ შედით სისტემაში."
-        );
+        setError(t.auth.verifyEmail);
         setLoading(false);
         return;
       }
@@ -88,25 +113,61 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
     }
   }
 
+  const isForgot = mode === "forgot";
+
   return (
     <Card className="mx-auto w-full max-w-md p-8">
       <div className="mb-6 flex justify-center">
         <KeraLogo size="lg" showText={false} />
       </div>
+
+      {isForgot && (
+        <button
+          type="button"
+          onClick={() => {
+            setMode("login");
+            setError("");
+            setSuccess("");
+          }}
+          className="mb-4 inline-flex items-center gap-1.5 text-sm text-slate-500 transition hover:text-kera-primary"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t.auth.backToLogin}
+        </button>
+      )}
+
       <h1 className="kera-page-header mb-2 text-center">
-        {mode === "login" ? "შესვლა" : "რეგისტრაცია"}
+        {isForgot
+          ? t.auth.forgotTitle
+          : mode === "login"
+            ? t.auth.login
+            : t.auth.signup}
       </h1>
       <p className="mb-6 text-center text-sm text-slate-500">
-        {mode === "login"
-          ? "შედით თქვენს ანგარიშში"
-          : "შექმენით ანგარიში ქონების განთავსებისთვის"}
+        {isForgot
+          ? t.auth.forgotSubtitle
+          : mode === "login"
+            ? t.auth.loginSubtitle
+            : t.auth.signupSubtitle}
       </p>
+
+      {resetSuccess && mode === "login" && !isForgot && (
+        <p className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-center text-sm text-emerald-700">
+          {t.auth.resetSuccess}
+        </p>
+      )}
+
+      {authFailed && mode === "login" && !isForgot && (
+        <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-center text-sm text-red-600">
+          {t.auth.authError}
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {mode === "signup" && (
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="სახელი"
+              label={t.auth.firstName}
               name="first_name"
               required
               value={form.first_name}
@@ -115,7 +176,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
               }
             />
             <Input
-              label="გვარი"
+              label={t.auth.lastName}
               name="last_name"
               required
               value={form.last_name}
@@ -127,7 +188,7 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
         )}
 
         <Input
-          label="ელ-ფოსტა"
+          label={t.auth.email}
           name="email"
           type="email"
           required
@@ -135,15 +196,34 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
           onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
         />
 
-        <Input
-          label="პაროლი"
-          name="password"
-          type="password"
-          required
-          minLength={6}
-          value={form.password}
-          onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-        />
+        {!isForgot && (
+          <div>
+            <Input
+              label={t.auth.password}
+              name="password"
+              type="password"
+              required
+              minLength={6}
+              value={form.password}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, password: e.target.value }))
+              }
+            />
+            {mode === "login" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("forgot");
+                  setError("");
+                  setSuccess("");
+                }}
+                className="mt-2 text-sm text-kera-primary transition hover:underline"
+              >
+                {t.auth.forgotPassword}
+              </button>
+            )}
+          </div>
+        )}
 
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
@@ -151,32 +231,42 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
           </p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        {success && (
+          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            {success}
+          </p>
+        )}
+
+        <Button type="submit" className="w-full" disabled={loading || !!success}>
           {loading
-            ? "იტვირთება..."
-            : mode === "login"
-              ? "შესვლა"
-              : "რეგისტრაცია"}
+            ? t.auth.loading
+            : isForgot
+              ? t.auth.sendResetLink
+              : mode === "login"
+                ? t.auth.login
+                : t.auth.signup}
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-500">
-        {mode === "login" ? (
-          <>
-            არ გაქვთ ანგარიში?{" "}
-            <Link href="/signup" className="kera-link">
-              რეგისტრაცია
-            </Link>
-          </>
-        ) : (
-          <>
-            უკვე გაქვთ ანგარიში?{" "}
-            <Link href="/login" className="kera-link">
-              შესვლა
-            </Link>
-          </>
-        )}
-      </p>
+      {!isForgot && (
+        <p className="mt-6 text-center text-sm text-slate-500">
+          {mode === "login" ? (
+            <>
+              {t.auth.noAccount}{" "}
+              <Link href="/signup" className="kera-link">
+                {t.auth.signup}
+              </Link>
+            </>
+          ) : (
+            <>
+              {t.auth.hasAccount}{" "}
+              <Link href="/login" className="kera-link">
+                {t.auth.login}
+              </Link>
+            </>
+          )}
+        </p>
+      )}
     </Card>
   );
 }

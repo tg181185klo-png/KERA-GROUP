@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import { useT } from "@/i18n/LocaleProvider";
 
 export function LogoutButton() {
+  const t = useT();
   const router = useRouter();
 
   async function handleLogout() {
@@ -18,7 +20,7 @@ export function LogoutButton() {
   return (
     <Button variant="ghost" size="sm" onClick={handleLogout}>
       <LogOut className="h-4 w-4" />
-      გასვლა
+      {t.dashboard.logout}
     </Button>
   );
 }

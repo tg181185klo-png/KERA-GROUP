@@ -1,39 +1,44 @@
+"use client";
+
 import Link from "next/link";
 import { Calculator, CircleDollarSign, Plus, Search } from "lucide-react";
-
-const ACTIONS = [
-  {
-    href: "/#search",
-    icon: Search,
-    label: "ქონების ძებნა",
-    description: "ფილტრი და პარამეტრები",
-  },
-  {
-    href: "/dashboard/add-property",
-    icon: Plus,
-    label: "ქონების განთავსება",
-    description: "განათავსე განცხადება",
-  },
-  {
-    href: "/#calculator",
-    icon: Calculator,
-    label: "იპოთეკის კალკულატორი",
-    description: "ყოველთვიური გადასახადი",
-  },
-  {
-    href: "/#currency",
-    icon: CircleDollarSign,
-    label: "ვალუტის კურსები",
-    description: "NBG ოფიციალური კურსი",
-  },
-] as const;
+import { useT } from "@/i18n/LocaleProvider";
 
 export function QuickActions() {
+  const t = useT();
+
+  const actions = [
+    {
+      href: "/#search",
+      icon: Search,
+      label: t.quickActions.search.label,
+      description: t.quickActions.search.desc,
+    },
+    {
+      href: "/dashboard/add-property",
+      icon: Plus,
+      label: t.quickActions.list.label,
+      description: t.quickActions.list.desc,
+    },
+    {
+      href: "/#calculator",
+      icon: Calculator,
+      label: t.quickActions.mortgage.label,
+      description: t.quickActions.mortgage.desc,
+    },
+    {
+      href: "/#currency",
+      icon: CircleDollarSign,
+      label: t.quickActions.currency.label,
+      description: t.quickActions.currency.desc,
+    },
+  ] as const;
+
   return (
     <section className="bg-kera-page pb-4 pt-2 sm:pb-6">
       <div className="kera-container">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
-          {ACTIONS.map(({ href, icon: Icon, label, description }) => (
+          {actions.map(({ href, icon: Icon, label, description }) => (
             <Link
               key={href}
               href={href}

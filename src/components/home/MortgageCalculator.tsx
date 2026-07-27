@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Calculator } from "lucide-react";
+import { useT } from "@/i18n/LocaleProvider";
 import { calculateMortgage, formatPrice } from "@/lib/format";
 
 const MAX_USD = 5_000_000;
@@ -9,6 +10,7 @@ const GEL_USD_RATE = 2.65;
 const MAX_GEL = Math.round(MAX_USD * GEL_USD_RATE);
 
 export function MortgageCalculator() {
+  const t = useT();
   const [currency, setCurrency] = useState<"USD" | "GEL">("USD");
   const [amount, setAmount] = useState(150000);
   const [years, setYears] = useState(20);
@@ -20,7 +22,7 @@ export function MortgageCalculator() {
 
   const result = useMemo(
     () => calculateMortgage(amount, years, rate),
-    [amount, years, rate]
+    [amount, years, rate],
   );
 
   function handleCurrencyChange(next: "USD" | "GEL") {
@@ -29,7 +31,7 @@ export function MortgageCalculator() {
     setAmount((prev) =>
       next === "GEL"
         ? Math.min(Math.round(prev * GEL_USD_RATE), MAX_GEL)
-        : Math.min(Math.round(prev / GEL_USD_RATE), MAX_USD)
+        : Math.min(Math.round(prev / GEL_USD_RATE), MAX_USD),
     );
   }
 
@@ -41,11 +43,9 @@ export function MortgageCalculator() {
         </div>
         <div>
           <h2 className="font-display text-lg font-bold text-kera-slate sm:text-xl">
-            იპოთეკური კალკულატორი
+            {t.mortgage.title}
           </h2>
-          <p className="mt-1 text-sm text-slate-600">
-            გამოთვალეთ სავარაუდო ყოველთვიური გადასახადი.
-          </p>
+          <p className="mt-1 text-sm text-slate-600">{t.mortgage.subtitle}</p>
         </div>
       </div>
 
@@ -69,7 +69,9 @@ export function MortgageCalculator() {
       <div className="space-y-5">
         <div>
           <label className="mb-2 flex justify-between text-sm font-medium text-slate-700">
-            <span>სესხის თანხა ({currency})</span>
+            <span>
+              {t.mortgage.amount} ({currency})
+            </span>
             <span className="font-bold text-kera-primary">
               {formatPrice(amount, currency)}
             </span>
@@ -87,8 +89,10 @@ export function MortgageCalculator() {
 
         <div>
           <label className="mb-2 flex justify-between text-sm font-medium text-slate-700">
-            <span>ვადა (წელი)</span>
-            <span className="font-bold text-kera-primary">{years} წელი</span>
+            <span>{t.mortgage.years}</span>
+            <span className="font-bold text-kera-primary">
+              {years} {t.mortgage.yearsUnit}
+            </span>
           </label>
           <input
             type="range"
@@ -102,7 +106,7 @@ export function MortgageCalculator() {
 
         <div>
           <label className="mb-2 flex justify-between text-sm font-medium text-slate-700">
-            <span>წლიური პროცენტი (%)</span>
+            <span>{t.mortgage.annualRate}</span>
             <span className="font-bold text-kera-primary">{rate}%</span>
           </label>
           <input
@@ -118,19 +122,19 @@ export function MortgageCalculator() {
       </div>
 
       <div className="mt-auto rounded-2xl bg-kera-slate p-5 text-white sm:p-6">
-        <p className="text-sm text-white/70">ყოველთვიური გადასახადი</p>
+        <p className="text-sm text-white/70">{t.mortgage.monthly}</p>
         <p className="font-display mt-1 text-3xl font-bold sm:text-4xl">
           {formatPrice(result.monthlyPayment, currency)}
         </p>
         <div className="mt-3 flex flex-wrap gap-4 text-sm text-white/70">
           <span>
-            სულ გადასახდელი{" "}
+            {t.mortgage.totalPayable}{" "}
             <strong className="text-white">
               {formatPrice(result.totalPayment, currency)}
             </strong>
           </span>
           <span>
-            სულ საპროცენტო{" "}
+            {t.mortgage.totalInterestLabel}{" "}
             <strong className="text-kera-primary">
               {formatPrice(result.totalInterest, currency)}
             </strong>

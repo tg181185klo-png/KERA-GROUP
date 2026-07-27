@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { X, Phone, MapPin, Hash, DollarSign } from "lucide-react";
+import { useT } from "@/i18n/LocaleProvider";
+import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
-import {
-  formatPrice,
-  formatPricePerSqm,
-} from "@/lib/cadastral";
-import { LISTING_TYPE_LABELS } from "@/lib/types/property-listing";
+import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { Badge } from "@/components/ui/Badge";
 
 interface PropertySidebarProps {
@@ -16,6 +14,7 @@ interface PropertySidebarProps {
 }
 
 export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
+  const t = useT();
   const ownerName = `${property.owner_first_name} ${property.owner_last_name}`;
 
   return (
@@ -23,7 +22,7 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
       <button
         type="button"
         className="absolute inset-0 z-20 bg-slate-900/25 backdrop-blur-[1px] sm:hidden"
-        aria-label="დახურვა"
+        aria-label={t.common.close}
         onClick={onClose}
       />
       <div className="absolute inset-y-0 right-0 z-30 flex h-full w-full max-w-sm flex-col overflow-hidden border-l border-slate-200 bg-white shadow-2xl sm:w-96">
@@ -35,7 +34,7 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
             type="button"
             onClick={onClose}
             className="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-            aria-label="დახურვა"
+            aria-label={t.common.close}
           >
             <X className="h-5 w-5" />
           </button>
@@ -53,13 +52,13 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
 
           <div className="space-y-4 p-5">
             <Badge variant={property.listing_type === "sale" ? "blue" : "amber"}>
-              {LISTING_TYPE_LABELS[property.listing_type]}
+              {getListingTypeLabel(t, property.listing_type)}
             </Badge>
 
-            <DetailRow icon={Hash} label="კად. კოდი" value={property.cadastral_code} />
-            <DetailRow icon={MapPin} label="მფლობელი" value={ownerName} />
-            <DetailRow icon={MapPin} label="მისამართი" value={property.address} />
-            <DetailRow icon={Phone} label="ტელეფონი" value={property.phone_number} />
+            <DetailRow icon={Hash} label={t.map.cadCode} value={property.cadastral_code} />
+            <DetailRow icon={MapPin} label={t.map.owner} value={ownerName} />
+            <DetailRow icon={MapPin} label={t.map.address} value={property.address} />
+            <DetailRow icon={Phone} label={t.map.phone} value={property.phone_number} />
 
             <div className="rounded-xl bg-slate-50 p-4">
               <div className="flex items-center gap-2 text-kera-blue">
@@ -69,7 +68,7 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
                 </span>
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                {property.area_sqm} მ² ·{" "}
+                {property.area_sqm} {t.common.sqm} ·{" "}
                 {property.price_per_sqm
                   ? formatPricePerSqm(property.price_per_sqm)
                   : "—"}
@@ -80,7 +79,7 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
               href={`/properties/${property.id}`}
               className="kera-btn mt-2 inline-flex w-full justify-center py-2.5 text-sm"
             >
-              სრული გვერდი →
+              {t.properties.fullPage}
             </Link>
           </div>
         </div>

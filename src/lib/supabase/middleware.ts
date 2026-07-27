@@ -34,6 +34,8 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isProtected = pathname.startsWith("/dashboard");
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
+  const isPasswordReset = pathname === "/reset-password";
 
   if (isProtected && !user) {
     const redirectUrl = request.nextUrl.clone();
@@ -42,10 +44,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  if ((pathname === "/login" || pathname === "/signup") && user) {
+  if (isAuthPage && user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/dashboard";
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // Allow password recovery session on /reset-password (do not redirect away)
+  if (isPasswordReset) {
+    return supabaseResponse;
   }
 
   return supabaseResponse;

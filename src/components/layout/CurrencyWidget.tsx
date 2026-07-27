@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useT } from "@/i18n/LocaleProvider";
 
 interface Rate {
   code: string;
@@ -16,7 +17,7 @@ const FALLBACK_RATES: Rate[] = [
 async function fetchNbgRates(): Promise<Rate[]> {
   try {
     const res = await fetch(
-      "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/en/json"
+      "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/en/json",
     );
     if (!res.ok) return FALLBACK_RATES;
 
@@ -27,7 +28,7 @@ async function fetchNbgRates(): Promise<Rate[]> {
     const rates = codes
       .map((code) => {
         const item = currencies.find(
-          (c: { code: string; rate: number }) => c.code === code
+          (c: { code: string; rate: number }) => c.code === code,
         );
         return item ? { code, rate: item.rate } : null;
       })
@@ -46,6 +47,7 @@ export function CurrencyWidget({
   compact?: boolean;
   variant?: "default" | "compact" | "header";
 }) {
+  const t = useT();
   const [rates, setRates] = useState<Rate[]>(FALLBACK_RATES);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export function CurrencyWidget({
     return (
       <div
         className="flex items-center gap-2 rounded-full border border-slate-200/90 bg-slate-50/90 px-3 py-1.5 whitespace-nowrap"
-        title="NBG ოფიციალური კურსი"
+        title={t.currency.nbgTitle}
       >
         {rates.map(({ code, rate }, index) => (
           <div key={code} className="flex items-center gap-2">
@@ -98,8 +100,8 @@ export function CurrencyWidget({
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-kera-page text-left text-xs uppercase tracking-wide text-slate-500">
-            <th className="px-4 py-2.5 font-semibold">ვალუტა</th>
-            <th className="px-4 py-2.5 font-semibold">NBG კურსი</th>
+            <th className="px-4 py-2.5 font-semibold">{t.currency.currencyCol}</th>
+            <th className="px-4 py-2.5 font-semibold">{t.currency.rateCol}</th>
           </tr>
         </thead>
         <tbody>
@@ -118,15 +120,15 @@ export function CurrencyWidget({
 }
 
 export function CurrencySection() {
+  const t = useT();
+
   return (
     <section id="currency" className="bg-kera-page py-10 sm:py-14">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <h2 className="kera-section-title">ვალუტის კურსები</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              საქართველოს ეროვნული ბანკის ოფიციალური კურსი
-            </p>
+            <h2 className="kera-section-title">{t.currency.title}</h2>
+            <p className="mt-2 text-sm text-slate-600">{t.currency.subtitle}</p>
           </div>
         </div>
         <div className="kera-card max-w-md p-1">

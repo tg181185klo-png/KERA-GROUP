@@ -4,12 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { Loader2, Shield } from "lucide-react";
 import { KeraLogo } from "@/components/brand/KeraLogo";
+import { useT } from "@/i18n/LocaleProvider";
 
 interface AdminLoginProps {
   onSuccess: () => void;
 }
 
 export function AdminLogin({ onSuccess }: AdminLoginProps) {
+  const t = useT();
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,12 +30,12 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error ?? "არასწორი პაროლი");
+        throw new Error(data.error ?? t.admin.wrongPassword);
       }
 
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "შეცდომა");
+      setError(err instanceof Error ? err.message : t.common.error);
     } finally {
       setLoading(false);
     }
@@ -47,17 +49,15 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
           <Shield className="h-5 w-5" />
         </div>
         <h1 className="font-display mt-4 text-xl font-bold text-kera-slate">
-          ადმინისტრატორის შესვლა
+          {t.admin.loginTitle}
         </h1>
-        <p className="mt-2 text-sm text-slate-600">
-          შეიყვანეთ ადმინისტრატორის პაროლი განცხადებების დასადასტურებლად.
-        </p>
+        <p className="mt-2 text-sm text-slate-600">{t.admin.loginSubtitle}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            პაროლი
+            {t.admin.password}
           </label>
           <input
             type="password"
@@ -66,7 +66,7 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
             required
             autoFocus
             autoComplete="current-password"
-            placeholder="ადმინისტრატორის პაროლი"
+            placeholder={t.admin.passwordPlaceholder}
             className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
           />
         </div>
@@ -85,17 +85,17 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              შემოწმება...
+              {t.admin.checking}
             </span>
           ) : (
-            "შესვლა ადმინ პანელში"
+            t.admin.submit
           )}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-500">
         <Link href="/" className="text-kera-blue hover:underline">
-          ← მთავარ გვერდზე
+          {t.admin.backHome}
         </Link>
       </p>
     </div>
