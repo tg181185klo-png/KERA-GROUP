@@ -64,8 +64,6 @@ export function Header() {
           </nav>
 
           <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
-            <LanguageSwitcher compact className="flex shrink-0" />
-
             <div className="hidden lg:block">
               <CurrencyWidget variant="header" />
             </div>
@@ -101,6 +99,8 @@ export function Header() {
             >
               {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
+
+            <LanguageSwitcher compact className="ml-0.5 shrink-0" />
           </div>
         </div>
       </div>
