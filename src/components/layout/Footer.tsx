@@ -1,13 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
-import { LOGO_IMAGE } from "@/lib/brand";
+import { KeraLogo } from "@/components/brand/KeraLogo";
 import {
   CONTACT_ADDRESS,
   CONTACT_EMAIL,
   CONTACT_PHONE,
   CONTACT_PHONE_HREF,
   SITE_NAME,
-  SITE_NAME_GE,
 } from "@/lib/constants";
 
 const FOOTER_LINKS = [
@@ -25,21 +23,7 @@ export function Footer() {
       <div className="kera-container py-12 lg:py-14">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
           <div className="max-w-sm">
-            <Link href="/" className="inline-flex items-center gap-3">
-              <Image
-                src={LOGO_IMAGE}
-                alt={SITE_NAME}
-                width={40}
-                height={40}
-                className="h-10 w-10 object-contain"
-              />
-              <div>
-                <p className="font-display text-base font-bold text-kera-slate">
-                  {SITE_NAME}
-                </p>
-                <p className="text-xs text-slate-500">{SITE_NAME_GE}</p>
-              </div>
-            </Link>
+            <KeraLogo size="md" />
             <p className="mt-4 text-sm leading-relaxed text-slate-500">
               Premium Real Estate Ecosystem — Real Estate · Development ·
               Investment · Property Management · Media

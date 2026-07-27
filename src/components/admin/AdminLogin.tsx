@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Loader2, Shield } from "lucide-react";
-import { LOGO_IMAGE } from "@/lib/brand";
-import { SITE_NAME } from "@/lib/constants";
+import { KeraLogo } from "@/components/brand/KeraLogo";
 
 interface AdminLoginProps {
   onSuccess: () => void;
@@ -43,14 +41,8 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
 
   return (
     <div className="kera-card mx-auto max-w-md p-8">
-      <div className="mb-6 text-center">
-        <Image
-          src={LOGO_IMAGE}
-          alt={SITE_NAME}
-          width={56}
-          height={56}
-          className="mx-auto h-14 w-14 object-contain"
-        />
+      <div className="mb-6 flex flex-col items-center text-center">
+        <KeraLogo size="lg" showText={false} />
         <div className="mx-auto mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-kera-blue/10 text-kera-blue">
           <Shield className="h-5 w-5" />
         </div>

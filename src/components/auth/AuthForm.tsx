@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { KeraLogo } from "@/components/brand/KeraLogo";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -89,10 +90,13 @@ export function AuthForm({ mode: initialMode }: { mode: Mode }) {
 
   return (
     <Card className="mx-auto w-full max-w-md p-8">
-      <h1 className="kera-page-header mb-2">
+      <div className="mb-6 flex justify-center">
+        <KeraLogo size="lg" showText={false} />
+      </div>
+      <h1 className="kera-page-header mb-2 text-center">
         {mode === "login" ? "შესვლა" : "რეგისტრაცია"}
       </h1>
-      <p className="mb-6 text-sm text-slate-500">
+      <p className="mb-6 text-center text-sm text-slate-500">
         {mode === "login"
           ? "შედით თქვენს ანგარიშში"
           : "შექმენით ანგარიში ქონების განთავსებისთვის"}
