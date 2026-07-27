@@ -1,11 +1,8 @@
-/** Primary logo for metadata / OG (PNG). UI uses inline SVG via KeraLogoMark. */
-export const LOGO_IMAGE = "/kera-logo.png";
+/** SVG logo mark only (no photo/raster). Used for favicon metadata and static paths. */
+export const LOGO_SVG = "/kera-logo.svg";
 
-/** Raster logo for social / OG previews. */
-export const LOGO_IMAGE_PNG = "/kera-logo.png";
-
-/** Favicon & apple touch icon. */
-export const LOGO_ICON = "/favicon.png";
+export const LOGO_IMAGE = LOGO_SVG;
+export const LOGO_ICON = LOGO_SVG;
 
 export const BRAND_COLORS = {
   primary: "#EF7D00",

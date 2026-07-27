@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
-import { LOGO_ICON, LOGO_IMAGE, LOGO_IMAGE_PNG } from "@/lib/brand";
+import { LOGO_SVG } from "@/lib/brand";
 import { SITE_NAME } from "@/lib/constants";
 import "./globals.css";
 
@@ -13,18 +13,15 @@ export const metadata: Metadata = {
   description:
     "კერა ჯგუფი — უძრავი ქონების სრული სერვისი: Real Estate, Development, Investment, Management & Media.",
   icons: {
-    icon: [
-      { url: LOGO_ICON, type: "image/png" },
-      { url: LOGO_IMAGE, type: "image/png" },
-    ],
-    shortcut: LOGO_ICON,
-    apple: "/apple-touch-icon.png",
+    icon: [{ url: LOGO_SVG, type: "image/svg+xml" }],
+    shortcut: LOGO_SVG,
+    apple: [{ url: LOGO_SVG, type: "image/svg+xml" }],
   },
   openGraph: {
     title: `${SITE_NAME} | Premium Real Estate Platform`,
     description:
       "კერა ჯგუფი — უძრავი ქონების სრული სერვისი: Real Estate, Development, Investment, Management & Media.",
-    images: [LOGO_IMAGE_PNG],
+    images: [LOGO_SVG],
   },
 };
 
