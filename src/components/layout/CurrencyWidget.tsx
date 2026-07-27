@@ -57,15 +57,18 @@ export function CurrencyWidget({
   if (variant === "header") {
     return (
       <div
-        className="flex items-center gap-2 rounded-full border border-slate-200/90 bg-slate-50/90 px-3 py-1.5 whitespace-nowrap"
+        className="flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-slate-50/90 px-2 py-1 whitespace-nowrap xl:gap-2 xl:px-2.5 xl:py-1.5"
         title={t.currency.nbgTitle}
       >
         {rates.map(({ code, rate }, index) => (
-          <div key={code} className="flex items-center gap-2">
+          <div
+            key={code}
+            className={`flex items-center gap-1.5 ${code === "GBP" ? "hidden xl:flex" : ""}`}
+          >
             {index > 0 && (
               <span className="h-3 w-px bg-slate-300/80" aria-hidden />
             )}
-            <span className="flex items-center gap-1 text-[11px] sm:text-xs">
+            <span className="flex items-center gap-0.5 text-[10px] xl:gap-1 xl:text-[11px]">
               <span className="font-bold text-kera-primary">{code}</span>
               <span className="font-semibold tabular-nums text-slate-600">
                 {rate.toFixed(2)} ₾

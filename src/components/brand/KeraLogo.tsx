@@ -15,6 +15,7 @@ const MARK_HEIGHT = {
 export function KeraLogo({
   size = "md",
   showText = true,
+  compactTagline = false,
   href = "/",
   className = "",
   priority = false,
@@ -22,6 +23,7 @@ export function KeraLogo({
   size?: keyof typeof MARK_HEIGHT;
   priority?: boolean;
   showText?: boolean;
+  compactTagline?: boolean;
   href?: string;
   className?: string;
 }) {
@@ -40,14 +42,18 @@ export function KeraLogo({
   return (
     <Link
       href={href}
-      className={`group inline-flex min-w-0 items-center gap-2.5 sm:gap-3 ${className}`}
+      className={`group inline-flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5 ${className}`}
     >
       {mark}
       <div className="min-w-0 leading-none">
-        <p className="truncate font-display text-base font-bold tracking-tight text-kera-slate transition group-hover:text-kera-blue sm:text-[17px]">
+        <p className="truncate font-display text-sm font-bold tracking-tight text-kera-slate transition group-hover:text-kera-blue sm:text-base xl:text-[17px]">
           {t.brand.name}
         </p>
-        <p className="mt-0.5 truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-xs">
+        <p
+          className={`mt-0.5 truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-xs ${
+            compactTagline ? "hidden xl:block" : ""
+          }`}
+        >
           {SITE_TAGLINE}
         </p>
       </div>

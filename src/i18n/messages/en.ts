@@ -15,7 +15,7 @@ export const en = {
     map: "Map",
     properties: "Properties",
     calculator: "Calculator",
-    list: "List",
+    list: "List Property",
     home: "Home",
     admin: "Admin Panel",
   },
