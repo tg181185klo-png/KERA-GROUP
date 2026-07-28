@@ -13,20 +13,20 @@ import {
   getPropertyTypes,
   getSearchCities,
 } from "@/i18n/nav";
-import {
-  getDistrictsForCity,
-} from "@/lib/locations/georgia";
+import { getDistrictsForCity } from "@/lib/locations/georgia";
 
 function Field({
   label,
   children,
+  className = "",
 }: {
   label: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <div>
-      <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
+    <div className={`shrink-0 ${className}`}>
+      <label className="mb-1 block truncate text-[11px] font-medium leading-tight text-slate-500">
         {label}
       </label>
       {children}
@@ -111,123 +111,125 @@ export function HeroSearch() {
         <div className="kera-container">
           <form
             onSubmit={handleSubmit}
-            className="kera-card -mt-6 p-4 shadow-lg sm:p-6 lg:-mt-10"
+            className="kera-card -mt-6 overflow-hidden p-4 shadow-lg sm:p-5 lg:-mt-10"
           >
-            <div className="mb-4 flex flex-wrap gap-2">
-              {dealTypes.map(({ value, label }) => (
-                <label key={value} className="cursor-pointer">
-                  <input
-                    type="radio"
-                    name="deal_type"
-                    value={value}
-                    defaultChecked={value === "sale"}
-                    className="peer sr-only"
-                  />
-                  <span className="inline-flex min-w-[5.5rem] items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-colors peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary">
-                    {label}
-                  </span>
-                </label>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-              <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                <Field label={t.hero.propertyType}>
-                  <select
-                    name="property_type"
-                    className="kera-input"
-                    value={propertyType}
-                    onChange={(e) => setPropertyType(e.target.value)}
-                  >
-                    <option value="">{t.hero.propertyType}</option>
-                    {propertyTypes.map(({ value, label }) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-
-                <Field label={t.hero.city}>
-                  <select
-                    name="city"
-                    className="kera-input"
-                    value={city}
-                    onChange={(e) => handleCityChange(e.target.value)}
-                  >
-                    <option value="">{t.hero.selectCity}</option>
-                    {cities.map(({ value, label }) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-
-                {showDistrict && (
-                  <Field label={t.hero.district}>
-                    <select
-                      name="district"
-                      className="kera-input"
-                      value={district}
-                      onChange={(e) => setDistrict(e.target.value)}
-                    >
-                      <option value="">{t.hero.selectDistrict}</option>
-                      {districts.map((id) => (
-                        <option key={id} value={id}>
-                          {getDistrictLabel(t, id)}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                )}
-
-                {showLandStatus && (
-                  <Field label={t.hero.landStatus}>
-                    <select name="land_status" className="kera-input" defaultValue="">
-                      {landStatuses.map(({ value, label }) => (
-                        <option key={value || "any"} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                )}
-
-                <Field label={t.hero.bedrooms}>
-                  <input
-                    name="bedrooms"
-                    type="number"
-                    min={0}
-                    placeholder="0+"
-                    className="kera-input"
-                  />
-                </Field>
-
-                <Field label={t.hero.minPrice}>
-                  <input
-                    name="min_price"
-                    type="number"
-                    min={0}
-                    placeholder="0"
-                    className="kera-input"
-                  />
-                </Field>
-
-                <Field label={t.hero.maxPrice}>
-                  <input
-                    name="max_price"
-                    type="number"
-                    min={0}
-                    placeholder="∞"
-                    className="kera-input"
-                  />
-                </Field>
+            <div className="flex items-end gap-2 overflow-x-auto pb-1">
+              <div className="flex shrink-0 items-end gap-1.5 self-end pb-[1px]">
+                {dealTypes.map(({ value, label }) => (
+                  <label key={value} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="deal_type"
+                      value={value}
+                      defaultChecked={value === "sale"}
+                      className="peer sr-only"
+                    />
+                    <span className="inline-flex items-center justify-center text-nowrap rounded-lg border border-slate-200 px-2.5 py-2 text-xs font-medium text-slate-600 transition-colors peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary sm:px-3">
+                      {label}
+                    </span>
+                  </label>
+                ))}
               </div>
+
+              <Field label={t.hero.propertyType} className="w-[7.5rem]">
+                <select
+                  name="property_type"
+                  className="kera-input text-sm"
+                  value={propertyType}
+                  onChange={(e) => setPropertyType(e.target.value)}
+                >
+                  <option value="">{t.hero.propertyType}</option>
+                  {propertyTypes.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label={t.hero.city} className="w-[6.5rem]">
+                <select
+                  name="city"
+                  className="kera-input text-sm"
+                  value={city}
+                  onChange={(e) => handleCityChange(e.target.value)}
+                >
+                  <option value="">{t.hero.selectCity}</option>
+                  {cities.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              {showDistrict && (
+                <Field label={t.hero.district} className="w-[7.5rem]">
+                  <select
+                    name="district"
+                    className="kera-input text-sm"
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                  >
+                    <option value="">{t.hero.selectDistrict}</option>
+                    {districts.map((id) => (
+                      <option key={id} value={id}>
+                        {getDistrictLabel(t, id)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+
+              {showLandStatus && (
+                <Field label={t.hero.landStatus} className="w-[8rem]">
+                  <select
+                    name="land_status"
+                    className="kera-input text-sm"
+                    defaultValue=""
+                  >
+                    {landStatuses.map(({ value, label }) => (
+                      <option key={value || "any"} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+
+              <Field label={t.hero.bedrooms} className="w-[4.5rem]">
+                <input
+                  name="bedrooms"
+                  type="number"
+                  min={0}
+                  placeholder="0+"
+                  className="kera-input text-sm"
+                />
+              </Field>
+
+              <Field label={t.hero.minPrice} className="w-[5.5rem]">
+                <input
+                  name="min_price"
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  className="kera-input text-sm"
+                />
+              </Field>
+
+              <Field label={t.hero.maxPrice} className="w-[5.5rem]">
+                <input
+                  name="max_price"
+                  type="number"
+                  min={0}
+                  placeholder="∞"
+                  className="kera-input text-sm"
+                />
+              </Field>
 
               <button
                 type="submit"
-                className="kera-btn flex w-full shrink-0 items-center justify-center gap-2 px-6 py-2.5 lg:min-w-[7.5rem] lg:w-auto"
+                className="kera-btn flex shrink-0 items-center justify-center gap-1.5 self-end px-4 py-2 text-sm"
               >
                 <Search className="h-4 w-4" />
                 {t.hero.search}
