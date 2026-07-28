@@ -18,6 +18,7 @@ function filterProperties(
 ): MapProperty[] {
   return properties.filter((p) => {
     const dealType = p.listing_type === "rent" ? "rent" : "sale";
+    if (params.deal_type === "pledge") return false;
     if (params.deal_type && dealType !== params.deal_type) return false;
     if (
       params.location &&

@@ -1,16 +1,62 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Search } from "lucide-react";
 import { useT } from "@/i18n/LocaleProvider";
-import { getDealTypes, getPropertyTypes } from "@/i18n/nav";
+import {
+  getCityLabel,
+  getDealTypes,
+  getDistrictLabel,
+  getLandStatusOptions,
+  getPropertyTypes,
+  getSearchCities,
+} from "@/i18n/nav";
+import {
+  getDistrictsForCity,
+} from "@/lib/locations/georgia";
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
 
 export function HeroSearch() {
   const t = useT();
   const router = useRouter();
   const dealTypes = getDealTypes(t);
   const propertyTypes = getPropertyTypes(t);
+  const cities = getSearchCities(t);
+  const landStatuses = getLandStatusOptions(t);
+
+  const [propertyType, setPropertyType] = useState("");
+  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
+
+  const districts = useMemo(
+    () => (city ? getDistrictsForCity(city) : []),
+    [city],
+  );
+  const showDistrict = districts.length > 0;
+  const showLandStatus = propertyType === "land";
+
+  function handleCityChange(nextCity: string) {
+    setCity(nextCity);
+    setDistrict("");
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,6 +67,17 @@ export function HeroSearch() {
       if (value && String(value).trim()) {
         params.set(key, String(value));
       }
+    }
+
+    if (city) {
+      const cityLabel = getCityLabel(t, city);
+      const districtLabel = district ? getDistrictLabel(t, district) : "";
+      const location = districtLabel
+        ? `${cityLabel}, ${districtLabel}`
+        : cityLabel;
+      params.set("location", location);
+      params.set("city", city);
+      if (district) params.set("district", district);
     }
 
     const query = params.toString();
@@ -41,11 +98,10 @@ export function HeroSearch() {
         <div className="absolute inset-0 bg-gradient-to-r from-kera-slate/85 via-kera-slate/55 to-kera-slate/20" />
 
         <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-10 sm:px-6 sm:pb-14 lg:px-8">
-          <p className="kera-eyebrow mb-2 sm:tracking-[0.25em]">{t.hero.eyebrow}</p>
-          <h1 className="font-display max-w-3xl text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl lg:text-4xl">
+          <h1 className="font-display text-nowrap text-lg font-bold leading-tight tracking-tight text-white sm:text-2xl lg:text-3xl xl:text-4xl">
             {t.hero.title}
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/90 sm:text-base">
+          <p className="mt-3 text-nowrap text-xs leading-relaxed text-white/90 sm:text-sm lg:text-base">
             {t.hero.subtitle}
           </p>
         </div>
@@ -64,7 +120,7 @@ export function HeroSearch() {
                     type="radio"
                     name="deal_type"
                     value={value}
-                    defaultChecked={value === "buy"}
+                    defaultChecked={value === "sale"}
                     className="peer sr-only"
                   />
                   <span className="inline-flex min-w-[5.5rem] items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-colors peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary">
@@ -75,71 +131,98 @@ export function HeroSearch() {
             </div>
 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-              <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              <div>
-                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
-                  {t.hero.propertyType}
-                </label>
-                <select name="property_type" className="kera-input">
-                  <option value="">{t.hero.propertyType}</option>
-                  {propertyTypes.map(({ value, label }) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <Field label={t.hero.propertyType}>
+                  <select
+                    name="property_type"
+                    className="kera-input"
+                    value={propertyType}
+                    onChange={(e) => setPropertyType(e.target.value)}
+                  >
+                    <option value="">{t.hero.propertyType}</option>
+                    {propertyTypes.map(({ value, label }) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
 
-              <div>
-                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
-                  {t.hero.location}
-                </label>
-                <input
-                  name="location"
-                  type="text"
-                  placeholder={t.hero.locationPlaceholder}
-                  className="kera-input"
-                />
-              </div>
+                <Field label={t.hero.city}>
+                  <select
+                    name="city"
+                    className="kera-input"
+                    value={city}
+                    onChange={(e) => handleCityChange(e.target.value)}
+                  >
+                    <option value="">{t.hero.selectCity}</option>
+                    {cities.map(({ value, label }) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
 
-              <div>
-                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
-                  {t.hero.bedrooms}
-                </label>
-                <input
-                  name="bedrooms"
-                  type="number"
-                  min={0}
-                  placeholder="0+"
-                  className="kera-input"
-                />
-              </div>
+                {showDistrict && (
+                  <Field label={t.hero.district}>
+                    <select
+                      name="district"
+                      className="kera-input"
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                    >
+                      <option value="">{t.hero.selectDistrict}</option>
+                      {districts.map((id) => (
+                        <option key={id} value={id}>
+                          {getDistrictLabel(t, id)}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                )}
 
-              <div>
-                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
-                  {t.hero.minPrice}
-                </label>
-                <input
-                  name="min_price"
-                  type="number"
-                  min={0}
-                  placeholder="0"
-                  className="kera-input"
-                />
-              </div>
+                {showLandStatus && (
+                  <Field label={t.hero.landStatus}>
+                    <select name="land_status" className="kera-input" defaultValue="">
+                      {landStatuses.map(({ value, label }) => (
+                        <option key={value || "any"} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                )}
 
-              <div>
-                <label className="mb-1.5 flex min-h-[2rem] items-end text-xs font-medium leading-tight text-slate-500">
-                  {t.hero.maxPrice}
-                </label>
-                <input
-                  name="max_price"
-                  type="number"
-                  min={0}
-                  placeholder="∞"
-                  className="kera-input"
-                />
-              </div>
+                <Field label={t.hero.bedrooms}>
+                  <input
+                    name="bedrooms"
+                    type="number"
+                    min={0}
+                    placeholder="0+"
+                    className="kera-input"
+                  />
+                </Field>
+
+                <Field label={t.hero.minPrice}>
+                  <input
+                    name="min_price"
+                    type="number"
+                    min={0}
+                    placeholder="0"
+                    className="kera-input"
+                  />
+                </Field>
+
+                <Field label={t.hero.maxPrice}>
+                  <input
+                    name="max_price"
+                    type="number"
+                    min={0}
+                    placeholder="∞"
+                    className="kera-input"
+                  />
+                </Field>
               </div>
 
               <button

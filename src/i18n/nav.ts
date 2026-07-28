@@ -1,4 +1,5 @@
 import type { Messages } from "./messages";
+import { ALL_SEARCH_CITIES } from "@/lib/locations/georgia";
 
 export function getNavLinks(t: Messages) {
   return [
@@ -23,8 +24,9 @@ export function getFooterLinks(t: Messages) {
 
 export function getDealTypes(t: Messages) {
   return [
-    { value: "buy", label: t.dealTypes.buy },
+    { value: "sale", label: t.dealTypes.buySell },
     { value: "rent", label: t.dealTypes.rent },
+    { value: "pledge", label: t.dealTypes.pledge },
   ] as const;
 }
 
@@ -35,6 +37,34 @@ export function getPropertyTypes(t: Messages) {
     { value: "commercial", label: t.propertyTypes.commercial },
     { value: "land", label: t.propertyTypes.land },
   ] as const;
+}
+
+export function getSearchCities(t: Messages) {
+  return ALL_SEARCH_CITIES.map((id) => ({
+    value: id,
+    label: t.hero.cities[id as keyof typeof t.hero.cities],
+  }));
+}
+
+export function getLandStatusOptions(t: Messages) {
+  return [
+    { value: "", label: t.landStatus.any },
+    { value: "agricultural", label: t.landStatus.agricultural },
+    { value: "non_agricultural", label: t.landStatus.nonAgricultural },
+  ] as const;
+}
+
+export function getDistrictLabel(
+  t: Messages,
+  districtId: string,
+): string {
+  return (
+    t.hero.districts[districtId as keyof typeof t.hero.districts] ?? districtId
+  );
+}
+
+export function getCityLabel(t: Messages, cityId: string): string {
+  return t.hero.cities[cityId as keyof typeof t.hero.cities] ?? cityId;
 }
 
 export function getServices(t: Messages) {

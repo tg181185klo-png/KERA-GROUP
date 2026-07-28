@@ -24,9 +24,12 @@ export interface Property {
 }
 
 export interface PropertySearchParams {
-  deal_type?: DealType;
+  deal_type?: DealType | "pledge";
   property_type?: string;
   location?: string;
+  city?: string;
+  district?: string;
+  land_status?: string;
   min_price?: number;
   max_price?: number;
   bedrooms?: number;
