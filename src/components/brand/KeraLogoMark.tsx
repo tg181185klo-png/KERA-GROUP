@@ -7,7 +7,7 @@ const ASPECT = 752 / 439;
 /** Logo mark — bundled PNG, always loads (no broken public path). */
 export function KeraLogoMark({
   className,
-  height = 41,
+  height = 45,
   priority = false,
 }: {
   className?: string;
