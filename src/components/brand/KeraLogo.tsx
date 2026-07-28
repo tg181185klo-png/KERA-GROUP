@@ -5,11 +5,12 @@ import { KeraLogoMark } from "@/components/brand/KeraLogoMark";
 import { useT } from "@/i18n/LocaleProvider";
 import { SITE_TAGLINE } from "@/lib/constants";
 
+/** Logo mark heights (+15% vs previous sizes). */
 const MARK_HEIGHT = {
-  sm: 38,
-  md: 44,
-  lg: 52,
-  header: 48,
+  sm: 44,
+  md: 51,
+  lg: 60,
+  header: 55,
 } as const;
 
 export function KeraLogo({
