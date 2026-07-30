@@ -250,6 +250,7 @@ export const en = {
     owner: "Owner",
     address: "Address",
     phone: "Phone",
+    zoomHint: "Zoom in to see cadastral boundaries",
   },
   properties: {
     eyebrow: "Active Listings",
@@ -272,7 +273,7 @@ export const en = {
     allResults: "Results",
     moreListings: "More listings",
     viewAll: "View all →",
-    viewOnMap: "Map",
+    viewOnMap: "View on map",
     empty: "No listings match your criteria.",
     backToSearch: "New search",
     rooms: (n: number) => `${n} rooms`,

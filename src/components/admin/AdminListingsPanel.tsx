@@ -75,7 +75,7 @@ export function AdminListingsPanel({
     }
 
     if (status === "active") {
-      alert("განცხადება დამტკიცდა და რუკაზე გამოჩნდება.");
+      alert("განცხადება დამტკიცდა და რუქაზე გამოჩნდება.");
     }
 
     await loadData();
@@ -206,7 +206,7 @@ export function AdminListingsPanel({
                           size="sm"
                           onClick={() => updateStatus(item.id, "active")}
                         >
-                          რუკაზე გამოჩენა
+                          რუქაზე გამოჩენა
                         </Button>
                       )}
                       {item.status !== "active" && item.status !== "pending" && (

@@ -71,7 +71,7 @@ alter table public.properties add column if not exists latitude double precision
 alter table public.properties add column if not exists longitude double precision;
 alter table public.properties add column if not exists geojson_polygon jsonb;
 
--- არსებული pending → active (რუკაზე გამოსაჩენად)
+-- არსებული pending → active (რუქაზე გამოსაჩენად)
 update public.properties set status = 'active' where status = 'pending';
 
 do $$

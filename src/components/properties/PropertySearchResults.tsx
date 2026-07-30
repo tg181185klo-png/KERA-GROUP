@@ -108,7 +108,7 @@ export function PropertySearchResults({
 
   if (sorted.length === 0) {
     return (
-      <div className="kera-card mx-auto max-w-xl p-10 text-center">
+      <div className="kera-card mx-auto max-w-xl p-6 text-center sm:p-10">
         <p className="text-slate-600">{t.searchResults.empty}</p>
         <Link href="/" className="kera-btn mt-4 inline-flex px-6 py-2.5">
           {t.searchResults.backToSearch}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/i18n/LocaleProvider";
 import type {
   CadastralMapPreview,
   MapProperty,
@@ -77,6 +78,7 @@ export function PropertyMap({
   showSidebarOnSelect = true,
   forcePolygons = false,
 }: PropertyMapProps) {
+  const t = useT();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const clusterRef = useRef<import("leaflet").MarkerClusterGroup | null>(null);
@@ -377,8 +379,8 @@ export function PropertyMap({
     <div className="relative isolate h-full min-h-[320px] w-full overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 z-0" />
       {showZoomHint && (
-        <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-white/20 bg-slate-900/75 px-4 py-2 text-center text-xs text-white shadow-lg backdrop-blur">
-          გადიდეთ რუკა კადასტრის ზომების სანახავად
+        <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-full border border-white/20 bg-slate-900/75 px-4 py-2 text-center text-xs text-white shadow-lg backdrop-blur">
+          {t.map.zoomHint}
         </div>
       )}
       {activeSidebar && (

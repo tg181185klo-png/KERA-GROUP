@@ -135,10 +135,10 @@ export function HeroSearch() {
         <div className="absolute inset-0 bg-gradient-to-r from-kera-slate/85 via-kera-slate/55 to-kera-slate/20" />
 
         <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-10 sm:px-6 sm:pb-14 lg:px-8">
-          <h1 className="font-display text-nowrap text-lg font-bold leading-tight tracking-tight text-white sm:text-2xl lg:text-3xl xl:text-4xl">
+          <h1 className="font-display text-lg font-bold leading-tight tracking-tight text-white sm:text-2xl lg:text-3xl xl:text-4xl">
             {t.hero.title}
           </h1>
-          <p className="mt-3 text-nowrap text-xs leading-relaxed text-white/90 sm:text-sm lg:text-base">
+          <p className="mt-3 text-xs leading-relaxed text-white/90 sm:text-sm lg:text-base">
             {t.hero.subtitle}
           </p>
         </div>
@@ -301,10 +301,10 @@ export function HeroSearch() {
             </div>
 
             {/* Row 3 — search */}
-            <div className="flex justify-end border-t border-slate-100 pt-5">
+            <div className="flex justify-stretch border-t border-slate-100 pt-5 sm:justify-end">
               <button
                 type="submit"
-                className="kera-btn min-w-[9.5rem] px-8 py-3 text-sm font-bold shadow-sm sm:min-w-[11rem] sm:text-base"
+                className="kera-btn w-full min-w-0 px-8 py-3 text-sm font-bold shadow-sm sm:w-auto sm:min-w-[11rem] sm:text-base"
               >
                 <Search className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
                 {t.hero.search}

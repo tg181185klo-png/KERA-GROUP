@@ -278,7 +278,7 @@ export function AddPropertyWizard() {
               </div>
             </div>
             <p className="text-xs text-slate-400">
-              კადასტრის კოდი იღება საჯარო რეესტრის რუკიდან (NAPR) და ზუსტ პოლიგონზე
+              კადასტრის კოდი იღება საჯარო რეესტრის რუქიდან (NAPR) და ზუსტ პოლიგონზე
               განთავსდება მონიშვნა.
             </p>
             <MapPicker
