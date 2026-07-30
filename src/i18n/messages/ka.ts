@@ -71,7 +71,7 @@ export const ka = {
       akhmeta: "ახმეტა",
       baghdati: "ბაღდათი",
       bolnisi: "ბოლნისი",
-      borjomi: "ბორჟომი",
+      borjomi: "ბორჯომი",
       gardabani: "გარდაბანი",
       gurjaani: "გურჯაანი",
       dedoplistskaro: "დედოფლისწყარო",
