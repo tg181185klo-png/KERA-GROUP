@@ -75,6 +75,17 @@ export function getListingType(row: PropertyRow): ListingType {
   return "sale";
 }
 
+export function getMapDealTypeFromRow(row: PropertyRow): MapProperty["deal_type"] {
+  const raw = String(row.deal_type ?? row.listing_type ?? "sale")
+    .toLowerCase()
+    .trim();
+
+  if (raw === "rent") return "rent";
+  if (raw === "daily_rent" || raw === "daily") return "daily_rent";
+  if (raw === "pledge") return "pledge";
+  return "sale";
+}
+
 export function normalizeListingStatus(status: unknown): ListingStatus {
   const normalized = normalizePublicStatus(status);
   if (normalized === "active") return "active";
@@ -163,6 +174,7 @@ export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
           ? Math.round((price / area) * 100) / 100
           : null,
     listing_type: getListingType(row),
+    deal_type: getMapDealTypeFromRow(row),
     latitude: lat,
     longitude: lng,
     geojson_polygon: geojson,

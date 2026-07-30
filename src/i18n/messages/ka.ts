@@ -251,6 +251,22 @@ export const ka = {
     address: "მისამართი",
     phone: "ტელეფონი",
     zoomHint: "გადიდეთ რუქა კადასტრის ზომების სანახავად",
+    legend: {
+      title: "რუქის აღწერა",
+      dealSection: "გარიგება",
+      locationSection: "ლოკაცია",
+      deals: {
+        sale: "გაყიდვა",
+        rent: "ქირა",
+        daily_rent: "დღიური ქირა",
+        pledge: "გირა",
+      },
+      locations: {
+        metropolis: "დედაქალაქი / დიდი ქალაქი",
+        city: "ქალაქი / რაიონული ცენტრი",
+        village: "სოფელი",
+      },
+    },
   },
   properties: {
     eyebrow: "აქტიური განცხადებები",

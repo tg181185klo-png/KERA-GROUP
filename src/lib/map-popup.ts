@@ -39,9 +39,18 @@ export function buildMapHoverTooltipHtml(
       <p class="kera-map-hover-tooltip__price">${escapeHtml(formatPrice(property.total_price))}</p>
       <p class="kera-map-hover-tooltip__meta">${property.area_sqm} ${escapeHtml(labels.sqm)} · ${escapeHtml(pricePerSqm)}</p>
       ${rooms}
-      <p class="kera-map-hover-tooltip__row"><span>${escapeHtml(labels.cadCode)}</span> ${escapeHtml(formatCadastralCode(property.cadastral_code))}</p>
-      <p class="kera-map-hover-tooltip__row"><span>${escapeHtml(labels.address)}</span> ${escapeHtml(property.address)}</p>
-      <p class="kera-map-hover-tooltip__row"><span>${escapeHtml(labels.phone)}</span> ${escapeHtml(property.phone_number)}</p>
+      <p class="kera-map-hover-tooltip__row">
+        <span class="kera-map-hover-tooltip__label">${escapeHtml(labels.cadCode)}</span>
+        <span class="kera-map-hover-tooltip__value">${escapeHtml(formatCadastralCode(property.cadastral_code))}</span>
+      </p>
+      <p class="kera-map-hover-tooltip__row">
+        <span class="kera-map-hover-tooltip__label">${escapeHtml(labels.address)}</span>
+        <span class="kera-map-hover-tooltip__value">${escapeHtml(property.address)}</span>
+      </p>
+      <p class="kera-map-hover-tooltip__row">
+        <span class="kera-map-hover-tooltip__label">${escapeHtml(labels.phone)}</span>
+        <span class="kera-map-hover-tooltip__value">${escapeHtml(property.phone_number)}</span>
+      </p>
       <a class="kera-map-hover-tooltip__link" href="/properties/${escapeHtml(property.id)}">${escapeHtml(labels.fullPage)}</a>
     </div>
   `;

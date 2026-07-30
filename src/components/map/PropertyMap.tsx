@@ -2,17 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/i18n/LocaleProvider";
-import { getListingTypeLabel } from "@/i18n/nav";
+import { getMapDealTypeLabel } from "@/i18n/nav";
 import type {
   CadastralMapPreview,
   MapProperty,
 } from "@/lib/types/property-listing";
+import { MapLegend } from "@/components/map/MapLegend";
 import { PropertySidebar } from "@/components/map/PropertySidebar";
 import { formatCadastralCode } from "@/lib/cadastral";
 import {
   buildMapHoverTooltipHtml,
   buildMapPopupHtml,
 } from "@/lib/map-popup";
+import {
+  getMapDealType,
+  getPolygonFillColor,
+} from "@/lib/map-marker-style";
 import {
   getPropertyBounds,
   getPropertyCenter,
@@ -62,13 +67,12 @@ function polygonStyle(
   selectedId: string | null,
   hoveredId: string | null,
 ) {
-  const isSale = property.listing_type === "sale";
   const isSelected = property.id === selectedId;
   const isHovered = property.id === hoveredId;
 
   return {
     color: "#ffffff",
-    fillColor: isSelected ? "#ef4444" : isSale ? "#f97316" : "#3b82f6",
+    fillColor: getPolygonFillColor(property, isSelected),
     fillOpacity: isSelected ? 0.55 : isHovered ? 0.5 : 0.42,
     weight: isSelected ? 3 : 2,
   };
@@ -96,7 +100,7 @@ export function PropertyMap({
 
   const buildLabels = (property: MapProperty) => ({
     ...tooltipLabels,
-    listingType: getListingTypeLabel(t, property.listing_type),
+    listingType: getMapDealTypeLabel(t, getMapDealType(property)),
   });
 
   const hoverTooltipOptions = {
@@ -429,6 +433,7 @@ export function PropertyMap({
           {t.map.zoomHint}
         </div>
       )}
+      {!activeSidebar && <MapLegend />}
       {activeSidebar && (
         <PropertySidebar
           property={activeSidebar}

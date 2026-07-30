@@ -251,6 +251,22 @@ export const en = {
     address: "Address",
     phone: "Phone",
     zoomHint: "Zoom in to see cadastral boundaries",
+    legend: {
+      title: "Map legend",
+      dealSection: "Deal type",
+      locationSection: "Location",
+      deals: {
+        sale: "Sale",
+        rent: "Rent",
+        daily_rent: "Daily rent",
+        pledge: "Pledge",
+      },
+      locations: {
+        metropolis: "Capital / major city",
+        city: "City / regional center",
+        village: "Village",
+      },
+    },
   },
   properties: {
     eyebrow: "Active Listings",

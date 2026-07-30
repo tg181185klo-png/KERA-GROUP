@@ -190,18 +190,37 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 5px;
+    background: var(--marker-bg, #2ecc71);
     border: 2px solid #fff;
     border-radius: 9999px;
-    box-shadow: 0 3px 12px rgb(0 0 0 / 45%);
+    box-shadow:
+      0 0 0 2px var(--marker-accent, #34495e),
+      0 3px 12px rgb(0 0 0 / 45%);
     color: #fff;
     cursor: pointer;
     font-size: 12px;
     font-weight: 800;
     letter-spacing: -0.02em;
     line-height: 1;
-    padding: 6px 11px;
+    padding: 6px 11px 6px 9px;
     transform: translate(-50%, -100%);
     white-space: nowrap;
+  }
+
+  .kera-price-marker__badge {
+    display: inline-block;
+    height: 7px;
+    width: 7px;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 85%);
+  }
+
+  .kera-price-marker__badge--metro {
+    border-radius: 2px;
+    height: 8px;
+    width: 8px;
   }
 
   .kera-price-marker::after {
@@ -212,22 +231,22 @@ body {
     width: 0;
     border-left: 7px solid transparent;
     border-right: 7px solid transparent;
-    border-top: 8px solid #fff;
+    border-top: 8px solid var(--marker-accent, #34495e);
     content: "";
     transform: translateX(-50%);
   }
 
-  .kera-price-marker--sale {
-    background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
-  }
-
+  .kera-price-marker--sale,
   .kera-price-marker--rent {
-    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+    /* legacy classes kept for compatibility */
   }
 
   .kera-price-marker.is-selected {
-    background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
-    box-shadow: 0 0 0 4px rgb(239 68 68 / 35%), 0 4px 16px rgb(0 0 0 / 50%);
+    background: linear-gradient(180deg, #f87171 0%, #dc2626 100%) !important;
+    box-shadow:
+      0 0 0 2px #fff,
+      0 0 0 4px rgb(239 68 68 / 45%),
+      0 4px 16px rgb(0 0 0 / 50%) !important;
     transform: translate(-50%, -100%) scale(1.06);
     z-index: 1000 !important;
   }
@@ -259,7 +278,8 @@ body {
     color: #0f172a !important;
     padding: 0 !important;
     min-width: 220px;
-    max-width: 280px;
+    max-width: min(300px, calc(100vw - 2rem));
+    overflow: hidden;
   }
 
   .leaflet-tooltip.kera-map-hover-tooltip::before {
@@ -269,6 +289,7 @@ body {
   .kera-map-hover-tooltip__inner {
     padding: 10px 12px;
     font-family: system-ui, sans-serif;
+    overflow: hidden;
   }
 
   .kera-map-hover-tooltip__type {
@@ -305,15 +326,28 @@ body {
   }
 
   .kera-map-hover-tooltip__row {
+    display: grid;
+    grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr);
+    gap: 2px 8px;
+    align-items: start;
     margin: 0 0 4px;
     font-size: 11px;
     line-height: 1.4;
     color: #475569;
   }
 
-  .kera-map-hover-tooltip__row span {
+  .kera-map-hover-tooltip__label {
     color: #94a3b8;
     font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .kera-map-hover-tooltip__value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font-weight: 500;
+    color: #334155;
   }
 
   .kera-map-hover-tooltip__link {

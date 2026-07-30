@@ -2,6 +2,7 @@ import type { GeoJSON } from "geojson";
 
 export type ListingStatus = "pending" | "active" | "blocked";
 export type ListingType = "sale" | "rent";
+export type MapDealType = "sale" | "rent" | "daily_rent" | "pledge";
 
 export interface PropertyListing {
   id: string;
@@ -17,6 +18,7 @@ export interface PropertyListing {
   area_sqm: number;
   price_per_sqm: number | null;
   listing_type: ListingType;
+  deal_type?: MapDealType | null;
   status: ListingStatus;
   latitude: number | null;
   longitude: number | null;
@@ -36,6 +38,7 @@ export interface PropertyListingFormData {
   total_price: number;
   area_sqm: number;
   listing_type: ListingType;
+  deal_type?: MapDealType | null;
   latitude: number | null;
   longitude: number | null;
   geojson_polygon: GeoJSON.Polygon | null;
@@ -62,6 +65,7 @@ export interface MapProperty {
   area_sqm: number;
   price_per_sqm: number | null;
   listing_type: ListingType;
+  deal_type?: MapDealType | null;
   latitude: number | null;
   longitude: number | null;
   geojson_polygon: GeoJSON.Polygon | null;

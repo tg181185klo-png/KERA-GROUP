@@ -130,3 +130,10 @@ export function getListingTypeLabel(
 ): string {
   return type === "rent" ? t.listingTypes.rent : t.listingTypes.sale;
 }
+
+export function getMapDealTypeLabel(
+  t: Messages,
+  type: "sale" | "rent" | "daily_rent" | "pledge",
+): string {
+  return t.map.legend.deals[type];
+}
