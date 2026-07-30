@@ -225,7 +225,7 @@ export const en = {
     subtitle:
       "Enter a cadastral code — the parcel appears on the map instantly. Approved listings are shown here too.",
     fullScreen: "Full screen →",
-    cadastralSearch: "Cadastral code search",
+    cadastralSearch: "Search by cadastral code",
     cadastralPlaceholder: "e.g. 01.10.15.001.002",
     cadastralHint: "Format: XX.XX.XX.XXX.XXX · NAPR polygon is orange",
     found: "Found: {code}{address}",

@@ -85,8 +85,11 @@ export function HomeMapSection() {
             <MapPin className="h-4 w-4 shrink-0 text-kera-primary" />
             {t.map.cadastralSearch}
           </label>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition focus-within:border-kera-blue focus-within:ring-2 focus-within:ring-kera-blue/20">
+            <Search
+              className="h-4 w-4 shrink-0 text-slate-400"
+              aria-hidden
+            />
             <input
               id="home-cadastral-search"
               type="text"
@@ -97,12 +100,12 @@ export function HomeMapSection() {
                 if (formatted !== e.target.value) setCadastralCode(formatted);
               }}
               placeholder={t.map.cadastralPlaceholder}
-              className="kera-input py-3 pl-12 pr-12"
+              className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-slate-800 outline-none placeholder:text-slate-400"
               autoComplete="off"
               spellCheck={false}
             />
             {lookupLoading && (
-              <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-kera-primary" />
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin text-kera-primary" />
             )}
           </div>
           {lookupError && (

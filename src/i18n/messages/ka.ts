@@ -225,7 +225,7 @@ export const ka = {
     subtitle:
       "შეიყვანეთ საკადასტრო კოდი — მონაკვეთი მაშინვე გამოჩნდება რუქაზე. დამტკიცებული განცხადებები ასევე ჩანს აქ.",
     fullScreen: "სრული ეკრანი →",
-    cadastralSearch: "საკადასტრო კოდის ძებნა",
+    cadastralSearch: "საკადასტრო კოდით ძებნა",
     cadastralPlaceholder: "მაგ: 01.10.15.001.002",
     cadastralHint: "ფორმატი: XX.XX.XX.XXX.XXX · ნარიყვლის პოლიგონი ნარინჯისფერია",
     found: "ნაპოვნია: {code}{address}",
