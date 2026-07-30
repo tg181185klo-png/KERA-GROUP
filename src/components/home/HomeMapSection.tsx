@@ -70,14 +70,8 @@ export function HomeMapSection() {
   return (
     <section id="map" className="kera-section bg-white">
       <div className="kera-container">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-2xl">
-            <p className="kera-eyebrow">{t.map.eyebrow}</p>
-            <h2 className="kera-section-title mt-2">{t.map.title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
-              {t.map.subtitle}
-            </p>
-          </div>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <h2 className="kera-section-title">{t.map.title}</h2>
           <Link href="/map" className="kera-link shrink-0 text-sm">
             {t.map.fullScreen}
           </Link>
@@ -118,7 +112,6 @@ export function HomeMapSection() {
               })}
             </p>
           )}
-          <p className="mt-2 text-xs text-slate-500">{t.map.cadastralHint}</p>
         </div>
 
         <div className="kera-map-shell h-[min(60vh,520px)] min-h-[360px] sm:min-h-[420px]">
