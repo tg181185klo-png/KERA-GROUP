@@ -4,8 +4,6 @@ import { CITIES_WITH_DISTRICTS, OTHER_CITIES } from "./georgia";
 /** Self-governing cities — no predefined districts/villages; free-text area input. */
 export const SELF_GOVERNING_CITIES = [
   "rustavi",
-  "gori",
-  "zugdidi",
   "poti",
 ] as const satisfies readonly SearchCityId[];
 
