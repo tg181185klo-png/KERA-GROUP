@@ -2,7 +2,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { canManageListings } from "@/lib/admin-access";
 import { publicStatusFilter } from "@/lib/listing-status";
 import { lookupCadastralParcel } from "@/lib/cadastral-lookup";
-import { isValidCadastralCode } from "@/lib/cadastral";
+import { isValidCadastralCode, formatCadastralCode } from "@/lib/cadastral";
 import { insertPropertyListing } from "@/lib/listings-insert";
 import { normalizeToAdminListing } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
@@ -77,6 +77,8 @@ export async function POST(request: Request) {
       if (parcel.address && !body.address) {
         body.address = parcel.address;
       }
+    } else {
+      body.cadastral_code = formatCadastralCode(body.cadastral_code);
     }
   }
 

@@ -11,6 +11,7 @@ import { MapPicker } from "@/components/dashboard/MapPicker";
 import { ImageUpload } from "@/components/submit/ImageUpload";
 import {
   isValidCadastralCode,
+  formatCadastralCode,
   formatPrice,
   formatPricePerSqm,
 } from "@/lib/cadastral";
@@ -72,7 +73,7 @@ export function AddPropertyWizard() {
 
       setForm((prev) => ({
         ...prev,
-        cadastral_code: data.cadastral_code ?? prev.cadastral_code,
+        cadastral_code: formatCadastralCode(data.cadastral_code ?? prev.cadastral_code),
         latitude: data.latitude,
         longitude: data.longitude,
         geojson_polygon: data.geojson_polygon,
@@ -89,7 +90,10 @@ export function AddPropertyWizard() {
     setLoading(true);
     setSubmitError("");
 
-    let payload = { ...form };
+    let payload = {
+      ...form,
+      cadastral_code: formatCadastralCode(form.cadastral_code),
+    };
 
     if (
       isValidCadastralCode(form.cadastral_code) &&
@@ -103,7 +107,9 @@ export function AddPropertyWizard() {
         if (lookupRes.ok) {
           payload = {
             ...payload,
-            cadastral_code: lookupData.cadastral_code ?? payload.cadastral_code,
+            cadastral_code: formatCadastralCode(
+              lookupData.cadastral_code ?? payload.cadastral_code,
+            ),
             latitude: lookupData.latitude,
             longitude: lookupData.longitude,
             geojson_polygon: lookupData.geojson_polygon,
@@ -266,6 +272,12 @@ export function AddPropertyWizard() {
                 required
                 value={form.cadastral_code}
                 onChange={(e) => updateField("cadastral_code", e.target.value)}
+                onBlur={(e) => {
+                  const formatted = formatCadastralCode(e.target.value);
+                  if (formatted !== e.target.value) {
+                    updateField("cadastral_code", formatted);
+                  }
+                }}
                 placeholder="01.10.15.001.002"
                 error={cadastralError}
                 className="flex-1"
@@ -308,7 +320,7 @@ export function AddPropertyWizard() {
         {step === 4 && (
           <div className="space-y-3 text-sm">
             <ReviewRow label="სათაური" value={form.title} />
-            <ReviewRow label="კად. კოდი" value={form.cadastral_code} />
+            <ReviewRow label="კად. კოდი" value={formatCadastralCode(form.cadastral_code)} />
             <ReviewRow
               label="მფლობელი"
               value={`${form.owner_first_name} ${form.owner_last_name}`}

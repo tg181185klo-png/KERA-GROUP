@@ -1,6 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { formatCadastralCode } from "@/lib/cadastral";
 
 type ListingBody = {
   title?: string;
@@ -49,7 +50,7 @@ function buildLegacyDescription(body: ListingBody) {
   const parts = [
     body.title,
     body.description,
-    body.cadastral_code ? `კადასტრი: ${body.cadastral_code}` : null,
+    body.cadastral_code ? `კადასტრი: ${formatCadastralCode(body.cadastral_code)}` : null,
   ].filter(Boolean);
   return parts.join("\n") || body.address;
 }
@@ -136,7 +137,9 @@ export async function insertPropertyListing(user: User, body: ListingBody) {
     user_id: user.id,
     title: body.title ?? body.address,
     description: body.description ?? "",
-    cadastral_code: body.cadastral_code ?? `TEMP-${Date.now()}`,
+    cadastral_code: body.cadastral_code
+      ? formatCadastralCode(body.cadastral_code)
+      : `TEMP-${Date.now()}`,
     owner_first_name: body.owner_first_name ?? "",
     owner_last_name: body.owner_last_name ?? "",
     address: body.address,

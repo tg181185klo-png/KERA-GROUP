@@ -1,5 +1,5 @@
 import type { MapProperty, ListingType, ListingStatus } from "@/lib/types/property-listing";
-import { extractCadastralCode } from "@/lib/cadastral";
+import { extractCadastralCode, formatCadastralCode } from "@/lib/cadastral";
 import {
   isPubliclyVisibleListing,
   normalizePublicStatus,
@@ -42,9 +42,10 @@ export function getListingTitle(row: PropertyRow): string {
 
 export function getCadastralCode(row: PropertyRow): string {
   if (typeof row.cadastral_code === "string" && row.cadastral_code) {
-    const fromField = extractCadastralCode(row.cadastral_code);
-    if (fromField) return fromField;
-    if (!row.cadastral_code.startsWith("TEMP-")) return row.cadastral_code.trim();
+    const formatted = formatCadastralCode(row.cadastral_code);
+    if (formatted && formatted !== "—" && !formatted.startsWith("TEMP-")) {
+      return formatted;
+    }
   }
 
   const searchIn = [row.description, row.title, row.address]
@@ -56,7 +57,7 @@ export function getCadastralCode(row: PropertyRow): string {
 
   const georgianMatch = searchIn.match(/კადასტრი:\s*(\S+)/);
   if (georgianMatch?.[1]) {
-    const fromLabel = extractCadastralCode(georgianMatch[1]) ?? georgianMatch[1].trim();
+    const fromLabel = formatCadastralCode(georgianMatch[1]);
     if (fromLabel && !fromLabel.startsWith("TEMP-")) return fromLabel;
   }
 

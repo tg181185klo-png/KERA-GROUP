@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Loader2, MapPin, Search } from "lucide-react";
 import { PropertyMapClient } from "@/components/map/PropertyMapClient";
 import { useLocale } from "@/i18n/LocaleProvider";
-import { isValidCadastralCode } from "@/lib/cadastral";
+import { formatCadastralCode, isValidCadastralCode } from "@/lib/cadastral";
 import type { CadastralMapPreview } from "@/lib/types/property-listing";
 
 export function HomeMapSection() {
@@ -49,7 +49,7 @@ export function HomeMapSection() {
         }
 
         setPreview({
-          cadastral_code: data.cadastral_code,
+          cadastral_code: formatCadastralCode(data.cadastral_code ?? trimmed),
           address: data.address,
           latitude: data.latitude,
           longitude: data.longitude,
@@ -86,14 +86,18 @@ export function HomeMapSection() {
             {t.map.cadastralSearch}
           </label>
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               id="home-cadastral-search"
               type="text"
               value={cadastralCode}
               onChange={(e) => setCadastralCode(e.target.value)}
+              onBlur={(e) => {
+                const formatted = formatCadastralCode(e.target.value);
+                if (formatted !== e.target.value) setCadastralCode(formatted);
+              }}
               placeholder={t.map.cadastralPlaceholder}
-              className="kera-input py-3 pl-10 pr-12"
+              className="kera-input py-3 pl-12 pr-12"
               autoComplete="off"
               spellCheck={false}
             />
@@ -107,7 +111,7 @@ export function HomeMapSection() {
           {preview && !lookupError && (
             <p className="mt-2 text-sm text-emerald-700">
               {fmt(t.map.found, {
-                code: preview.cadastral_code,
+                code: formatCadastralCode(preview.cadastral_code),
                 address: preview.address ? ` — ${preview.address}` : "",
               })}
             </p>

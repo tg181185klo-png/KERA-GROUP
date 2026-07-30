@@ -18,11 +18,27 @@ export function extractCadastralCode(text: string): string | null {
   return null;
 }
 
-/** Compact NAPR UNIQ_CODE (12 digits) → dotted cadastral code. */
+/** Compact digit string (9–12 digits) → dotted cadastral code. */
+export function digitsToCadastral(digits: string): string | null {
+  const clean = digits.replace(/\D/g, "");
+  if (clean.length === 12) {
+    return `${clean.slice(0, 2)}.${clean.slice(2, 4)}.${clean.slice(4, 6)}.${clean.slice(6, 9)}.${clean.slice(9, 12)}`;
+  }
+  if (clean.length === 11) {
+    return `${clean.slice(0, 2)}.${clean.slice(2, 4)}.${clean.slice(4, 6)}.${clean.slice(6, 9)}.${clean.slice(9, 11)}`;
+  }
+  if (clean.length === 10) {
+    return `${clean.slice(0, 2)}.${clean.slice(2, 4)}.${clean.slice(4, 6)}.${clean.slice(6, 10)}`;
+  }
+  if (clean.length === 9) {
+    return `${clean.slice(0, 2)}.${clean.slice(2, 4)}.${clean.slice(4, 6)}.${clean.slice(6, 9)}`;
+  }
+  return null;
+}
+
+/** Compact NAPR UNIQ_CODE (9–12 digits) → dotted cadastral code. */
 export function uniqCodeToCadastral(uniqCode: string): string | null {
-  const digits = uniqCode.replace(/\D/g, "");
-  if (digits.length !== 12) return null;
-  return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4, 6)}.${digits.slice(6, 9)}.${digits.slice(9, 12)}`;
+  return digitsToCadastral(uniqCode);
 }
 
 /** Dotted or compact cadastral code → NAPR UNIQ_CODE for API queries. */
@@ -40,13 +56,19 @@ export function cadastralToUniqCode(code: string): string | null {
 }
 
 export function formatCadastralCode(code: string): string {
-  const dotted = extractCadastralCode(code);
+  const trimmed = code.trim();
+  if (!trimmed || trimmed.startsWith("TEMP-")) return trimmed;
+
+  const dotted = extractCadastralCode(trimmed);
   if (dotted) return dotted;
 
-  const fromUniq = uniqCodeToCadastral(code);
-  if (fromUniq) return fromUniq;
+  const digits = trimmed.replace(/\D/g, "");
+  if (digits.length >= 9 && digits.length <= 12) {
+    const fromDigits = digitsToCadastral(digits);
+    if (fromDigits) return fromDigits;
+  }
 
-  return code.trim();
+  return trimmed;
 }
 
 export function isValidCadastralCode(code: string): boolean {

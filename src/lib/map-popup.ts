@@ -1,5 +1,5 @@
 import type { MapProperty } from "@/lib/types/property-listing";
-import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
+import { formatPrice, formatPricePerSqm, formatCadastralCode } from "@/lib/cadastral";
 import { LISTING_TYPE_LABELS } from "@/lib/types/property-listing";
 import { getPropertyBounds } from "@/lib/map-geometry";
 
@@ -29,7 +29,7 @@ export function buildMapPopupHtml(property: MapProperty): string {
       <p style="margin:0 0 6px;font-size:12px;color:#64748b;">
         ${property.area_sqm} მ² · ${escapeHtml(pricePerSqm)}
       </p>
-      <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;">კად. ${escapeHtml(property.cadastral_code)}</p>
+      <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;">კად. ${escapeHtml(formatCadastralCode(property.cadastral_code))}</p>
       <p style="margin:0 0 4px;font-size:12px;color:#475569;">${escapeHtml(property.address)}</p>
       <p style="margin:0 0 10px;font-size:12px;color:#475569;">${escapeHtml(property.phone_number)}</p>
       <a href="/properties/${escapeHtml(property.id)}" style="display:inline-block;font-size:12px;font-weight:600;color:#00a3e0;text-decoration:none;">

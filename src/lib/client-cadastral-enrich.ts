@@ -1,5 +1,5 @@
 import type { MapProperty } from "@/lib/types/property-listing";
-import { cadastralToUniqCode } from "@/lib/cadastral";
+import { cadastralToUniqCode, formatCadastralCode } from "@/lib/cadastral";
 import { isMappableProperty } from "@/lib/property-normalize";
 
 const enrichCache = new Map<string, MapProperty>();
@@ -41,7 +41,9 @@ export async function fetchCadastralForProperty(
       longitude: data.longitude ?? property.longitude,
       geojson_polygon: data.geojson_polygon ?? property.geojson_polygon,
       address: property.address || data.address || property.address,
-      cadastral_code: data.cadastral_code ?? property.cadastral_code,
+      cadastral_code: formatCadastralCode(
+        data.cadastral_code ?? property.cadastral_code,
+      ),
     };
 
     enrichCache.set(property.id, enriched);

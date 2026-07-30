@@ -7,6 +7,7 @@ import type {
   MapProperty,
 } from "@/lib/types/property-listing";
 import { PropertySidebar } from "@/components/map/PropertySidebar";
+import { formatCadastralCode } from "@/lib/cadastral";
 import { buildMapPopupHtml } from "@/lib/map-popup";
 import {
   getPropertyBounds,
@@ -220,7 +221,7 @@ export function PropertyMap({
             className: "kera-map-popup",
           });
 
-          poly.bindTooltip(property.cadastral_code, {
+          poly.bindTooltip(formatCadastralCode(property.cadastral_code), {
             permanent: mapRef.current!.getZoom() >= 16,
             direction: "center",
             className: "kera-cadastral-label",
@@ -301,7 +302,7 @@ export function PropertyMap({
             dashArray: "6 4",
           },
         );
-        poly.bindTooltip(preview.cadastral_code, {
+        poly.bindTooltip(formatCadastralCode(preview.cadastral_code), {
           permanent: true,
           direction: "center",
           className: "kera-cadastral-label",
@@ -318,7 +319,7 @@ export function PropertyMap({
             weight: 3,
           },
         );
-        marker.bindTooltip(preview.cadastral_code, { permanent: true });
+        marker.bindTooltip(formatCadastralCode(preview.cadastral_code), { permanent: true });
         marker.addTo(previewLayerRef.current);
       }
     }
