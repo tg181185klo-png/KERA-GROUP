@@ -36,16 +36,12 @@ export function buildMapHoverTooltipHtml(
 
   return `
     <div class="kera-map-hover-tooltip__inner">
-      <div class="kera-map-hover-tooltip__header">
-        <span class="kera-map-hover-tooltip__badge">${escapeHtml(labels.listingType)}</span>
-      </div>
+      <span class="kera-map-hover-tooltip__badge">${escapeHtml(labels.listingType)}</span>
       <h3 class="kera-map-hover-tooltip__title">${escapeHtml(property.title)}</h3>
-      <p class="kera-map-hover-tooltip__price">${escapeHtml(formatPrice(property.total_price))}</p>
-      <p class="kera-map-hover-tooltip__meta">
-        <span>${property.area_sqm} ${escapeHtml(labels.sqm)}</span>
-        <span class="kera-map-hover-tooltip__meta-sep">·</span>
-        <span>${escapeHtml(pricePerSqm)}</span>
-      </p>
+      <div class="kera-map-hover-tooltip__pricing">
+        <span class="kera-map-hover-tooltip__price">${escapeHtml(formatPrice(property.total_price))}</span>
+        <span class="kera-map-hover-tooltip__meta">${property.area_sqm} ${escapeHtml(labels.sqm)} · ${escapeHtml(pricePerSqm)}</span>
+      </div>
       <dl class="kera-map-hover-tooltip__details">
         ${detailRow(labels.cadCode, cadastral)}
         ${detailRow(labels.address, property.address)}
