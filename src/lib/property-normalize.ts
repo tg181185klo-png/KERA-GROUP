@@ -166,6 +166,11 @@ export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
     longitude: lng,
     geojson_polygon: geojson,
     images: Array.isArray(row.images) ? (row.images as string[]) : [],
+    created_at:
+      typeof row.created_at === "string" ? row.created_at : undefined,
+    bedrooms: typeof row.bedrooms === "number" ? row.bedrooms : null,
+    property_type:
+      typeof row.property_type === "string" ? row.property_type : null,
   };
 }
 

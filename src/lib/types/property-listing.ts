@@ -66,6 +66,9 @@ export interface MapProperty {
   longitude: number | null;
   geojson_polygon: GeoJSON.Polygon | null;
   images: string[];
+  created_at?: string;
+  bedrooms?: number | null;
+  property_type?: string | null;
 }
 
 export const LISTING_TYPE_LABELS: Record<ListingType, string> = {

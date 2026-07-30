@@ -118,7 +118,7 @@ export function HeroSearch() {
     }
 
     const query = params.toString();
-    router.push(query ? `/?${query}#featured` : "/#featured");
+    router.push(query ? `/properties?${query}` : "/properties");
   }
 
   return (

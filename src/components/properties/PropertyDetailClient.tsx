@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Hash, Loader2, MapPin, Phone } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import { fetchCadastralForProperty } from "@/lib/client-cadastral-enrich";
@@ -20,6 +21,8 @@ export function PropertyDetailClient({
   property: initialProperty,
 }: PropertyDetailClientProps) {
   const t = useT();
+  const searchParams = useSearchParams();
+  const backHref = searchParams.get("back") ?? "/properties";
   const [property, setProperty] = useState(initialProperty);
   const [mapLoading, setMapLoading] = useState(true);
 
@@ -54,7 +57,7 @@ export function PropertyDetailClient({
     <section className="kera-section bg-kera-page">
       <div className="kera-container">
         <Link
-          href="/properties"
+          href={backHref}
           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-kera-primary"
         >
           <ArrowLeft className="h-4 w-4" />
