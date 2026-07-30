@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/i18n/LocaleProvider";
+import { getListingTypeLabel } from "@/i18n/nav";
 import type {
   CadastralMapPreview,
   MapProperty,
 } from "@/lib/types/property-listing";
 import { PropertySidebar } from "@/components/map/PropertySidebar";
 import { formatCadastralCode } from "@/lib/cadastral";
-import { buildMapPopupHtml } from "@/lib/map-popup";
+import {
+  buildMapHoverTooltipHtml,
+  buildMapPopupHtml,
+} from "@/lib/map-popup";
 import {
   getPropertyBounds,
   getPropertyCenter,
@@ -80,6 +84,29 @@ export function PropertyMap({
   forcePolygons = false,
 }: PropertyMapProps) {
   const t = useT();
+  const tooltipLabels = {
+    listingType: "", // filled per property
+    cadCode: t.map.cadCode,
+    address: t.map.address,
+    phone: t.map.phone,
+    sqm: t.common.sqm,
+    fullPage: t.properties.fullPage,
+    rooms: t.searchResults.rooms,
+  };
+
+  const buildLabels = (property: MapProperty) => ({
+    ...tooltipLabels,
+    listingType: getListingTypeLabel(t, property.listing_type),
+  });
+
+  const hoverTooltipOptions = {
+    sticky: true,
+    direction: "top" as const,
+    className: "kera-map-hover-tooltip",
+    opacity: 1,
+    offset: [0, -8] as [number, number],
+    interactive: true,
+  };
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const clusterRef = useRef<import("leaflet").MarkerClusterGroup | null>(null);
@@ -216,16 +243,15 @@ export function PropertyMap({
             style,
           );
 
-          poly.bindPopup(buildMapPopupHtml(property), {
+          poly.bindPopup(buildMapPopupHtml(property, buildLabels(property)), {
             maxWidth: 280,
             className: "kera-map-popup",
           });
 
-          poly.bindTooltip(formatCadastralCode(property.cadastral_code), {
-            permanent: mapRef.current!.getZoom() >= 16,
-            direction: "center",
-            className: "kera-cadastral-label",
-          });
+          poly.bindTooltip(
+            buildMapHoverTooltipHtml(property, buildLabels(property)),
+            hoverTooltipOptions,
+          );
 
           poly.on("mouseover", () => setHoveredId(property.id));
           poly.on("mouseout", () =>
@@ -242,7 +268,13 @@ export function PropertyMap({
             icon: L.divIcon(priceMarkerIconOptions(property, selectedId)),
           });
 
-          marker.bindPopup(buildMapPopupHtml(property), { maxWidth: 280 });
+          marker.bindPopup(buildMapPopupHtml(property, buildLabels(property)), {
+            maxWidth: 280,
+          });
+          marker.bindTooltip(
+            buildMapHoverTooltipHtml(property, buildLabels(property)),
+            hoverTooltipOptions,
+          );
           marker.on("click", handleSelect);
           marker.on("mouseover", () => setHoveredId(property.id));
           marker.on("mouseout", () =>
@@ -268,12 +300,25 @@ export function PropertyMap({
     properties,
     ready,
     selectedId,
-    hoveredId,
     onSelect,
     showSidebarOnSelect,
     forcePolygons,
     zoomLevel,
+    t,
   ]);
+
+  useEffect(() => {
+    if (!ready) return;
+
+    layerByIdRef.current.forEach((layer, id) => {
+      if (!("setStyle" in layer) || typeof layer.setStyle !== "function") return;
+
+      const property = propertiesRef.current.find((item) => item.id === id);
+      if (!property) return;
+
+      layer.setStyle(polygonStyle(property, selectedId, hoveredId));
+    });
+  }, [hoveredId, selectedId, ready]);
 
   useEffect(() => {
     if (!ready || !mapRef.current || !previewLayerRef.current) return;
