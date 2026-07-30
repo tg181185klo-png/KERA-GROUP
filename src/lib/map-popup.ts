@@ -14,44 +14,46 @@ export interface MapTooltipLabels {
   rooms: (count: number) => string;
 }
 
+function detailRow(label: string, value: string): string {
+  if (!value || value === "—") return "";
+  return `
+    <div class="kera-map-hover-tooltip__detail">
+      <dt class="kera-map-hover-tooltip__label">${escapeHtml(label)}</dt>
+      <dd class="kera-map-hover-tooltip__value">${escapeHtml(value)}</dd>
+    </div>
+  `;
+}
+
 export function buildMapHoverTooltipHtml(
   property: MapProperty,
   labels: MapTooltipLabels,
 ): string {
-  const image = property.images[0]
-    ? `<img src="${escapeHtml(property.images[0])}" alt="" style="width:100%;height:72px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />`
-    : "";
-
   const pricePerSqm = property.price_per_sqm
     ? formatPricePerSqm(property.price_per_sqm)
     : "—";
 
-  const rooms =
-    property.bedrooms != null && property.bedrooms > 0
-      ? `<p style="margin:0 0 6px;font-size:12px;color:#64748b;">${escapeHtml(labels.rooms(property.bedrooms))}</p>`
-      : "";
+  const cadastral = formatCadastralCode(property.cadastral_code);
 
   return `
     <div class="kera-map-hover-tooltip__inner">
-      ${image}
-      <p class="kera-map-hover-tooltip__type">${escapeHtml(labels.listingType)}</p>
-      <p class="kera-map-hover-tooltip__title">${escapeHtml(property.title)}</p>
+      <div class="kera-map-hover-tooltip__header">
+        <span class="kera-map-hover-tooltip__badge">${escapeHtml(labels.listingType)}</span>
+      </div>
+      <h3 class="kera-map-hover-tooltip__title">${escapeHtml(property.title)}</h3>
       <p class="kera-map-hover-tooltip__price">${escapeHtml(formatPrice(property.total_price))}</p>
-      <p class="kera-map-hover-tooltip__meta">${property.area_sqm} ${escapeHtml(labels.sqm)} · ${escapeHtml(pricePerSqm)}</p>
-      ${rooms}
-      <p class="kera-map-hover-tooltip__row">
-        <span class="kera-map-hover-tooltip__label">${escapeHtml(labels.cadCode)}</span>
-        <span class="kera-map-hover-tooltip__value">${escapeHtml(formatCadastralCode(property.cadastral_code))}</span>
+      <p class="kera-map-hover-tooltip__meta">
+        <span>${property.area_sqm} ${escapeHtml(labels.sqm)}</span>
+        <span class="kera-map-hover-tooltip__meta-sep">·</span>
+        <span>${escapeHtml(pricePerSqm)}</span>
       </p>
-      <p class="kera-map-hover-tooltip__row">
-        <span class="kera-map-hover-tooltip__label">${escapeHtml(labels.address)}</span>
-        <span class="kera-map-hover-tooltip__value">${escapeHtml(property.address)}</span>
-      </p>
-      <p class="kera-map-hover-tooltip__row">
-        <span class="kera-map-hover-tooltip__label">${escapeHtml(labels.phone)}</span>
-        <span class="kera-map-hover-tooltip__value">${escapeHtml(property.phone_number)}</span>
-      </p>
-      <a class="kera-map-hover-tooltip__link" href="/properties/${escapeHtml(property.id)}">${escapeHtml(labels.fullPage)}</a>
+      <dl class="kera-map-hover-tooltip__details">
+        ${detailRow(labels.cadCode, cadastral)}
+        ${detailRow(labels.address, property.address)}
+        ${detailRow(labels.phone, property.phone_number)}
+      </dl>
+      <div class="kera-map-hover-tooltip__footer">
+        <a class="kera-map-hover-tooltip__link" href="/properties/${escapeHtml(property.id)}">${escapeHtml(labels.fullPage)}</a>
+      </div>
     </div>
   `;
 }

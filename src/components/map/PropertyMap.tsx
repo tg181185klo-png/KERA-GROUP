@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/i18n/LocaleProvider";
-import { getMapDealTypeLabel } from "@/i18n/nav";
+import { getListingTypeLabel } from "@/i18n/nav";
 import type {
   CadastralMapPreview,
   MapProperty,
@@ -15,7 +15,6 @@ import {
   buildMapPopupHtml,
 } from "@/lib/map-popup";
 import {
-  getMapDealType,
   getPolygonFillColor,
 } from "@/lib/map-marker-style";
 import {
@@ -100,7 +99,7 @@ export function PropertyMap({
 
   const buildLabels = (property: MapProperty) => ({
     ...tooltipLabels,
-    listingType: getMapDealTypeLabel(t, getMapDealType(property)),
+    listingType: getListingTypeLabel(t, property.listing_type),
   });
 
   const hoverTooltipOptions = {
