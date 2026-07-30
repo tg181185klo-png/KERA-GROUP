@@ -1,5 +1,14 @@
 import type { Messages } from "./messages";
 import { ALL_SEARCH_CITIES } from "@/lib/locations/georgia";
+import {
+  isMunicipalityAllAreas,
+  type LocationAreaMode,
+} from "@/lib/locations/location-area";
+import {
+  getVillageLabel,
+  getVillagesForMunicipality,
+} from "@/lib/locations/municipality-villages";
+import type { Locale } from "./types";
 
 export function getNavLinks(t: Messages) {
   return [
@@ -65,6 +74,44 @@ export function getDistrictLabel(
 
 export function getCityLabel(t: Messages, cityId: string): string {
   return t.hero.cities[cityId as keyof typeof t.hero.cities] ?? cityId;
+}
+
+export function getLocationAreaFieldLabel(
+  t: Messages,
+  mode: LocationAreaMode,
+): string {
+  if (mode === "village-select") return t.hero.village;
+  return t.hero.district;
+}
+
+export function getLocationAreaPlaceholder(
+  t: Messages,
+  mode: LocationAreaMode,
+): string {
+  if (mode === "village-select") return t.hero.selectVillage;
+  if (mode === "district-text") return t.hero.districtFreePlaceholder;
+  return t.hero.selectDistrict;
+}
+
+export function getAreaDisplayLabel(
+  t: Messages,
+  locale: Locale,
+  cityId: string,
+  areaValue: string,
+  mode: LocationAreaMode,
+): string {
+  if (!areaValue || isMunicipalityAllAreas(areaValue)) return "";
+  if (mode === "district-select") {
+    return getDistrictLabel(t, areaValue);
+  }
+  if (mode === "village-select") {
+    return getVillageLabel(
+      getVillagesForMunicipality(cityId),
+      areaValue,
+      locale,
+    );
+  }
+  return areaValue.trim();
 }
 
 export function getServices(t: Messages) {

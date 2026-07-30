@@ -27,6 +27,7 @@ function getSearchParams(
     location: getValue("location"),
     city: getValue("city"),
     district: getValue("district"),
+    village: getValue("village"),
     land_status: getValue("land_status"),
     min_price: getValue("min_price") ? Number(getValue("min_price")) : undefined,
     max_price: getValue("max_price") ? Number(getValue("max_price")) : undefined,

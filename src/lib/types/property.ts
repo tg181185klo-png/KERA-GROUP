@@ -29,6 +29,7 @@ export interface PropertySearchParams {
   location?: string;
   city?: string;
   district?: string;
+  village?: string;
   land_status?: string;
   min_price?: number;
   max_price?: number;

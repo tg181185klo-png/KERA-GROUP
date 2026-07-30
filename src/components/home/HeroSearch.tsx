@@ -4,16 +4,25 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Search } from "lucide-react";
-import { useT } from "@/i18n/LocaleProvider";
+import { useLocale, useT } from "@/i18n/LocaleProvider";
 import {
+  getAreaDisplayLabel,
   getCityLabel,
   getDealTypes,
   getDistrictLabel,
   getLandStatusOptions,
+  getLocationAreaFieldLabel,
+  getLocationAreaPlaceholder,
   getPropertyTypes,
   getSearchCities,
 } from "@/i18n/nav";
 import { getDistrictsForCity } from "@/lib/locations/georgia";
+import {
+  getLocationAreaMode,
+  isMunicipalityAllAreas,
+  MUNICIPALITY_ALL_AREAS,
+} from "@/lib/locations/location-area";
+import { getVillagesForMunicipality } from "@/lib/locations/municipality-villages";
 
 function Field({
   label,
@@ -36,6 +45,7 @@ function Field({
 
 export function HeroSearch() {
   const t = useT();
+  const { locale } = useLocale();
   const router = useRouter();
   const dealTypes = getDealTypes(t);
   const propertyTypes = getPropertyTypes(t);
@@ -44,18 +54,32 @@ export function HeroSearch() {
 
   const [propertyType, setPropertyType] = useState("");
   const [city, setCity] = useState("");
-  const [district, setDistrict] = useState("");
+  const [areaValue, setAreaValue] = useState("");
 
-  const districts = useMemo(
-    () => (city ? getDistrictsForCity(city) : []),
+  const areaMode = useMemo(
+    () => (city ? getLocationAreaMode(city) : "hidden"),
     [city],
   );
-  const showDistrict = districts.length > 0;
+
+  const districts = useMemo(
+    () => (areaMode === "district-select" ? getDistrictsForCity(city) : []),
+    [areaMode, city],
+  );
+
+  const villages = useMemo(
+    () => (areaMode === "village-select" ? getVillagesForMunicipality(city) : []),
+    [areaMode, city],
+  );
+
+  const showAreaField = areaMode !== "hidden";
   const showLandStatus = propertyType === "land";
+  const areaLabel = getLocationAreaFieldLabel(t, areaMode);
+  const areaPlaceholder = getLocationAreaPlaceholder(t, areaMode);
 
   function handleCityChange(nextCity: string) {
     setCity(nextCity);
-    setDistrict("");
+    const nextMode = nextCity ? getLocationAreaMode(nextCity) : "hidden";
+    setAreaValue(nextMode === "village-select" ? MUNICIPALITY_ALL_AREAS : "");
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -71,13 +95,26 @@ export function HeroSearch() {
 
     if (city) {
       const cityLabel = getCityLabel(t, city);
-      const districtLabel = district ? getDistrictLabel(t, district) : "";
-      const location = districtLabel
-        ? `${cityLabel}, ${districtLabel}`
+      const areaLabelText = getAreaDisplayLabel(
+        t,
+        locale,
+        city,
+        areaValue,
+        areaMode,
+      );
+      const location = areaLabelText
+        ? `${cityLabel}, ${areaLabelText}`
         : cityLabel;
       params.set("location", location);
       params.set("city", city);
-      if (district) params.set("district", district);
+      params.delete("village");
+      if (areaValue && !isMunicipalityAllAreas(areaValue)) {
+        if (areaMode === "village-select") {
+          params.set("village", areaValue);
+        } else {
+          params.set("district", areaValue);
+        }
+      }
     }
 
     const query = params.toString();
@@ -168,21 +205,52 @@ export function HeroSearch() {
                 </select>
               </Field>
 
-              {showDistrict && (
-                <Field label={t.hero.district} className="lg:min-w-0 lg:flex-[1.2]">
+              {showAreaField && areaMode === "district-select" && (
+                <Field label={areaLabel} className="lg:min-w-0 lg:flex-[1.2]">
                   <select
                     name="district"
                     className="kera-input"
-                    value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
+                    value={areaValue}
+                    onChange={(e) => setAreaValue(e.target.value)}
                   >
-                    <option value="">{t.hero.selectDistrict}</option>
+                    <option value="">{areaPlaceholder}</option>
                     {districts.map((id) => (
                       <option key={id} value={id}>
                         {getDistrictLabel(t, id)}
                       </option>
                     ))}
                   </select>
+                </Field>
+              )}
+
+              {showAreaField && areaMode === "village-select" && (
+                <Field label={areaLabel} className="lg:min-w-0 lg:flex-[1.2]">
+                  <select
+                    name="village"
+                    className="kera-input"
+                    value={areaValue}
+                    onChange={(e) => setAreaValue(e.target.value)}
+                  >
+                    <option value={MUNICIPALITY_ALL_AREAS}>{t.hero.allAreas}</option>
+                    {villages.map((village) => (
+                      <option key={village.id} value={village.id}>
+                        {locale === "ka" ? village.ka : village.en}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+
+              {showAreaField && areaMode === "district-text" && (
+                <Field label={areaLabel} className="lg:min-w-0 lg:flex-[1.2]">
+                  <input
+                    name="district"
+                    type="text"
+                    className="kera-input"
+                    value={areaValue}
+                    onChange={(e) => setAreaValue(e.target.value)}
+                    placeholder={areaPlaceholder}
+                  />
                 </Field>
               )}
 
