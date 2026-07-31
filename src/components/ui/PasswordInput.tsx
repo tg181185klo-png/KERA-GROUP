@@ -20,7 +20,7 @@ export function PasswordInput({
   const inputId = id ?? props.name;
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 min-w-0">
       {label && (
         <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
           {label}
@@ -31,7 +31,7 @@ export function PasswordInput({
           id={inputId}
           type={visible ? "text" : "password"}
           className={cn(
-            "kera-input pr-11",
+            "kera-input pr-11 truncate",
             error && "border-red-400",
             className,
           )}

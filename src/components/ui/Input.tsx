@@ -12,7 +12,7 @@ export function Input({
 }) {
   const inputId = id ?? props.name;
   return (
-    <div className="space-y-1.5">
+    <div className="min-w-0 space-y-1.5">
       {label && (
         <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
           {label}
@@ -44,7 +44,7 @@ export function Textarea({
 }) {
   const inputId = id ?? props.name;
   return (
-    <div className="space-y-1.5">
+    <div className="min-w-0 space-y-1.5">
       {label && (
         <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
           {label}

@@ -14,7 +14,7 @@ export function Select({
 }) {
   const selectId = id ?? props.name;
   return (
-    <div className="space-y-1.5">
+    <div className="min-w-0 space-y-1.5">
       {label && (
         <label htmlFor={selectId} className="block text-sm font-medium text-slate-700">
           {label}

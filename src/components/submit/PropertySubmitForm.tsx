@@ -234,7 +234,7 @@ function Field({
 }) {
   const id = `field-${name}`;
   return (
-    <div className={className}>
+    <div className={`min-w-0 ${className}`}>
       <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </label>
@@ -244,7 +244,7 @@ function Field({
         type={type}
         required={required}
         min={min}
-        className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
+        className="kera-input"
       />
     </div>
   );
@@ -265,7 +265,7 @@ function SelectField({
 }) {
   const id = `field-${name}`;
   return (
-    <div className={className}>
+    <div className={`min-w-0 ${className}`}>
       <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </label>
@@ -273,7 +273,7 @@ function SelectField({
         id={id}
         name={name}
         required={required}
-        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
+        className="kera-input"
       >
         {options.map(({ value, label: optLabel }) => (
           <option key={value} value={value}>

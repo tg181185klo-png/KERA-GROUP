@@ -47,7 +47,7 @@ function Field({
         className={
           variant === "hero"
             ? "mb-2 flex min-h-[2rem] items-end text-xs font-semibold leading-snug text-slate-500"
-            : "mb-1 block text-[11px] font-semibold leading-tight text-slate-600 sm:text-xs"
+            : "mb-1 block text-xs font-semibold leading-tight text-slate-600"
         }
       >
         {label}
@@ -57,8 +57,7 @@ function Field({
   );
 }
 
-const compactInput =
-  "kera-input kera-input-compact !py-2 !px-2.5 !text-[11px] sm:!text-xs";
+const compactInput = "kera-input kera-input-compact";
 
 interface PropertySearchFormProps {
   initialParams?: PropertySearchParams;
@@ -204,8 +203,8 @@ export function PropertySearchForm({
       <div
         className={
           isHero
-            ? "grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3 lg:flex lg:items-end lg:gap-5"
-            : "flex flex-wrap items-end gap-2.5 lg:flex-nowrap lg:gap-2"
+            ? "hero-search-fields grid min-w-0 grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3 lg:flex lg:items-end lg:gap-5"
+            : "flex w-full min-w-0 max-w-full flex-wrap items-end gap-2.5 lg:flex-nowrap lg:gap-2"
         }
       >
         <Field
@@ -426,7 +425,7 @@ export function PropertySearchForm({
           <div className="w-full shrink-0 sm:w-auto lg:ml-auto">
             <button
               type="submit"
-              className="kera-btn w-full min-w-[5.25rem] px-3 py-1.5 text-[11px] font-bold shadow-sm sm:w-auto sm:text-xs"
+              className="kera-btn w-full min-w-[5.25rem] px-3 py-1.5 text-xs font-bold shadow-sm sm:w-auto"
             >
               <Search className="h-3.5 w-3.5" aria-hidden="true" />
               {submitLabel}

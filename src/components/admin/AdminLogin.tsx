@@ -67,7 +67,7 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
             autoFocus
             autoComplete="current-password"
             placeholder={t.admin.passwordPlaceholder}
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
+            className="kera-input"
           />
         </div>
 

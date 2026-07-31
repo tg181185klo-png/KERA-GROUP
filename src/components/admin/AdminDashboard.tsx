@@ -283,16 +283,16 @@ function EditModal({
         </div>
 
         <form onSubmit={handleSave} className="space-y-4">
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-sm font-medium">მისამართი</label>
             <input
               value={form.address}
               onChange={(e) => setForm({ ...form, address: e.target.value })}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              className="kera-input"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          <div className="grid min-w-0 grid-cols-2 gap-3">
+            <div className="min-w-0">
               <label className="mb-1 block text-sm font-medium">ფასი</label>
               <input
                 type="number"
@@ -300,22 +300,22 @@ function EditModal({
                 onChange={(e) =>
                   setForm({ ...form, price: Number(e.target.value) })
                 }
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                className="kera-input"
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="mb-1 block text-sm font-medium">ვალუტა</label>
               <select
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                className="kera-input"
               >
                 <option value="USD">USD</option>
                 <option value="GEL">GEL</option>
               </select>
             </div>
           </div>
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-sm font-medium">სტატუსი</label>
             <select
               value={form.status}
@@ -325,14 +325,14 @@ function EditModal({
                   status: e.target.value as PropertyStatus,
                 })
               }
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              className="kera-input"
             >
               <option value="pending">მოდერაციაში</option>
               <option value="active">აქტიური</option>
               <option value="archived">არქივი</option>
             </select>
           </div>
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-sm font-medium">აღწერა</label>
             <textarea
               rows={3}
@@ -340,7 +340,7 @@ function EditModal({
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              className="kera-input min-h-24 resize-y"
             />
           </div>
           <button

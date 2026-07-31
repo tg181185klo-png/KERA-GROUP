@@ -210,7 +210,7 @@ export function AddPropertyWizard() {
                 { value: "rent", label: "ქირავდება" },
               ]}
             />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid min-w-0 grid-cols-2 gap-4">
               <Input
                 label="საერთო ფასი (USD)"
                 type="number"
@@ -243,7 +243,7 @@ export function AddPropertyWizard() {
         {/* Step 1: Owner info */}
         {step === 1 && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid min-w-0 grid-cols-2 gap-4">
               <Input
                 label="მფლობელის სახელი"
                 required
