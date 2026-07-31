@@ -12,6 +12,7 @@ import {
 import type { Profile } from "@/lib/types/profile";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { getPricePerSqm } from "@/lib/price-display";
+import { useT } from "@/i18n/LocaleProvider";
 
 interface ListingRow {
   id: string;
@@ -33,6 +34,7 @@ export function AdminListingsPanel({
 }: {
   initialListings?: ListingRow[];
 }) {
+  const t = useT();
   const [tab, setTab] = useState<"listings" | "users">("listings");
   const [listings, setListings] = useState<ListingRow[]>(initialListings);
   const [users, setUsers] = useState<Profile[]>([]);
@@ -191,7 +193,7 @@ export function AdminListingsPanel({
                     <div>{formatPrice(item.total_price)}</div>
                     {pricePerSqm != null && (
                       <div className="text-xs text-slate-500">
-                        {formatPricePerSqm(pricePerSqm)}
+                        {formatPricePerSqm(pricePerSqm, t.common.perSqm)}
                       </div>
                     )}
                   </td>

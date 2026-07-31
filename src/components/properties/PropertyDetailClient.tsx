@@ -126,16 +126,14 @@ export function PropertyDetailClient({
             <p className="mt-4 text-3xl font-bold text-kera-primary">
               {formatPrice(property.total_price)}
             </p>
-            {(property.area_sqm > 0 || pricePerSqm != null) && (
+            {pricePerSqm != null && (
+              <p className="mt-0.5 text-sm text-slate-500">
+                {formatPricePerSqm(pricePerSqm, t.common.perSqm)}
+              </p>
+            )}
+            {property.area_sqm > 0 && (
               <p className="mt-1 text-sm text-slate-500">
-                {property.area_sqm > 0 && (
-                  <>
-                    {property.area_sqm} {t.common.sqm}
-                    {pricePerSqm != null && " · "}
-                  </>
-                )}
-                {pricePerSqm != null &&
-                  formatPricePerSqm(pricePerSqm, t.common.perSqm)}
+                {property.area_sqm} {t.common.sqm}
               </p>
             )}
 

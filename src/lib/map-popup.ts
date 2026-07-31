@@ -43,7 +43,8 @@ export function buildMapHoverTooltipHtml(
       <h3 class="kera-map-hover-tooltip__title">${escapeHtml(property.title)}</h3>
       <div class="kera-map-hover-tooltip__pricing">
         <span class="kera-map-hover-tooltip__price">${escapeHtml(formatPrice(property.total_price))}</span>
-        <span class="kera-map-hover-tooltip__meta">${property.area_sqm > 0 ? `${property.area_sqm} ${escapeHtml(labels.sqm)} · ` : ""}${escapeHtml(pricePerSqm)}</span>
+        ${pricePerSqmValue ? `<span class="kera-map-hover-tooltip__meta">${escapeHtml(pricePerSqm)}</span>` : ""}
+        ${property.area_sqm > 0 ? `<span class="kera-map-hover-tooltip__meta">${property.area_sqm} ${escapeHtml(labels.sqm)}</span>` : ""}
       </div>
       <dl class="kera-map-hover-tooltip__details">
         ${detailRow(labels.cadCode, cadastral)}
@@ -82,9 +83,8 @@ export function buildMapPopupHtml(
       <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#00a3e0;">
         ${escapeHtml(formatPrice(property.total_price))}
       </p>
-      <p style="margin:0 0 6px;font-size:12px;color:#64748b;">
-        ${property.area_sqm > 0 ? `${property.area_sqm} ${escapeHtml(labels.sqm)} · ` : ""}${escapeHtml(pricePerSqm)}
-      </p>
+      ${pricePerSqmValue ? `<p style="margin:0 0 4px;font-size:12px;color:#64748b;">${escapeHtml(pricePerSqm)}</p>` : ""}
+      ${property.area_sqm > 0 ? `<p style="margin:0 0 6px;font-size:12px;color:#64748b;">${property.area_sqm} ${escapeHtml(labels.sqm)}</p>` : ""}
       <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;">კად. ${escapeHtml(formatCadastralCode(property.cadastral_code))}</p>
       <p style="margin:0 0 4px;font-size:12px;color:#475569;">${escapeHtml(property.address)}</p>
       <p style="margin:0 0 10px;font-size:12px;color:#475569;">${escapeHtml(property.phone_number)}</p>

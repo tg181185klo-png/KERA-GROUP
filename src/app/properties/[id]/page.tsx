@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { fetchActiveListingById } from "@/lib/active-listings";
 import { PropertyDetailClient } from "@/components/properties/PropertyDetailClient";
-import { formatPrice } from "@/lib/cadastral";
+import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
+import { getPricePerSqm } from "@/lib/price-display";
 
 interface PropertyPageProps {
   params: Promise<{ id: string }>;
@@ -18,9 +19,15 @@ export async function generateMetadata({
     return { title: "განცხადება ვერ მოიძებნა" };
   }
 
+  const pricePerSqm = getPricePerSqm(property);
+  const priceSummary =
+    pricePerSqm != null
+      ? `${formatPrice(property.total_price)} · ${formatPricePerSqm(pricePerSqm)}`
+      : formatPrice(property.total_price);
+
   return {
     title: `${property.title} | კერა ჯგუფი`,
-    description: `${formatPrice(property.total_price)} · ${property.address} · ${property.cadastral_code}`,
+    description: `${priceSummary} · ${property.address} · ${property.cadastral_code}`,
   };
 }
 

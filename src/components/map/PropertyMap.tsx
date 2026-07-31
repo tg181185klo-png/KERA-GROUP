@@ -287,7 +287,9 @@ export function PropertyMap({
           layerByIdRef.current.set(property.id, poly);
         } else if (!showPolygons || !property.geojson_polygon) {
           const marker = L.marker(center, {
-            icon: L.divIcon(priceMarkerIconOptions(property, selectedId)),
+            icon: L.divIcon(
+              priceMarkerIconOptions(property, selectedId, t.common.perSqm),
+            ),
           });
 
           marker.bindPopup(buildMapPopupHtml(property, buildLabels(property)), {

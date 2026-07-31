@@ -65,23 +65,22 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
             <div className="rounded-xl bg-slate-50 p-4">
               <div className="flex items-center gap-2 text-kera-blue">
                 <DollarSign className="h-5 w-5 shrink-0" />
-                <span className="text-2xl font-bold">
-                  {formatPrice(property.total_price)}
-                </span>
+                <div>
+                  <span className="text-2xl font-bold">
+                    {formatPrice(property.total_price)}
+                  </span>
+                  {pricePerSqm != null && (
+                    <p className="text-xs text-slate-500">
+                      {formatPricePerSqm(pricePerSqm, t.common.perSqm)}
+                    </p>
+                  )}
+                </div>
               </div>
-              <p className="mt-1 text-sm text-slate-500">
-                {property.area_sqm > 0 && (
-                  <>
-                    {property.area_sqm} {t.common.sqm}
-                    {pricePerSqm != null && " · "}
-                  </>
-                )}
-                {pricePerSqm != null
-                  ? formatPricePerSqm(pricePerSqm, t.common.perSqm)
-                  : property.area_sqm <= 0
-                    ? "—"
-                    : null}
-              </p>
+              {property.area_sqm > 0 && (
+                <p className="mt-1 text-sm text-slate-500">
+                  {property.area_sqm} {t.common.sqm}
+                </p>
+              )}
             </div>
 
             <Link
