@@ -211,17 +211,14 @@ export function UserMenu({ variant = "desktop" }: { variant?: "desktop" | "mobil
         type="button"
         onClick={() => setOpen((value) => !value)}
         className={cn(
-          "flex items-center gap-2 rounded-xl border border-slate-200 bg-white py-1 pl-1 pr-2.5 transition hover:border-slate-300 hover:bg-slate-50",
+          "flex items-center gap-1 rounded-xl border border-slate-200 bg-white py-1 pl-1 pr-1.5 transition hover:border-slate-300 hover:bg-slate-50",
           open && "border-kera-primary/30 bg-kera-primary-light/30",
         )}
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label={t.header.userMenu}
+        aria-label={`${getInitials(profile, user)} — ${t.header.userMenu}`}
       >
         <UserAvatar user={user} profile={profile} />
-        <span className="hidden max-w-[120px] truncate text-sm font-medium text-slate-700 lg:block">
-          {displayName}
-        </span>
         <ChevronDown
           className={cn(
             "h-4 w-4 shrink-0 text-slate-400 transition",
