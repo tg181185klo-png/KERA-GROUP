@@ -60,7 +60,8 @@ export function filterProperties(
       return false;
     }
 
-    if (params.city && context) {
+    if (params.city) {
+      if (!context) return false;
       if (
         !propertyMatchesLocation(
           p.address,

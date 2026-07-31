@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { PropertySearchParams } from "@/lib/types/property";
 import type { MapProperty } from "@/lib/types/property-listing";
 import { filterProperties } from "@/lib/property-search";
-import { useT } from "@/i18n/LocaleProvider";
+import { useLocale, useT } from "@/i18n/LocaleProvider";
 import { FeaturedPropertiesGrid } from "./PropertyCard";
 
 interface FeaturedPropertiesProps {
@@ -18,11 +18,12 @@ export function FeaturedProperties({
   searchParams,
 }: FeaturedPropertiesProps) {
   const t = useT();
+  const { locale } = useLocale();
   const [currency, setCurrency] = useState<"USD" | "GEL">("USD");
 
   const filtered = useMemo(
-    () => filterProperties(initialProperties, searchParams),
-    [initialProperties, searchParams],
+    () => filterProperties(initialProperties, searchParams, { t, locale }),
+    [initialProperties, searchParams, t, locale],
   );
 
   return (
