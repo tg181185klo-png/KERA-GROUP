@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, Check } from "lucide-react";
+import {
+  getDefaultAreaForCity,
+  LocationFields,
+} from "@/components/shared/LocationFields";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -40,6 +44,10 @@ export function AddPropertyWizard() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<PropertyListingFormData>(EMPTY_FORM);
+  const [locationCity, setLocationCity] = useState("");
+  const [locationArea, setLocationArea] = useState("");
+  const [locationBase, setLocationBase] = useState("");
+  const [addressDetail, setAddressDetail] = useState("");
   const [loading, setLoading] = useState(false);
   const [cadastralError, setCadastralError] = useState("");
   const [cadastralLoading, setCadastralLoading] = useState(false);
@@ -50,6 +58,13 @@ export function AddPropertyWizard() {
     value: PropertyListingFormData[K],
   ) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function syncAddress(base: string, detail: string) {
+    const composed = detail
+      ? `${base}${base ? ", " : ""}${detail}`
+      : base;
+    updateField("address", composed);
   }
 
   async function lookupCadastral() {
@@ -246,12 +261,25 @@ export function AddPropertyWizard() {
                 }
               />
             </div>
+            <LocationFields
+              city={locationCity}
+              areaValue={locationArea}
+              onCityChange={setLocationCity}
+              onAreaChange={setLocationArea}
+              onAddressChange={(base) => {
+                setLocationBase(base);
+                syncAddress(base, addressDetail);
+              }}
+            />
             <Input
-              label="მისამართი"
-              required
-              value={form.address}
-              onChange={(e) => updateField("address", e.target.value)}
-              placeholder="თბილისი, ვაკე, ..."
+              label="ქუჩა / დეტალი"
+              value={addressDetail}
+              onChange={(e) => {
+                const detail = e.target.value;
+                setAddressDetail(detail);
+                syncAddress(locationBase, detail);
+              }}
+              placeholder="მაგ: 9 აპრილის 20"
             />
             <Input
               label="ტელეფონი"

@@ -10,7 +10,7 @@ import {
   filterProperties,
   hasActiveSearchFilters,
 } from "@/lib/property-search";
-import { useT } from "@/i18n/LocaleProvider";
+import { useLocale, useT } from "@/i18n/LocaleProvider";
 import { PropertySearchCard } from "./PropertySearchCard";
 
 interface PropertySearchResultsProps {
@@ -77,11 +77,13 @@ export function PropertySearchResults({
   searchParams,
 }: PropertySearchResultsProps) {
   const t = useT();
+  const { locale } = useLocale();
   const [currency, setCurrency] = useState<"USD" | "GEL">("USD");
 
   const filtered = useMemo(
-    () => filterProperties(initialProperties, searchParams),
-    [initialProperties, searchParams],
+    () =>
+      filterProperties(initialProperties, searchParams, { t, locale }),
+    [initialProperties, searchParams, t, locale],
   );
 
   const sorted = useMemo(
@@ -110,7 +112,7 @@ export function PropertySearchResults({
     return (
       <div className="kera-card mx-auto max-w-xl p-6 text-center sm:p-10">
         <p className="text-slate-600">{t.searchResults.empty}</p>
-        <Link href="/" className="kera-btn mt-4 inline-flex px-6 py-2.5">
+        <Link href="/properties" className="kera-btn mt-4 inline-flex px-6 py-2.5">
           {t.searchResults.backToSearch}
         </Link>
       </div>

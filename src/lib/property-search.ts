@@ -1,5 +1,13 @@
+import type { Messages } from "@/i18n/messages";
+import type { Locale } from "@/i18n/types";
+import { propertyMatchesLocation } from "@/lib/location-match";
 import type { PropertySearchParams } from "@/lib/types/property";
 import type { MapProperty } from "@/lib/types/property-listing";
+
+export interface PropertyFilterContext {
+  t: Messages;
+  locale: Locale;
+}
 
 export function parsePropertySearchParams(
   params: Record<string, string | string[] | undefined>,
@@ -41,6 +49,7 @@ export function hasActiveSearchFilters(params: PropertySearchParams): boolean {
 export function filterProperties(
   properties: MapProperty[],
   params: PropertySearchParams,
+  context?: PropertyFilterContext,
 ): MapProperty[] {
   return properties.filter((p) => {
     const dealType = p.listing_type === "rent" ? "rent" : "sale";
@@ -51,7 +60,19 @@ export function filterProperties(
       return false;
     }
 
-    if (params.location) {
+    if (params.city && context) {
+      if (
+        !propertyMatchesLocation(
+          p.address,
+          p.title,
+          params,
+          context.t,
+          context.locale,
+        )
+      ) {
+        return false;
+      }
+    } else if (params.location) {
       const needle = params.location.toLowerCase();
       const haystack = `${p.address} ${p.title}`.toLowerCase();
       if (!haystack.includes(needle)) return false;

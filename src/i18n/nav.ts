@@ -81,6 +81,7 @@ export function getLocationAreaFieldLabel(
   mode: LocationAreaMode,
 ): string {
   if (mode === "village-select") return t.hero.village;
+  if (mode === "district-text") return t.hero.city;
   return t.hero.district;
 }
 

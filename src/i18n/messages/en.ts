@@ -273,6 +273,8 @@ export const en = {
     title: "Property Catalog",
     subtitle:
       "Approved listings only. Select a card — the detail page shows full info and the cadastral boundary on the map.",
+    searchHeading: "Search listings",
+    searchSubmit: "Search listings",
     detailPage: "Property details",
     fullPage: "Full page →",
     allListings: "All listings",
