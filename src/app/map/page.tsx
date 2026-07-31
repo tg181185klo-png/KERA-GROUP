@@ -8,7 +8,7 @@ function MapPageInner() {
   const t = useT();
 
   return (
-    <div className="kera-map-viewport flex flex-col bg-white p-3 sm:p-4">
+    <div className="kera-map-viewport flex flex-col bg-white">
       <Suspense
         fallback={
           <div className="flex h-full items-center justify-center text-slate-500">

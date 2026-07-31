@@ -12,12 +12,14 @@ import type { MapProperty } from "@/lib/types/property-listing";
 interface ListingsMapExplorerProps {
   initialSelectedId?: string | null;
   layout?: "split" | "map-only";
+  fullBleed?: boolean;
   className?: string;
 }
 
 export function ListingsMapExplorer({
   initialSelectedId = null,
-  layout = "split",
+  layout = "map-only",
+  fullBleed = false,
   className = "",
 }: ListingsMapExplorerProps) {
   const { t, fmt } = useLocale();
@@ -32,7 +34,9 @@ export function ListingsMapExplorer({
     else setRefreshing(true);
 
     try {
-      const res = await fetch("/api/listings/active", { cache: "no-store" });
+      const endpoint =
+        layout === "map-only" ? "/api/listings/map" : "/api/listings/active";
+      const res = await fetch(endpoint, { cache: "no-store" });
       const data = await res.json();
 
       if (!res.ok) {
@@ -49,7 +53,7 @@ export function ListingsMapExplorer({
       setLoading(false);
       setRefreshing(false);
     }
-  }, [t.common.error, t.map.loadFailed]);
+  }, [layout, t.common.error, t.map.loadFailed]);
 
   async function handleSelect(property: MapProperty | null) {
     if (!property) {
@@ -82,10 +86,10 @@ export function ListingsMapExplorer({
   }, [loadListings]);
 
   useEffect(() => {
-    if (!selectedId) return;
+    if (layout !== "split" || !selectedId) return;
     const el = document.querySelector(`[data-listing-id="${selectedId}"]`);
     el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [selectedId, properties.length]);
+  }, [layout, selectedId, properties.length]);
 
   useEffect(() => {
     setSelectedId(initialSelectedId);
@@ -123,9 +127,12 @@ export function ListingsMapExplorer({
   }
 
   const mapProperties = properties.filter(isMappableProperty);
+  const mapShellClass = fullBleed
+    ? "relative isolate h-full min-h-0 w-full overflow-hidden bg-slate-100"
+    : "kera-map-shell h-full min-h-[min(52dvh,520px)] flex-1 lg:min-h-0";
 
   const mapPanel = (
-    <div className="kera-map-shell h-full min-h-[min(52dvh,520px)] flex-1 lg:min-h-0">
+    <div className={mapShellClass}>
       <PropertyMap
         properties={mapProperties}
         selectedId={selectedId}

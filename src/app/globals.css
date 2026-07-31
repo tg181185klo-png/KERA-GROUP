@@ -172,21 +172,17 @@ body {
   }
 
   .kera-map-viewport {
-    height: calc(100dvh - var(--header-height));
-    min-height: 520px;
-    overflow-y: auto;
-  }
-
-  @media (max-width: 1023px) {
-    .kera-map-viewport {
-      height: auto;
-      min-height: calc(100dvh - var(--header-height));
-    }
+    position: fixed;
+    inset: var(--header-height) 0 0 0;
+    z-index: 10;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
   }
 
   @media (min-width: 1024px) {
     .kera-map-viewport {
-      height: calc(100dvh - var(--header-height-lg));
+      inset: var(--header-height-lg) 0 0 0;
     }
   }
 

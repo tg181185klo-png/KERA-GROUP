@@ -17,11 +17,12 @@ export function ListingsMapExplorerClient({
     return (
       <ListingsMapExplorer
         initialSelectedId={selected}
-        layout="split"
+        layout="map-only"
+        fullBleed
         className="h-full min-h-0"
       />
     );
   }
 
-  return <ListingsMapExplorer initialSelectedId={selected} layout="split" />;
+  return <ListingsMapExplorer initialSelectedId={selected} layout="map-only" />;
 }

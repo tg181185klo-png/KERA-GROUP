@@ -446,7 +446,7 @@ export function PropertyMap({
     <div className="relative isolate h-full min-h-[320px] w-full overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 z-0" />
       {showZoomHint && (
-        <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 max-w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-full border border-white/20 bg-slate-900/75 px-4 py-2 text-center text-xs text-white shadow-lg backdrop-blur">
+        <div className="pointer-events-none absolute bottom-2 left-1/2 z-10 max-w-[min(calc(100%-10rem),14rem)] -translate-x-1/2 rounded-full border border-white/20 bg-slate-900/70 px-2.5 py-1 text-center text-[10px] leading-snug text-white shadow-md backdrop-blur sm:bottom-3 sm:max-w-[calc(100%-1.5rem)] sm:px-4 sm:py-2 sm:text-xs sm:shadow-lg">
           {t.map.zoomHint}
         </div>
       )}
