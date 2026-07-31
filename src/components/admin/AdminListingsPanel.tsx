@@ -10,7 +10,8 @@ import {
   type ListingStatus,
 } from "@/lib/types/property-listing";
 import type { Profile } from "@/lib/types/profile";
-import { formatPrice } from "@/lib/cadastral";
+import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
+import { getPricePerSqm } from "@/lib/price-display";
 
 interface ListingRow {
   id: string;
@@ -19,6 +20,8 @@ interface ListingRow {
   owner_first_name: string;
   owner_last_name: string;
   total_price: number;
+  area_sqm: number;
+  price_per_sqm: number | null;
   listing_type: string;
   status: ListingStatus;
   created_at: string;
@@ -175,14 +178,23 @@ export function AdminListingsPanel({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {listings.map((item) => (
+              {listings.map((item) => {
+                const pricePerSqm = getPricePerSqm(item);
+                return (
                 <tr key={item.id}>
                   <td className="px-4 py-3 font-medium">{item.title}</td>
                   <td className="px-4 py-3">{item.cadastral_code}</td>
                   <td className="px-4 py-3">
                     {item.owner_first_name} {item.owner_last_name}
                   </td>
-                  <td className="px-4 py-3">{formatPrice(item.total_price)}</td>
+                  <td className="px-4 py-3">
+                    <div>{formatPrice(item.total_price)}</div>
+                    {pricePerSqm != null && (
+                      <div className="text-xs text-slate-500">
+                        {formatPricePerSqm(pricePerSqm)}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     {LISTING_TYPE_LABELS[item.listing_type as keyof typeof LISTING_TYPE_LABELS]}
                   </td>
@@ -237,7 +249,8 @@ export function AdminListingsPanel({
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
           )}

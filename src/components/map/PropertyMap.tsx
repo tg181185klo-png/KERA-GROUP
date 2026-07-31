@@ -93,6 +93,7 @@ export function PropertyMap({
     address: t.map.address,
     phone: t.map.phone,
     sqm: t.common.sqm,
+    perSqm: t.common.perSqm,
     fullPage: t.properties.fullPage,
     rooms: t.searchResults.rooms,
   };

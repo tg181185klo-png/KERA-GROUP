@@ -5,8 +5,12 @@ import Link from "next/link";
 import { useT } from "@/i18n/LocaleProvider";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import type { MapProperty } from "@/lib/types/property-listing";
+import {
+  formatListingPrice,
+  formatListingPricePerSqm,
+  getDisplayPrices,
+} from "@/lib/price-display";
 
-const USD_TO_GEL = 2.65;
 const PLACEHOLDER =
   "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80";
 
@@ -14,27 +18,6 @@ interface PropertySearchCardProps {
   property: MapProperty;
   displayCurrency?: "USD" | "GEL";
   returnQuery?: string;
-}
-
-function getDisplayPrice(
-  property: MapProperty,
-  displayCurrency: "USD" | "GEL",
-): { price: number; currency: string } {
-  if (displayCurrency === "GEL") {
-    return {
-      price: Math.round(property.total_price * USD_TO_GEL),
-      currency: "GEL",
-    };
-  }
-  return { price: property.total_price, currency: "USD" };
-}
-
-function formatPrice(price: number, currency: string): string {
-  const formatted = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 0,
-  }).format(price);
-  if (currency === "GEL") return `${formatted} ₾`;
-  return `$${formatted}`;
 }
 
 function getLocationLabel(address: string): string {
@@ -49,7 +32,10 @@ export function PropertySearchCard({
 }: PropertySearchCardProps) {
   const t = useT();
   const imageUrl = property.images?.[0] ?? PLACEHOLDER;
-  const { price, currency } = getDisplayPrice(property, displayCurrency);
+  const { price, pricePerSqm, currency } = getDisplayPrices(
+    property,
+    displayCurrency,
+  );
   const timeAgo = formatRelativeTime(property.created_at, t.searchResults.time);
 
   const metaParts: string[] = [getLocationLabel(property.address)];
@@ -87,8 +73,13 @@ export function PropertySearchCard({
 
         <div className="space-y-1 px-2.5 py-2.5">
           <p className="text-base font-bold leading-tight text-kera-slate">
-            {formatPrice(price, currency)}
+            {formatListingPrice(price, currency)}
           </p>
+          {pricePerSqm != null && (
+            <p className="text-[11px] leading-tight text-slate-500">
+              {formatListingPricePerSqm(pricePerSqm, currency, t.common.perSqm)}
+            </p>
+          )}
           <p className="line-clamp-2 text-xs leading-snug text-slate-600">
             {metaParts.join(" - ")}
           </p>

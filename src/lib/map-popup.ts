@@ -1,5 +1,6 @@
 import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm, formatCadastralCode } from "@/lib/cadastral";
+import { getPricePerSqm } from "@/lib/price-display";
 import { getPropertyBounds } from "@/lib/map-geometry";
 
 export { getPropertyBounds };
@@ -10,6 +11,7 @@ export interface MapTooltipLabels {
   address: string;
   phone: string;
   sqm: string;
+  perSqm: string;
   fullPage: string;
   rooms: (count: number) => string;
 }
@@ -28,8 +30,9 @@ export function buildMapHoverTooltipHtml(
   property: MapProperty,
   labels: MapTooltipLabels,
 ): string {
-  const pricePerSqm = property.price_per_sqm
-    ? formatPricePerSqm(property.price_per_sqm)
+  const pricePerSqmValue = getPricePerSqm(property);
+  const pricePerSqm = pricePerSqmValue
+    ? formatPricePerSqm(pricePerSqmValue, labels.perSqm)
     : "—";
 
   const cadastral = formatCadastralCode(property.cadastral_code);
@@ -40,7 +43,7 @@ export function buildMapHoverTooltipHtml(
       <h3 class="kera-map-hover-tooltip__title">${escapeHtml(property.title)}</h3>
       <div class="kera-map-hover-tooltip__pricing">
         <span class="kera-map-hover-tooltip__price">${escapeHtml(formatPrice(property.total_price))}</span>
-        <span class="kera-map-hover-tooltip__meta">${property.area_sqm} ${escapeHtml(labels.sqm)} · ${escapeHtml(pricePerSqm)}</span>
+        <span class="kera-map-hover-tooltip__meta">${property.area_sqm > 0 ? `${property.area_sqm} ${escapeHtml(labels.sqm)} · ` : ""}${escapeHtml(pricePerSqm)}</span>
       </div>
       <dl class="kera-map-hover-tooltip__details">
         ${detailRow(labels.cadCode, cadastral)}
@@ -62,8 +65,9 @@ export function buildMapPopupHtml(
     ? `<img src="${escapeHtml(property.images[0])}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />`
     : "";
 
-  const pricePerSqm = property.price_per_sqm
-    ? formatPricePerSqm(property.price_per_sqm)
+  const pricePerSqmValue = getPricePerSqm(property);
+  const pricePerSqm = pricePerSqmValue
+    ? formatPricePerSqm(pricePerSqmValue, labels.perSqm)
     : "—";
 
   return `
@@ -79,7 +83,7 @@ export function buildMapPopupHtml(
         ${escapeHtml(formatPrice(property.total_price))}
       </p>
       <p style="margin:0 0 6px;font-size:12px;color:#64748b;">
-        ${property.area_sqm} მ² · ${escapeHtml(pricePerSqm)}
+        ${property.area_sqm > 0 ? `${property.area_sqm} ${escapeHtml(labels.sqm)} · ` : ""}${escapeHtml(pricePerSqm)}
       </p>
       <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;">კად. ${escapeHtml(formatCadastralCode(property.cadastral_code))}</p>
       <p style="margin:0 0 4px;font-size:12px;color:#475569;">${escapeHtml(property.address)}</p>

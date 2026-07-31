@@ -6,6 +6,7 @@ import { useT } from "@/i18n/LocaleProvider";
 import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
+import { getPricePerSqm } from "@/lib/price-display";
 import { Badge } from "@/components/ui/Badge";
 
 interface PropertySidebarProps {
@@ -16,6 +17,7 @@ interface PropertySidebarProps {
 export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
   const t = useT();
   const ownerName = `${property.owner_first_name} ${property.owner_last_name}`;
+  const pricePerSqm = getPricePerSqm(property);
 
   return (
     <>
@@ -68,10 +70,17 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
                 </span>
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                {property.area_sqm} {t.common.sqm} ·{" "}
-                {property.price_per_sqm
-                  ? formatPricePerSqm(property.price_per_sqm)
-                  : "—"}
+                {property.area_sqm > 0 && (
+                  <>
+                    {property.area_sqm} {t.common.sqm}
+                    {pricePerSqm != null && " · "}
+                  </>
+                )}
+                {pricePerSqm != null
+                  ? formatPricePerSqm(pricePerSqm, t.common.perSqm)
+                  : property.area_sqm <= 0
+                    ? "—"
+                    : null}
               </p>
             </div>
 

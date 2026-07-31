@@ -7,6 +7,7 @@ import { useT } from "@/i18n/LocaleProvider";
 import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
+import { getPricePerSqm } from "@/lib/price-display";
 import { cn } from "@/lib/utils";
 
 interface ListingMapCardProps {
@@ -24,6 +25,7 @@ export function ListingMapCard({
   const imageUrl =
     property.images[0] ??
     "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80";
+  const pricePerSqm = getPricePerSqm(property);
 
   return (
     <button
@@ -54,6 +56,11 @@ export function ListingMapCard({
         <p className="font-display text-base font-bold text-kera-slate">
           {formatPrice(property.total_price)}
         </p>
+        {pricePerSqm != null && (
+          <p className="text-xs text-slate-500">
+            {formatPricePerSqm(pricePerSqm, t.common.perSqm)}
+          </p>
+        )}
         <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-slate-800">
           {property.title}
         </h3>
@@ -62,10 +69,8 @@ export function ListingMapCard({
           <span className="line-clamp-2">{property.address}</span>
         </p>
         <p className="mt-2 text-xs text-slate-400">
-          {property.cadastral_code} · {property.area_sqm} {t.common.sqm}
-          {property.price_per_sqm
-            ? ` · ${formatPricePerSqm(property.price_per_sqm)}`
-            : ""}
+          {property.cadastral_code}
+          {property.area_sqm > 0 && ` · ${property.area_sqm} ${t.common.sqm}`}
         </p>
         <Link
           href={`/properties/${property.id}`}

@@ -11,6 +11,7 @@ import { useT } from "@/i18n/LocaleProvider";
 import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
+import { getPricePerSqm } from "@/lib/price-display";
 import { Badge } from "@/components/ui/Badge";
 
 interface PropertyDetailClientProps {
@@ -46,6 +47,7 @@ export function PropertyDetailClient({
   }, [initialProperty]);
 
   const ownerName = `${property.owner_first_name} ${property.owner_last_name}`;
+  const pricePerSqm = getPricePerSqm(property);
   const images =
     property.images.length > 0
       ? property.images
@@ -124,12 +126,18 @@ export function PropertyDetailClient({
             <p className="mt-4 text-3xl font-bold text-kera-primary">
               {formatPrice(property.total_price)}
             </p>
-            <p className="mt-1 text-sm text-slate-500">
-              {property.area_sqm} {t.common.sqm}
-              {property.price_per_sqm
-                ? ` · ${formatPricePerSqm(property.price_per_sqm)}`
-                : ""}
-            </p>
+            {(property.area_sqm > 0 || pricePerSqm != null) && (
+              <p className="mt-1 text-sm text-slate-500">
+                {property.area_sqm > 0 && (
+                  <>
+                    {property.area_sqm} {t.common.sqm}
+                    {pricePerSqm != null && " · "}
+                  </>
+                )}
+                {pricePerSqm != null &&
+                  formatPricePerSqm(pricePerSqm, t.common.perSqm)}
+              </p>
+            )}
 
             <dl className="mt-8 space-y-4">
               <DetailItem

@@ -1,5 +1,6 @@
 import type { MapProperty, ListingType, ListingStatus } from "@/lib/types/property-listing";
 import { extractCadastralCode, formatCadastralCode } from "@/lib/cadastral";
+import { computePricePerSqm } from "@/lib/price-display";
 import {
   isPubliclyVisibleListing,
   normalizePublicStatus,
@@ -153,7 +154,7 @@ export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
   const { lat, lng, geojson } = resolveMapCoordinates(row);
   const owners = getOwnerNames(row);
   const area =
-    typeof row.area_sqm === "number" && row.area_sqm > 0 ? row.area_sqm : 1;
+    typeof row.area_sqm === "number" && row.area_sqm > 0 ? row.area_sqm : 0;
   const price = getTotalPrice(row);
   const cadastral = getCadastralCode(row);
 
@@ -168,11 +169,9 @@ export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
     total_price: price,
     area_sqm: area,
     price_per_sqm:
-      typeof row.price_per_sqm === "number"
+      typeof row.price_per_sqm === "number" && row.price_per_sqm > 0
         ? row.price_per_sqm
-        : area > 0
-          ? Math.round((price / area) * 100) / 100
-          : null,
+        : computePricePerSqm(price, area),
     listing_type: getListingType(row),
     deal_type: getMapDealTypeFromRow(row),
     latitude: lat,
@@ -195,13 +194,21 @@ export function isMappableProperty(property: MapProperty): boolean {
 
 export function normalizeToAdminListing(row: PropertyRow) {
   const owners = getOwnerNames(row);
+  const totalPrice = getTotalPrice(row);
+  const areaSqm =
+    typeof row.area_sqm === "number" && row.area_sqm > 0 ? row.area_sqm : 0;
   return {
     id: String(row.id),
     title: getListingTitle(row),
     cadastral_code: getCadastralCode(row),
     owner_first_name: owners.first,
     owner_last_name: owners.last,
-    total_price: getTotalPrice(row),
+    total_price: totalPrice,
+    area_sqm: areaSqm,
+    price_per_sqm:
+      typeof row.price_per_sqm === "number" && row.price_per_sqm > 0
+        ? row.price_per_sqm
+        : computePricePerSqm(totalPrice, areaSqm),
     listing_type: getListingType(row),
     status: normalizeListingStatus(row.status),
     created_at: String(row.created_at ?? ""),

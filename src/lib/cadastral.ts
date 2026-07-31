@@ -83,8 +83,11 @@ export function formatPrice(price: number): string {
   }).format(price);
 }
 
-export function formatPricePerSqm(price: number): string {
-  return `${formatPrice(price)}/მ²`;
+export function formatPricePerSqm(
+  price: number,
+  perSqmSuffix = "/მ²",
+): string {
+  return `${formatPrice(price)}${perSqmSuffix}`;
 }
 
 /** @deprecated Use /api/cadastral/lookup — kept for type compatibility */

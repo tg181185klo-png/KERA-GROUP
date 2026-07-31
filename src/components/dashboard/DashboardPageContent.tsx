@@ -5,13 +5,14 @@ import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { LogoutButton } from "@/components/dashboard/LogoutButton";
 import { useLocale } from "@/i18n/LocaleProvider";
-import { formatPrice } from "@/lib/cadastral";
+import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import {
   getCadastralCode,
   getListingTitle,
   getTotalPrice,
   type PropertyRow,
 } from "@/lib/property-normalize";
+import { computePricePerSqm } from "@/lib/price-display";
 
 interface DashboardPageContentProps {
   profile: { first_name?: string | null; last_name?: string | null; email?: string | null } | null;
@@ -89,13 +90,32 @@ export function DashboardPageContent({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {listings.map((item) => (
+                {listings.map((item) => {
+                  const totalPrice = getTotalPrice(item);
+                  const areaSqm =
+                    typeof item.area_sqm === "number" && item.area_sqm > 0
+                      ? item.area_sqm
+                      : 0;
+                  const pricePerSqm =
+                    typeof item.price_per_sqm === "number" &&
+                    item.price_per_sqm > 0
+                      ? item.price_per_sqm
+                      : computePricePerSqm(totalPrice, areaSqm);
+
+                  return (
                   <tr key={String(item.id)} className="hover:bg-slate-50">
                     <td className="px-6 py-4 font-medium text-slate-900">
                       {getListingTitle(item)}
                     </td>
                     <td className="px-6 py-4 text-slate-600">{getCadastralCode(item)}</td>
-                    <td className="px-6 py-4">{formatPrice(getTotalPrice(item))}</td>
+                    <td className="px-6 py-4">
+                      <div>{formatPrice(totalPrice)}</div>
+                      {pricePerSqm != null && (
+                        <div className="text-xs text-slate-500">
+                          {formatPricePerSqm(pricePerSqm, t.common.perSqm)}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium">
                         {statusLabel(String(item.status ?? "pending"))}
@@ -107,7 +127,8 @@ export function DashboardPageContent({
                         : "—"}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

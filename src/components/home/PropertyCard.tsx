@@ -6,34 +6,15 @@ import { MapPin, Maximize2 } from "lucide-react";
 import { useT } from "@/i18n/LocaleProvider";
 import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
-import { formatPrice as formatCadastralPrice } from "@/lib/cadastral";
-
-const USD_TO_GEL = 2.65;
+import {
+  formatListingPrice,
+  formatListingPricePerSqm,
+  getDisplayPrices,
+} from "@/lib/price-display";
 
 interface PropertyCardProps {
   property: MapProperty;
   displayCurrency?: "USD" | "GEL";
-}
-
-function getDisplayPrice(
-  property: MapProperty,
-  displayCurrency: "USD" | "GEL",
-): { price: number; currency: string } {
-  if (displayCurrency === "GEL") {
-    return {
-      price: Math.round(property.total_price * USD_TO_GEL),
-      currency: "GEL",
-    };
-  }
-  return { price: property.total_price, currency: "USD" };
-}
-
-function formatPrice(price: number, currency: string): string {
-  const symbol = currency === "GEL" ? "₾" : "$";
-  const formatted = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 0,
-  }).format(price);
-  return currency === "GEL" ? `${formatted} ${symbol}` : `${symbol}${formatted}`;
 }
 
 export function PropertyCard({
@@ -45,7 +26,10 @@ export function PropertyCard({
     property.images?.[0] ??
     "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80";
 
-  const { price, currency } = getDisplayPrice(property, displayCurrency);
+  const { price, pricePerSqm, currency } = getDisplayPrices(
+    property,
+    displayCurrency,
+  );
 
   return (
     <Link
@@ -67,8 +51,13 @@ export function PropertyCard({
 
       <div className="p-5">
         <p className="text-xl font-bold text-kera-slate">
-          {formatPrice(price, currency)}
+          {formatListingPrice(price, currency)}
         </p>
+        {pricePerSqm != null && (
+          <p className="mt-0.5 text-xs text-slate-500">
+            {formatListingPricePerSqm(pricePerSqm, currency, t.common.perSqm)}
+          </p>
+        )}
         <p className="mt-1 flex items-start gap-1.5 text-sm text-slate-600">
           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-kera-primary" />
           {property.address}
@@ -89,11 +78,6 @@ export function PropertyCard({
         <p className="mt-3 line-clamp-2 text-sm font-medium text-slate-700">
           {property.title}
         </p>
-        {property.price_per_sqm != null && (
-          <p className="mt-1 text-xs text-slate-400">
-            {formatCadastralPrice(property.price_per_sqm)} {t.common.perSqm}
-          </p>
-        )}
       </div>
     </Link>
   );

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { Property, PropertyStatus } from "@/lib/types/property";
 import { formatDealType, formatPrice, formatPropertyType } from "@/lib/format";
+import { computePricePerSqm } from "@/lib/price-display";
 
 const STATUS_LABELS: Record<PropertyStatus, string> = {
   pending: "მოდერაციაში",
@@ -162,7 +163,18 @@ export function AdminDashboard() {
                   </span>
                 </div>
                 <p className="mt-1 font-bold text-kera-slate">
-                  {formatPrice(property.price, property.currency)} —{" "}
+                  {formatPrice(property.price, property.currency)}
+                  {(() => {
+                    const areaSqm = property.area_sqm ?? 0;
+                    const pricePerSqm = computePricePerSqm(property.price, areaSqm);
+                    const perSqmSuffix = property.currency === "GEL" ? "/მ²" : "/m²";
+                    return pricePerSqm != null ? (
+                      <span className="ml-2 text-sm font-normal text-slate-500">
+                        · {formatPrice(pricePerSqm, property.currency)}{perSqmSuffix}
+                      </span>
+                    ) : null;
+                  })()}
+                  {" — "}
                   {property.address}
                 </p>
                 <p className="text-sm text-slate-500">
