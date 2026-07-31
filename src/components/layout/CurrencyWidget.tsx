@@ -2,42 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { useT } from "@/i18n/LocaleProvider";
+import { FALLBACK_NBG_RATES, type NbgRate } from "@/lib/nbg-rates";
 
-interface Rate {
-  code: string;
-  rate: number;
+async function loadRates(): Promise<NbgRate[]> {
+  try {
+    const res = await fetch("/api/currency/rates");
+    if (!res.ok) return FALLBACK_NBG_RATES;
+
+    const data = (await res.json()) as { rates?: NbgRate[] };
+    return data.rates?.length ? data.rates : FALLBACK_NBG_RATES;
+  } catch {
+    return FALLBACK_NBG_RATES;
+  }
 }
 
-const FALLBACK_RATES: Rate[] = [
-  { code: "USD", rate: 2.65 },
-  { code: "EUR", rate: 2.88 },
-  { code: "GBP", rate: 3.35 },
-];
+function RatePill({
+  code,
+  rate,
+  compact,
+}: {
+  code: string;
+  rate: number;
+  compact?: boolean;
+}) {
+  const decimals = compact ? 2 : 4;
 
-async function fetchNbgRates(): Promise<Rate[]> {
-  try {
-    const res = await fetch(
-      "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/en/json",
-    );
-    if (!res.ok) return FALLBACK_RATES;
-
-    const data = await res.json();
-    const currencies = data?.[0]?.currencies ?? [];
-    const codes = ["USD", "EUR", "GBP"];
-
-    const rates = codes
-      .map((code) => {
-        const item = currencies.find(
-          (c: { code: string; rate: number }) => c.code === code,
-        );
-        return item ? { code, rate: item.rate } : null;
-      })
-      .filter(Boolean) as Rate[];
-
-    return rates.length > 0 ? rates : FALLBACK_RATES;
-  } catch {
-    return FALLBACK_RATES;
-  }
+  return (
+    <span className="flex min-w-0 items-center gap-0.5">
+      <span className="shrink-0 font-bold text-kera-primary">{code}</span>
+      <span className="truncate font-semibold tabular-nums text-slate-600">
+        {rate.toFixed(decimals)} ₾
+      </span>
+    </span>
+  );
 }
 
 export function CurrencyWidget({
@@ -48,31 +45,26 @@ export function CurrencyWidget({
   variant?: "default" | "compact" | "header";
 }) {
   const t = useT();
-  const [rates, setRates] = useState<Rate[]>(FALLBACK_RATES);
+  const [rates, setRates] = useState<NbgRate[]>(FALLBACK_NBG_RATES);
 
   useEffect(() => {
-    fetchNbgRates().then(setRates);
+    void loadRates().then(setRates);
   }, []);
 
   if (variant === "header") {
     return (
       <div
-        className="flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-slate-50/90 px-2 py-1 whitespace-nowrap xl:gap-2 xl:px-2.5 xl:py-1.5"
+        className="flex min-w-0 max-w-full items-center gap-1 overflow-x-auto rounded-full border border-slate-200/90 bg-slate-50/90 px-1.5 py-1 sm:gap-1.5 sm:px-2 sm:py-1.5 lg:px-2.5"
         title={t.currency.nbgTitle}
+        aria-label={t.currency.nbgTitle}
       >
         {rates.map(({ code, rate }, index) => (
-          <div
-            key={code}
-            className={`flex items-center gap-1.5 ${code === "GBP" ? "hidden xl:flex" : ""}`}
-          >
+          <div key={code} className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-1.5">
             {index > 0 && (
-              <span className="h-3 w-px bg-slate-300/80" aria-hidden />
+              <span className="h-3 w-px shrink-0 bg-slate-300/80" aria-hidden />
             )}
-            <span className="flex items-center gap-0.5 text-[10px] xl:gap-1 xl:text-[11px]">
-              <span className="font-bold text-kera-primary">{code}</span>
-              <span className="font-semibold tabular-nums text-slate-600">
-                {rate.toFixed(2)} ₾
-              </span>
+            <span className="text-[11px] sm:text-xs">
+              <RatePill code={code} rate={rate} compact />
             </span>
           </div>
         ))}
@@ -86,12 +78,9 @@ export function CurrencyWidget({
         {rates.map(({ code, rate }) => (
           <div
             key={code}
-            className="flex items-center gap-1.5 rounded-lg bg-kera-page px-2.5 py-1"
+            className="flex min-w-0 items-center gap-1.5 rounded-lg bg-kera-page px-2.5 py-1"
           >
-            <span className="text-xs font-bold text-kera-primary">{code}</span>
-            <span className="text-xs font-semibold text-kera-slate">
-              {rate.toFixed(4)} ₾
-            </span>
+            <RatePill code={code} rate={rate} />
           </div>
         ))}
       </div>
