@@ -18,21 +18,13 @@ export function PropertiesPageContent({
   const t = useT();
 
   return (
-    <section className="bg-kera-page pb-10 pt-4 sm:pb-12 sm:pt-6">
+    <section className="bg-kera-page pb-10 pt-2 sm:pb-12 sm:pt-3">
       <div className="kera-container">
-        <header className="mx-auto mb-4 max-w-2xl text-center sm:mb-5">
-          <p className="kera-eyebrow">{t.properties.eyebrow}</p>
-          <h1 className="font-display mt-1.5 text-xl font-bold leading-tight tracking-tight text-kera-slate sm:text-2xl lg:text-3xl">
-            {t.properties.title}
-          </h1>
-          <p className="mt-1.5 text-sm text-slate-600 sm:text-base">
-            {t.properties.searchHeading}
-          </p>
-        </header>
+        <h1 className="sr-only">{t.properties.title}</h1>
 
         <PropertySearchForm
           initialParams={searchParams}
-          className="mx-auto mb-6 max-w-5xl sm:mb-7"
+          className="mb-5 w-full sm:mb-6"
         />
 
         <PropertySearchResults

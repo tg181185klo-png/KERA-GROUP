@@ -57,7 +57,8 @@ function Field({
   );
 }
 
-const compactInput = "kera-input !py-1.5 !px-3 !text-xs sm:!text-sm";
+const compactInput =
+  "kera-input kera-input-compact !py-2 !px-2.5 !text-[11px] sm:!text-xs";
 
 interface PropertySearchFormProps {
   initialParams?: PropertySearchParams;
@@ -112,7 +113,7 @@ export function PropertySearchForm({
   const areaLabel = getLocationAreaFieldLabel(t, areaMode);
   const areaPlaceholder = getLocationAreaPlaceholder(t, areaMode);
   const defaultDealType = initialParams.deal_type ?? "sale";
-  const submitLabel = isHero ? t.hero.search : t.properties.searchSubmit;
+  const submitLabel = t.hero.search;
 
   function handleCityChange(nextCity: string) {
     setCity(nextCity);
@@ -164,16 +165,16 @@ export function PropertySearchForm({
     <form
       onSubmit={handleSubmit}
       role="search"
-      aria-label={isHero ? t.hero.search : t.properties.searchHeading}
+      aria-label={t.hero.search}
       className={`kera-card shadow-lg ${
         isHero
           ? "-mt-6 space-y-5 p-5 sm:space-y-6 sm:p-6 lg:-mt-10 lg:p-7"
-          : "space-y-3 p-3.5 sm:space-y-3.5 sm:p-4"
+          : "space-y-2.5 p-3 sm:space-y-3 sm:p-4"
       } ${className}`}
     >
       <div
         className={`flex flex-wrap ${
-          isHero ? "gap-2.5" : "justify-center gap-2 sm:gap-2.5"
+          isHero ? "gap-2.5" : "gap-2 sm:gap-2.5"
         }`}
         role="group"
         aria-label={t.hero.search}
@@ -204,14 +205,18 @@ export function PropertySearchForm({
         className={
           isHero
             ? "grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3 lg:flex lg:items-end lg:gap-5"
-            : "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(9.25rem,1fr))]"
+            : "flex flex-wrap items-end gap-2.5 lg:flex-nowrap lg:gap-2"
         }
       >
         <Field
           id="search-property-type"
           label={t.hero.propertyType}
           variant={variant}
-          className="col-span-2 sm:col-span-1 lg:col-span-1"
+          className={
+            isHero
+              ? "col-span-2 sm:col-span-1 lg:col-span-1"
+              : "min-w-[calc(50%-0.3125rem)] flex-[1.2] sm:min-w-[9rem] lg:min-w-0"
+          }
         >
           <select
             id="search-property-type"
@@ -233,7 +238,11 @@ export function PropertySearchForm({
           id="search-city"
           label={t.hero.city}
           variant={variant}
-          className="col-span-1"
+          className={
+            isHero
+              ? "col-span-1"
+              : "min-w-[calc(50%-0.3125rem)] flex-1 sm:min-w-[9rem] lg:min-w-0"
+          }
         >
           <select
             id="search-city"
@@ -256,7 +265,9 @@ export function PropertySearchForm({
             id="search-district"
             label={areaLabel}
             variant={variant}
-            className="col-span-1"
+            className={
+              isHero ? "col-span-1" : "min-w-[calc(50%-0.3125rem)] flex-1 sm:min-w-[9rem] lg:min-w-0"
+            }
           >
             <select
               id="search-district"
@@ -280,7 +291,9 @@ export function PropertySearchForm({
             id="search-village"
             label={areaLabel}
             variant={variant}
-            className="col-span-1"
+            className={
+              isHero ? "col-span-1" : "min-w-[calc(50%-0.3125rem)] flex-1 sm:min-w-[9rem] lg:min-w-0"
+            }
           >
             <select
               id="search-village"
@@ -304,7 +317,9 @@ export function PropertySearchForm({
             id="search-district-text"
             label={areaLabel}
             variant={variant}
-            className="col-span-1"
+            className={
+              isHero ? "col-span-1" : "min-w-[calc(50%-0.3125rem)] flex-1 sm:min-w-[9rem] lg:min-w-0"
+            }
           >
             <input
               id="search-district-text"
@@ -323,7 +338,11 @@ export function PropertySearchForm({
             id="search-land-status"
             label={t.hero.landStatus}
             variant={variant}
-            className="col-span-2 sm:col-span-1"
+            className={
+              isHero
+                ? "col-span-2 sm:col-span-1"
+                : "min-w-[calc(50%-0.3125rem)] flex-1 sm:min-w-[9rem] lg:min-w-0"
+            }
           >
             <select
               id="search-land-status"
@@ -344,7 +363,11 @@ export function PropertySearchForm({
           id="search-bedrooms"
           label={t.hero.bedrooms}
           variant={variant}
-          className="col-span-1"
+          className={
+            isHero
+              ? "col-span-1"
+              : "min-w-[calc(50%-0.3125rem)] flex-[0.85] sm:min-w-[5.5rem] lg:min-w-0"
+          }
         >
           <input
             id="search-bedrooms"
@@ -361,7 +384,11 @@ export function PropertySearchForm({
           id="search-min-price"
           label={t.hero.minPrice}
           variant={variant}
-          className="col-span-1"
+          className={
+            isHero
+              ? "col-span-1"
+              : "min-w-[calc(50%-0.3125rem)] flex-1 sm:min-w-[7rem] lg:min-w-0"
+          }
         >
           <input
             id="search-min-price"
@@ -378,7 +405,11 @@ export function PropertySearchForm({
           id="search-max-price"
           label={t.hero.maxPrice}
           variant={variant}
-          className="col-span-1"
+          className={
+            isHero
+              ? "col-span-1"
+              : "min-w-[calc(50%-0.3125rem)] flex-1 sm:min-w-[7rem] lg:min-w-0"
+          }
         >
           <input
             id="search-max-price"
@@ -392,12 +423,12 @@ export function PropertySearchForm({
         </Field>
 
         {!isHero && (
-          <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-1">
+          <div className="w-full shrink-0 sm:w-auto lg:ml-auto">
             <button
               type="submit"
-              className="kera-btn w-full min-w-0 px-4 py-2.5 text-xs font-bold shadow-sm sm:text-sm lg:min-w-[10.5rem]"
+              className="kera-btn w-full min-w-[5.25rem] px-3 py-1.5 text-[11px] font-bold shadow-sm sm:w-auto sm:text-xs"
             >
-              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
+              <Search className="h-3.5 w-3.5" aria-hidden="true" />
               {submitLabel}
             </button>
           </div>
