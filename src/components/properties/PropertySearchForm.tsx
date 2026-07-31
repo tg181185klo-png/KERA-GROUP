@@ -36,13 +36,15 @@ function Field({
 }) {
   return (
     <div className={`min-w-0 ${className}`}>
-      <label className="mb-2 flex min-h-[2rem] items-end text-xs font-semibold leading-snug text-slate-500">
+      <label className="mb-0.5 block text-[10px] font-semibold leading-tight text-slate-500 sm:text-xs">
         {label}
       </label>
       {children}
     </div>
   );
 }
+
+const compactInput = "kera-input !py-1.5 !px-3 !text-xs sm:!text-sm";
 
 interface PropertySearchFormProps {
   initialParams?: PropertySearchParams;
@@ -143,9 +145,9 @@ export function PropertySearchForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`kera-card space-y-5 p-5 shadow-lg sm:space-y-6 sm:p-6 lg:p-7 ${className}`}
+      className={`kera-card space-y-2.5 p-3 shadow-lg sm:space-y-3 sm:p-4 ${className}`}
     >
-      <div className="flex flex-wrap gap-2.5">
+      <div className="flex flex-wrap gap-1.5">
         {dealTypes.map(({ value, label }) => (
           <label key={value} className="cursor-pointer">
             <input
@@ -155,21 +157,21 @@ export function PropertySearchForm({
               defaultChecked={value === defaultDealType}
               className="peer sr-only"
             />
-            <span className="inline-flex min-w-[5.5rem] items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary peer-checked:shadow-sm sm:min-w-[6.5rem] sm:px-5">
+            <span className="inline-flex min-w-[4.75rem] items-center justify-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-all peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary peer-checked:shadow-sm sm:min-w-[5.5rem] sm:px-3.5">
               {label}
             </span>
           </label>
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3 lg:flex lg:items-end lg:gap-5">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3 lg:flex lg:flex-wrap lg:items-end lg:gap-3">
         <Field
           label={t.hero.propertyType}
           className="col-span-2 sm:col-span-1 lg:min-w-0 lg:flex-[1.35]"
         >
           <select
             name="property_type"
-            className="kera-input"
+            className={compactInput}
             value={propertyType}
             onChange={(e) => setPropertyType(e.target.value)}
           >
@@ -185,7 +187,7 @@ export function PropertySearchForm({
         <Field label={t.hero.city} className="lg:min-w-0 lg:flex-1">
           <select
             name="city"
-            className="kera-input"
+            className={compactInput}
             value={city}
             onChange={(e) => handleCityChange(e.target.value)}
           >
@@ -202,7 +204,7 @@ export function PropertySearchForm({
           <Field label={areaLabel} className="lg:min-w-0 lg:flex-[1.2]">
             <select
               name="district"
-              className="kera-input"
+              className={compactInput}
               value={areaValue}
               onChange={(e) => setAreaValue(e.target.value)}
             >
@@ -220,7 +222,7 @@ export function PropertySearchForm({
           <Field label={areaLabel} className="lg:min-w-0 lg:flex-[1.2]">
             <select
               name="village"
-              className="kera-input"
+              className={compactInput}
               value={areaValue}
               onChange={(e) => setAreaValue(e.target.value)}
             >
@@ -239,7 +241,7 @@ export function PropertySearchForm({
             <input
               name="district"
               type="text"
-              className="kera-input"
+              className={compactInput}
               value={areaValue}
               onChange={(e) => setAreaValue(e.target.value)}
               placeholder={areaPlaceholder}
@@ -254,7 +256,7 @@ export function PropertySearchForm({
           >
             <select
               name="land_status"
-              className="kera-input"
+              className={compactInput}
               defaultValue={initialParams.land_status ?? ""}
             >
               {landStatuses.map(({ value, label }) => (
@@ -273,7 +275,7 @@ export function PropertySearchForm({
             min={0}
             placeholder="0+"
             defaultValue={initialParams.bedrooms ?? ""}
-            className="kera-input"
+            className={compactInput}
           />
         </Field>
 
@@ -284,7 +286,7 @@ export function PropertySearchForm({
             min={0}
             placeholder="0"
             defaultValue={initialParams.min_price ?? ""}
-            className="kera-input"
+            className={compactInput}
           />
         </Field>
 
@@ -295,19 +297,18 @@ export function PropertySearchForm({
             min={0}
             placeholder="∞"
             defaultValue={initialParams.max_price ?? ""}
-            className="kera-input"
+            className={compactInput}
           />
         </Field>
-      </div>
-
-      <div className="flex justify-stretch border-t border-slate-100 pt-5 sm:justify-end">
-        <button
-          type="submit"
-          className="kera-btn w-full min-w-0 px-8 py-3 text-sm font-bold shadow-sm sm:w-auto sm:min-w-[11rem] sm:text-base"
-        >
-          <Search className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
-          {t.properties.searchSubmit}
-        </button>
+        <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-auto lg:ml-auto lg:flex-shrink-0">
+          <button
+            type="submit"
+            className="kera-btn w-full min-w-0 px-5 py-2 text-xs font-bold shadow-sm sm:min-w-[9.5rem] sm:text-sm"
+          >
+            <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            {t.properties.searchSubmit}
+          </button>
+        </div>
       </div>
     </form>
   );
