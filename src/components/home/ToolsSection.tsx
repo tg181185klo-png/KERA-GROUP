@@ -12,7 +12,7 @@ export function ToolsSection() {
       <div className="kera-container">
         <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 md:gap-8">
           <div
-            id="currency"
+            id="home-currency"
             className="kera-card flex h-full min-h-0 scroll-mt-[calc(var(--header-height)+1rem)] flex-col p-6 sm:scroll-mt-[calc(var(--header-height-lg)+1rem)] sm:p-8"
           >
             <div className="mb-6">

@@ -28,6 +28,7 @@ export function getFooterLinks(t: Messages) {
     { href: "/properties", label: t.nav.properties },
     { href: "/dashboard/add-property", label: t.nav.list },
     { href: "/#calculator", label: t.nav.calculator },
+    { href: "/currency", label: t.quickActions.currency.label },
   ] as const;
 }
 

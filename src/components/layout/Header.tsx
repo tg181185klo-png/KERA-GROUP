@@ -68,7 +68,13 @@ export function Header() {
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-1.5 lg:gap-2">
             <div className="hidden lg:block">
-              <CurrencyWidget variant="header" />
+              <Link
+                href="/currency"
+                className="block transition hover:opacity-90"
+                title={t.currency.nbgTitle}
+              >
+                <CurrencyWidget variant="header" />
+              </Link>
             </div>
 
             <div className="hidden h-5 w-px bg-slate-200 lg:block" aria-hidden />
@@ -129,7 +135,7 @@ export function Header() {
                 </Link>
               ))}
               <Link
-                href="/#currency"
+                href="/currency"
                 className="rounded-xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                 onClick={() => setOpen(false)}
               >
@@ -137,7 +143,7 @@ export function Header() {
               </Link>
             </nav>
             <Link
-              href="/#currency"
+              href="/currency"
               className="mt-4 block rounded-xl border border-slate-100 bg-kera-page p-3 transition hover:border-kera-primary/30 hover:bg-white"
               onClick={() => setOpen(false)}
             >

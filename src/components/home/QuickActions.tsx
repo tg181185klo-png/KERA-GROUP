@@ -27,7 +27,7 @@ export function QuickActions() {
       description: t.quickActions.mortgage.desc,
     },
     {
-      href: "/#currency",
+      href: "/currency",
       icon: CircleDollarSign,
       label: t.quickActions.currency.label,
       description: t.quickActions.currency.desc,
