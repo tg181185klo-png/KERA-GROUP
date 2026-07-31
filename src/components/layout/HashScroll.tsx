@@ -1,43 +1,38 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import {
+  consumeScrollTarget,
+  scrollToSection,
+} from "@/lib/scroll-to-section";
 
-function scrollToHash() {
+function scrollFromHash() {
   const hash = window.location.hash;
   if (!hash || hash.length <= 1) return;
 
   const id = decodeURIComponent(hash.slice(1));
-
-  if (id === "currency") {
-    window.location.replace("/currency");
-    return;
-  }
-
-  const el = document.getElementById(id);
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  scrollToSection(id);
 }
 
 export function HashScroll() {
   const pathname = usePathname();
-  const router = useRouter();
 
   useEffect(() => {
-    if (window.location.hash === "#currency" && pathname !== "/currency") {
-      router.replace("/currency");
+    const queued = consumeScrollTarget();
+    if (queued && pathname === "/") {
+      scrollToSection(queued);
       return;
     }
 
-    scrollToHash();
-    const timer = window.setTimeout(scrollToHash, 200);
+    scrollFromHash();
+    const timer = window.setTimeout(scrollFromHash, 250);
     return () => window.clearTimeout(timer);
-  }, [pathname, router]);
+  }, [pathname]);
 
   useEffect(() => {
-    window.addEventListener("hashchange", scrollToHash);
-    return () => window.removeEventListener("hashchange", scrollToHash);
+    window.addEventListener("hashchange", scrollFromHash);
+    return () => window.removeEventListener("hashchange", scrollFromHash);
   }, []);
 
   return null;

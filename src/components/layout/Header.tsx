@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { KeraLogo } from "@/components/brand/KeraLogo";
@@ -11,6 +11,11 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { UserMenu, useAuthUser } from "@/components/layout/UserMenu";
 import { useT } from "@/i18n/LocaleProvider";
 import { getNavLinks } from "@/i18n/nav";
+import {
+  CURRENCY_SECTION_ID,
+  queueScrollToSection,
+  scrollToSection,
+} from "@/lib/scroll-to-section";
 import { cn } from "@/lib/utils";
 
 function NavLink({ href, label }: { href: string; label: string }) {
@@ -38,6 +43,8 @@ function NavLink({ href, label }: { href: string; label: string }) {
 
 export function Header() {
   const t = useT();
+  const router = useRouter();
+  const pathname = usePathname();
   const navLinks = getNavLinks(t);
   const { isLoggedIn, loading: authLoading } = useAuthUser();
   const [open, setOpen] = useState(false);
@@ -48,6 +55,18 @@ export function Header() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  function openCurrencySection() {
+    setOpen(false);
+
+    if (pathname === "/") {
+      scrollToSection(CURRENCY_SECTION_ID);
+      return;
+    }
+
+    queueScrollToSection(CURRENCY_SECTION_ID);
+    router.push("/");
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_1px_3px_rgba(15,23,42,0.04)] backdrop-blur-md supports-[backdrop-filter]:bg-white/92">
@@ -68,13 +87,7 @@ export function Header() {
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-1.5 lg:gap-2">
             <div className="hidden lg:block">
-              <Link
-                href="/currency"
-                className="block transition hover:opacity-90"
-                title={t.currency.nbgTitle}
-              >
-                <CurrencyWidget variant="header" />
-              </Link>
+              <CurrencyWidget variant="header" />
             </div>
 
             <div className="hidden h-5 w-px bg-slate-200 lg:block" aria-hidden />
@@ -134,24 +147,26 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
-              <Link
-                href="/currency"
-                className="rounded-xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                onClick={() => setOpen(false)}
+              <button
+                type="button"
+                className="rounded-xl px-3 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                onClick={openCurrencySection}
               >
                 {t.quickActions.currency.label}
-              </Link>
+              </button>
             </nav>
-            <Link
-              href="/currency"
-              className="mt-4 block rounded-xl border border-slate-100 bg-kera-page p-3 transition hover:border-kera-primary/30 hover:bg-white"
-              onClick={() => setOpen(false)}
+
+            <button
+              type="button"
+              className="mt-4 w-full rounded-xl border border-slate-100 bg-kera-page p-3 text-left transition hover:border-kera-primary/30 hover:bg-white"
+              onClick={openCurrencySection}
             >
               <p className="mb-2 text-xs font-semibold text-slate-500">
                 {t.currency.nbgTitle}
               </p>
               <CurrencyWidget variant="compact" />
-            </Link>
+            </button>
+
             <div className="mt-4">
               {authLoading ? (
                 <div className="h-24 animate-pulse rounded-xl bg-slate-100" aria-hidden />
