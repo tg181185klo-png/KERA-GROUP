@@ -1,29 +1,34 @@
 import sharp from "sharp";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const input = path.join(
-  root,
-  "..",
-  "..",
-  ".cursor",
-  "projects",
-  "c-Users-User-Desktop-PROGRAM-SALE-Copy-Copy",
-  "assets",
-  "c__Users_User_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_Gemini_Generated_Image_6p18mi6p18mi6p18-611f2f9f-09fc-49fe-972d-a9ad32b16f7d.png"
-);
 
-// Fallback: workspace assets path from project
-const inputAlt = "C:\\Users\\User\\.cursor\\projects\\c-Users-User-Desktop-PROGRAM-SALE-Copy-Copy\\assets\\c__Users_User_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_Gemini_Generated_Image_6p18mi6p18mi6p18-611f2f9f-09fc-49fe-972d-a9ad32b16f7d.png";
+const source =
+  process.argv[2] ??
+  path.join(
+    root,
+    "..",
+    "..",
+    ".cursor",
+    "projects",
+    "c-Users-User-Desktop-PROGRAM-SALE-Copy-Copy",
+    "assets",
+    "c__Users_User_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_17b066c1-028b-4847-80aa-c269b0299be0-887f3463-da9e-458c-8b36-91e30e780307.png",
+  );
 
-const source = inputAlt;
-const outMark = path.join(root, "..", "public", "kera-logo-mark.png");
+const outMarkPublic = path.join(root, "..", "public", "kera-logo-mark.png");
+const outMarkSrc = path.join(root, "..", "src", "assets", "logo-mark.png");
 const outIcon = path.join(root, "..", "src", "app", "icon.png");
 const outApple = path.join(root, "..", "src", "app", "apple-icon.png");
 
+if (!fs.existsSync(source)) {
+  console.error("Logo source not found:", source);
+  process.exit(1);
+}
+
 function isBackground(r, g, b) {
-  // Cream / off-white paper texture from the source image
   const brightness = (r + g + b) / 3;
   if (brightness > 210 && r - b < 25 && g - b < 20) return true;
   if (brightness > 235) return true;
@@ -49,11 +54,13 @@ const transparent = sharp(pixels, {
   raw: { width: info.width, height: info.height, channels: 4 },
 });
 
-await transparent.clone().trim().png().toFile(outMark);
+const markBuffer = await transparent.clone().trim().png().toBuffer();
+await sharp(markBuffer).toFile(outMarkPublic);
+await sharp(markBuffer).toFile(outMarkSrc);
 
-const markMeta = await sharp(outMark).metadata();
+const markMeta = await sharp(markBuffer).metadata();
 const iconSize = 512;
-await sharp(outMark)
+await sharp(markBuffer)
   .resize(iconSize, iconSize, {
     fit: "contain",
     background: { r: 0, g: 0, b: 0, alpha: 0 },
@@ -61,7 +68,7 @@ await sharp(outMark)
   .png()
   .toFile(outIcon);
 
-await sharp(outMark)
+await sharp(markBuffer)
   .resize(180, 180, {
     fit: "contain",
     background: { r: 0, g: 0, b: 0, alpha: 0 },
@@ -69,4 +76,4 @@ await sharp(outMark)
   .png()
   .toFile(outApple);
 
-console.log("Logo extracted:", outMark, markMeta.width, "x", markMeta.height);
+console.log("Logo extracted:", outMarkPublic, markMeta.width, "x", markMeta.height);

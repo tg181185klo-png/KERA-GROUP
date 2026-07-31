@@ -2,7 +2,7 @@ import Image from "next/image";
 import logoMark from "@/assets/logo-mark.png";
 import { cn } from "@/lib/utils";
 
-const ASPECT = 752 / 439;
+const ASPECT = 809 / 472;
 
 /** Logo mark — bundled PNG, always loads (no broken public path). */
 export function KeraLogoMark({

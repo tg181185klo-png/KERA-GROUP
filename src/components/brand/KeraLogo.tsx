@@ -34,7 +34,11 @@ export function KeraLogo({
 
   if (!showText) {
     return (
-      <Link href={href} className={`inline-flex ${className}`} aria-label={t.brand.name}>
+      <Link
+        href={href}
+        className={`inline-flex rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kera-primary/40 focus-visible:ring-offset-2 ${className}`}
+        aria-label={t.brand.name}
+      >
         {mark}
       </Link>
     );
@@ -43,7 +47,7 @@ export function KeraLogo({
   return (
     <Link
       href={href}
-      className={`group inline-flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5 ${className}`}
+      className={`group inline-flex min-w-0 shrink-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kera-primary/40 focus-visible:ring-offset-2 sm:gap-2.5 ${className}`}
     >
       {mark}
       <div className="min-w-0 leading-none">

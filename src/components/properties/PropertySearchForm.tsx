@@ -204,7 +204,7 @@ export function PropertySearchForm({
         className={
           isHero
             ? "grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3 lg:flex lg:items-end lg:gap-5"
-            : "grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-[repeat(5,minmax(0,1fr))_auto]"
+            : "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(9.25rem,1fr))]"
         }
       >
         <Field
@@ -392,10 +392,10 @@ export function PropertySearchForm({
         </Field>
 
         {!isHero && (
-          <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-1 xl:col-span-1">
+          <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-1">
             <button
               type="submit"
-              className="kera-btn w-full min-w-0 px-4 py-2 text-xs font-bold shadow-sm sm:text-sm xl:min-w-[10.5rem]"
+              className="kera-btn w-full min-w-0 px-4 py-2.5 text-xs font-bold shadow-sm sm:text-sm lg:min-w-[10.5rem]"
             >
               <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
               {submitLabel}

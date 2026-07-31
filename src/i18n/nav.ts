@@ -24,8 +24,8 @@ export function getFooterLinks(t: Messages) {
   return [
     { href: "/", label: t.nav.home },
     { href: "/#services", label: t.nav.services },
-    { href: "/#map", label: t.nav.map },
-    { href: "/#featured", label: t.nav.properties },
+    { href: "/map", label: t.nav.map },
+    { href: "/properties", label: t.nav.properties },
     { href: "/dashboard/add-property", label: t.nav.list },
     { href: "/#calculator", label: t.nav.calculator },
   ] as const;
