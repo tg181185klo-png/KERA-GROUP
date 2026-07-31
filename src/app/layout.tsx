@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Footer } from "@/components/layout/Footer";
+import { HashScroll } from "@/components/layout/HashScroll";
 import { Header } from "@/components/layout/Header";
 import { LocaleProvider } from "@/i18n/LocaleProvider";
 import { getMessages } from "@/i18n/messages";
@@ -46,6 +47,7 @@ export default async function RootLayout({
     <html lang={locale} className="h-full scroll-smooth">
       <body className="flex min-h-full flex-col overflow-x-hidden bg-kera-page font-sans text-kera-slate antialiased">
         <LocaleProvider initialLocale={locale}>
+          <HashScroll />
           <Header />
           <main className="flex min-h-0 flex-1 flex-col">{children}</main>
           <Footer />

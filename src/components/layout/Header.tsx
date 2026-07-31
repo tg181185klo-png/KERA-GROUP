@@ -67,7 +67,7 @@ export function Header() {
           <div className="min-w-0 flex-1" aria-hidden />
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-1.5 lg:gap-2">
-            <div className="min-w-0 max-w-[min(100%,11.5rem)] sm:max-w-none">
+            <div className="hidden lg:block">
               <CurrencyWidget variant="header" />
             </div>
 
@@ -128,7 +128,24 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
+              <Link
+                href="/#currency"
+                className="rounded-xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                onClick={() => setOpen(false)}
+              >
+                {t.quickActions.currency.label}
+              </Link>
             </nav>
+            <Link
+              href="/#currency"
+              className="mt-4 block rounded-xl border border-slate-100 bg-kera-page p-3 transition hover:border-kera-primary/30 hover:bg-white"
+              onClick={() => setOpen(false)}
+            >
+              <p className="mb-2 text-xs font-semibold text-slate-500">
+                {t.currency.nbgTitle}
+              </p>
+              <CurrencyWidget variant="compact" />
+            </Link>
             <div className="mt-4">
               {authLoading ? (
                 <div className="h-24 animate-pulse rounded-xl bg-slate-100" aria-hidden />
