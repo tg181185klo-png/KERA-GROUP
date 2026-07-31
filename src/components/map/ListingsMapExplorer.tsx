@@ -125,7 +125,7 @@ export function ListingsMapExplorer({
   const mapProperties = properties.filter(isMappableProperty);
 
   const mapPanel = (
-    <div className="kera-map-shell min-h-[360px] flex-1 lg:min-h-0">
+    <div className="kera-map-shell h-full min-h-[min(52dvh,520px)] flex-1 lg:min-h-0">
       <PropertyMap
         properties={mapProperties}
         selectedId={selectedId}
@@ -153,13 +153,17 @@ export function ListingsMapExplorer({
 
   return (
     <div
-      className={`flex h-full min-h-0 flex-col gap-4 lg:flex-row ${className} ${
+      className={`flex h-full min-h-0 flex-col gap-3 lg:flex-row lg:gap-4 ${className} ${
         layout === "split" && className.includes("h-full")
           ? "lg:min-h-[calc(100dvh-var(--header-height)-2rem)]"
           : "lg:min-h-[640px]"
       }`}
     >
-      <aside className="flex w-full shrink-0 flex-col lg:w-[380px] xl:w-[420px]">
+      <div className="order-1 min-h-[min(52dvh,520px)] flex-1 lg:order-2 lg:min-h-0">
+        {mapPanel}
+      </div>
+
+      <aside className="order-2 flex max-h-[min(40dvh,400px)] w-full shrink-0 flex-col lg:order-1 lg:max-h-none lg:w-[380px] xl:w-[420px]">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-lg font-bold text-kera-slate">
@@ -201,8 +205,6 @@ export function ListingsMapExplorer({
           )}
         </div>
       </aside>
-
-      <div className="min-h-[420px] flex-1 lg:min-h-0">{mapPanel}</div>
     </div>
   );
 }

@@ -185,6 +185,7 @@ export function PropertyMap({
       setReady(true);
 
       setTimeout(() => map.invalidateSize(), 150);
+      setTimeout(() => map.invalidateSize(), 500);
     }
 
     init();
@@ -200,6 +201,23 @@ export function PropertyMap({
       setReady(false);
     };
   }, []);
+
+  useEffect(() => {
+    if (!ready || !mapRef.current || !containerRef.current) return;
+
+    const map = mapRef.current;
+    const container = containerRef.current;
+
+    const invalidate = () => {
+      window.requestAnimationFrame(() => map.invalidateSize());
+    };
+
+    invalidate();
+    const ro = new ResizeObserver(invalidate);
+    ro.observe(container);
+
+    return () => ro.disconnect();
+  }, [ready]);
 
   useEffect(() => {
     if (!ready || !mapRef.current || !clusterRef.current || !polygonLayerRef.current)

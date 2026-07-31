@@ -173,7 +173,15 @@ body {
 
   .kera-map-viewport {
     height: calc(100dvh - var(--header-height));
-    min-height: 480px;
+    min-height: 520px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 1023px) {
+    .kera-map-viewport {
+      height: auto;
+      min-height: calc(100dvh - var(--header-height));
+    }
   }
 
   @media (min-width: 1024px) {

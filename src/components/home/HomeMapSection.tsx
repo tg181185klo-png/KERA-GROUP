@@ -121,7 +121,7 @@ export function HomeMapSection() {
           )}
         </div>
 
-        <div className="kera-map-shell h-[min(55vh,480px)] min-h-[280px] sm:min-h-[360px] lg:min-h-[420px]">
+        <div className="kera-map-shell h-[min(58dvh,520px)] min-h-[300px] sm:min-h-[360px] lg:h-[min(55vh,480px)] lg:min-h-[420px]">
           <PropertyMapClient preview={preview} alwaysShowMap showAdminHint />
         </div>
       </div>
