@@ -25,18 +25,28 @@ import { getVillagesForMunicipality } from "@/lib/locations/municipality-village
 import type { PropertySearchParams } from "@/lib/types/property";
 import { getDefaultAreaForCity } from "@/components/shared/LocationFields";
 
+type FormVariant = "hero" | "compact";
+
 function Field({
   label,
   children,
   className = "",
+  variant,
 }: {
   label: string;
   children: React.ReactNode;
   className?: string;
+  variant: FormVariant;
 }) {
   return (
     <div className={`min-w-0 ${className}`}>
-      <label className="mb-0.5 block text-[10px] font-semibold leading-tight text-slate-500 sm:text-xs">
+      <label
+        className={
+          variant === "hero"
+            ? "mb-2 flex min-h-[2rem] items-end text-xs font-semibold leading-snug text-slate-500"
+            : "mb-0.5 block text-[10px] font-semibold leading-tight text-slate-500 sm:text-xs"
+        }
+      >
         {label}
       </label>
       {children}
@@ -49,11 +59,13 @@ const compactInput = "kera-input !py-1.5 !px-3 !text-xs sm:!text-sm";
 interface PropertySearchFormProps {
   initialParams?: PropertySearchParams;
   className?: string;
+  variant?: FormVariant;
 }
 
 export function PropertySearchForm({
   initialParams = {},
   className = "",
+  variant = "compact",
 }: PropertySearchFormProps) {
   const t = useT();
   const { locale } = useLocale();
@@ -62,6 +74,8 @@ export function PropertySearchForm({
   const propertyTypes = getPropertyTypes(t);
   const cities = getSearchCities(t);
   const landStatuses = getLandStatusOptions(t);
+  const isHero = variant === "hero";
+  const inputClass = isHero ? "kera-input" : compactInput;
 
   const [propertyType, setPropertyType] = useState(
     initialParams.property_type ?? "",
@@ -95,6 +109,7 @@ export function PropertySearchForm({
   const areaLabel = getLocationAreaFieldLabel(t, areaMode);
   const areaPlaceholder = getLocationAreaPlaceholder(t, areaMode);
   const defaultDealType = initialParams.deal_type ?? "sale";
+  const submitLabel = isHero ? t.hero.search : t.properties.searchSubmit;
 
   function handleCityChange(nextCity: string) {
     setCity(nextCity);
@@ -145,9 +160,13 @@ export function PropertySearchForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`kera-card space-y-2.5 p-3 shadow-lg sm:space-y-3 sm:p-4 ${className}`}
+      className={`kera-card shadow-lg ${
+        isHero
+          ? "-mt-6 space-y-5 p-5 sm:space-y-6 sm:p-6 lg:-mt-10 lg:p-7"
+          : "space-y-2.5 p-3 sm:space-y-3 sm:p-4"
+      } ${className}`}
     >
-      <div className="flex flex-wrap gap-1.5">
+      <div className={`flex flex-wrap ${isHero ? "gap-2.5" : "gap-1.5"}`}>
         {dealTypes.map(({ value, label }) => (
           <label key={value} className="cursor-pointer">
             <input
@@ -157,21 +176,34 @@ export function PropertySearchForm({
               defaultChecked={value === defaultDealType}
               className="peer sr-only"
             />
-            <span className="inline-flex min-w-[4.75rem] items-center justify-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-all peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary peer-checked:shadow-sm sm:min-w-[5.5rem] sm:px-3.5">
+            <span
+              className={
+                isHero
+                  ? "inline-flex min-w-[5.5rem] items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition-all peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary peer-checked:shadow-sm sm:min-w-[6.5rem] sm:px-5"
+                  : "inline-flex min-w-[4.75rem] items-center justify-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-all peer-checked:border-kera-primary peer-checked:bg-kera-primary-light peer-checked:text-kera-primary peer-checked:shadow-sm sm:min-w-[5.5rem] sm:px-3.5"
+              }
+            >
               {label}
             </span>
           </label>
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3 lg:flex lg:flex-wrap lg:items-end lg:gap-3">
+      <div
+        className={
+          isHero
+            ? "grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3 lg:flex lg:items-end lg:gap-5"
+            : "grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3 lg:flex lg:flex-wrap lg:items-end lg:gap-3"
+        }
+      >
         <Field
           label={t.hero.propertyType}
+          variant={variant}
           className="col-span-2 sm:col-span-1 lg:min-w-0 lg:flex-[1.35]"
         >
           <select
             name="property_type"
-            className={compactInput}
+            className={inputClass}
             value={propertyType}
             onChange={(e) => setPropertyType(e.target.value)}
           >
@@ -184,10 +216,10 @@ export function PropertySearchForm({
           </select>
         </Field>
 
-        <Field label={t.hero.city} className="lg:min-w-0 lg:flex-1">
+        <Field label={t.hero.city} variant={variant} className="lg:min-w-0 lg:flex-1">
           <select
             name="city"
-            className={compactInput}
+            className={inputClass}
             value={city}
             onChange={(e) => handleCityChange(e.target.value)}
           >
@@ -201,10 +233,10 @@ export function PropertySearchForm({
         </Field>
 
         {showAreaField && areaMode === "district-select" && (
-          <Field label={areaLabel} className="lg:min-w-0 lg:flex-[1.2]">
+          <Field label={areaLabel} variant={variant} className="lg:min-w-0 lg:flex-[1.2]">
             <select
               name="district"
-              className={compactInput}
+              className={inputClass}
               value={areaValue}
               onChange={(e) => setAreaValue(e.target.value)}
             >
@@ -219,10 +251,10 @@ export function PropertySearchForm({
         )}
 
         {showAreaField && areaMode === "village-select" && (
-          <Field label={areaLabel} className="lg:min-w-0 lg:flex-[1.2]">
+          <Field label={areaLabel} variant={variant} className="lg:min-w-0 lg:flex-[1.2]">
             <select
               name="village"
-              className={compactInput}
+              className={inputClass}
               value={areaValue}
               onChange={(e) => setAreaValue(e.target.value)}
             >
@@ -237,11 +269,11 @@ export function PropertySearchForm({
         )}
 
         {showAreaField && areaMode === "district-text" && (
-          <Field label={areaLabel} className="lg:min-w-0 lg:flex-[1.2]">
+          <Field label={areaLabel} variant={variant} className="lg:min-w-0 lg:flex-[1.2]">
             <input
               name="district"
               type="text"
-              className={compactInput}
+              className={inputClass}
               value={areaValue}
               onChange={(e) => setAreaValue(e.target.value)}
               placeholder={areaPlaceholder}
@@ -252,11 +284,12 @@ export function PropertySearchForm({
         {showLandStatus && (
           <Field
             label={t.hero.landStatus}
+            variant={variant}
             className="col-span-2 sm:col-span-1 lg:min-w-0 lg:flex-[1.25]"
           >
             <select
               name="land_status"
-              className={compactInput}
+              className={inputClass}
               defaultValue={initialParams.land_status ?? ""}
             >
               {landStatuses.map(({ value, label }) => (
@@ -268,48 +301,63 @@ export function PropertySearchForm({
           </Field>
         )}
 
-        <Field label={t.hero.bedrooms} className="lg:min-w-0 lg:flex-[0.75]">
+        <Field label={t.hero.bedrooms} variant={variant} className="lg:min-w-0 lg:flex-[0.75]">
           <input
             name="bedrooms"
             type="number"
             min={0}
             placeholder="0+"
             defaultValue={initialParams.bedrooms ?? ""}
-            className={compactInput}
+            className={inputClass}
           />
         </Field>
 
-        <Field label={t.hero.minPrice} className="lg:min-w-0 lg:flex-1">
+        <Field label={t.hero.minPrice} variant={variant} className="lg:min-w-0 lg:flex-1">
           <input
             name="min_price"
             type="number"
             min={0}
             placeholder="0"
             defaultValue={initialParams.min_price ?? ""}
-            className={compactInput}
+            className={inputClass}
           />
         </Field>
 
-        <Field label={t.hero.maxPrice} className="lg:min-w-0 lg:flex-1">
+        <Field label={t.hero.maxPrice} variant={variant} className="lg:min-w-0 lg:flex-1">
           <input
             name="max_price"
             type="number"
             min={0}
             placeholder="∞"
             defaultValue={initialParams.max_price ?? ""}
-            className={compactInput}
+            className={inputClass}
           />
         </Field>
-        <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-auto lg:ml-auto lg:flex-shrink-0">
+
+        {!isHero && (
+          <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-auto lg:ml-auto lg:flex-shrink-0">
+            <button
+              type="submit"
+              className="kera-btn w-full min-w-0 px-5 py-2 text-xs font-bold shadow-sm sm:min-w-[9.5rem] sm:text-sm"
+            >
+              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              {submitLabel}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {isHero && (
+        <div className="flex justify-stretch border-t border-slate-100 pt-5 sm:justify-end">
           <button
             type="submit"
-            className="kera-btn w-full min-w-0 px-5 py-2 text-xs font-bold shadow-sm sm:min-w-[9.5rem] sm:text-sm"
+            className="kera-btn w-full min-w-0 px-8 py-3 text-sm font-bold shadow-sm sm:w-auto sm:min-w-[11rem] sm:text-base"
           >
-            <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            {t.properties.searchSubmit}
+            <Search className="h-4 w-4 sm:h-[1.125rem] sm:w-[1.125rem]" />
+            {submitLabel}
           </button>
         </div>
-      </div>
+      )}
     </form>
   );
 }
