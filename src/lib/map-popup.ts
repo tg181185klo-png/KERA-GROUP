@@ -1,5 +1,6 @@
 import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm, formatCadastralCode } from "@/lib/cadastral";
+import { formatDisplayAddress } from "@/lib/format-display-address";
 import { getPricePerSqm, resolveAreaSqm } from "@/lib/price-display";
 import { getPropertyBounds } from "@/lib/map-geometry";
 
@@ -22,16 +23,6 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-/** Strip municipality suffix from cadastral addresses for compact map display. */
-function formatMapAddress(address: string): string {
-  if (!address || address === "—") return address;
-  return address
-    .replace(/\s*მუნიციპალიტეტი\b/giu, "")
-    .replace(/\s{2,}/g, " ")
-    .replace(/\s+,/g, ",")
-    .trim();
 }
 
 function detailRow(label: string, value: string, valueClass = ""): string {
@@ -57,7 +48,7 @@ function buildMapCardContent(
     : "—";
   const areaSqm = resolveAreaSqm(property);
   const cadastral = formatCadastralCode(property.cadastral_code);
-  const address = formatMapAddress(property.address);
+  const address = formatDisplayAddress(property.address);
 
   return `
     <span class="kera-map-hover-tooltip__badge">${escapeHtml(labels.listingType)}</span>

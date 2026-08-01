@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MapProperty, ListingType, ListingStatus } from "@/lib/types/property-listing";
 import { extractCadastralCode, formatCadastralCode } from "@/lib/cadastral";
+import { formatDisplayAddress } from "@/lib/format-display-address";
 import { computePolygonAreaSqm } from "@/lib/map-geometry";
 import { computePricePerSqm } from "@/lib/price-display";
 import {
@@ -215,7 +216,7 @@ export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
     cadastral_code: cadastral,
     owner_first_name: owners.first,
     owner_last_name: owners.last,
-    address: String(row.address ?? ""),
+    address: formatDisplayAddress(String(row.address ?? "")),
     phone_number: String(row.phone_number ?? row.owner_phone ?? ""),
     total_price: price,
     area_sqm: area,
