@@ -11,7 +11,7 @@ import { useT } from "@/i18n/LocaleProvider";
 import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
-import { getPricePerSqm } from "@/lib/price-display";
+import { getPricePerSqm, resolveAreaSqm } from "@/lib/price-display";
 import { Badge } from "@/components/ui/Badge";
 
 interface PropertyDetailClientProps {
@@ -48,6 +48,7 @@ export function PropertyDetailClient({
 
   const ownerName = `${property.owner_first_name} ${property.owner_last_name}`;
   const pricePerSqm = getPricePerSqm(property);
+  const areaSqm = resolveAreaSqm(property);
   const images =
     property.images.length > 0
       ? property.images
@@ -131,9 +132,9 @@ export function PropertyDetailClient({
                 {formatPricePerSqm(pricePerSqm, t.common.perSqm)}
               </p>
             )}
-            {property.area_sqm > 0 && (
+            {areaSqm > 0 && (
               <p className="mt-1 text-sm text-slate-500">
-                {property.area_sqm} {t.common.sqm}
+                {areaSqm} {t.common.sqm}
               </p>
             )}
 

@@ -1,6 +1,6 @@
 import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm, formatCadastralCode } from "@/lib/cadastral";
-import { getPricePerSqm } from "@/lib/price-display";
+import { getPricePerSqm, resolveAreaSqm } from "@/lib/price-display";
 import { getPropertyBounds } from "@/lib/map-geometry";
 
 export { getPropertyBounds };
@@ -34,6 +34,7 @@ export function buildMapHoverTooltipHtml(
   const pricePerSqm = pricePerSqmValue
     ? formatPricePerSqm(pricePerSqmValue, labels.perSqm)
     : "—";
+  const areaSqm = resolveAreaSqm(property);
 
   const cadastral = formatCadastralCode(property.cadastral_code);
 
@@ -43,8 +44,8 @@ export function buildMapHoverTooltipHtml(
       <h3 class="kera-map-hover-tooltip__title">${escapeHtml(property.title)}</h3>
       <div class="kera-map-hover-tooltip__pricing">
         <span class="kera-map-hover-tooltip__price">${escapeHtml(formatPrice(property.total_price))}</span>
-        ${pricePerSqmValue ? `<span class="kera-map-hover-tooltip__meta">${escapeHtml(pricePerSqm)}</span>` : ""}
-        ${property.area_sqm > 0 ? `<span class="kera-map-hover-tooltip__meta">${property.area_sqm} ${escapeHtml(labels.sqm)}</span>` : ""}
+        ${pricePerSqmValue != null ? `<span class="kera-map-hover-tooltip__meta">${escapeHtml(pricePerSqm)}</span>` : ""}
+        ${areaSqm > 0 ? `<span class="kera-map-hover-tooltip__meta">${areaSqm} ${escapeHtml(labels.sqm)}</span>` : ""}
       </div>
       <dl class="kera-map-hover-tooltip__details">
         ${detailRow(labels.cadCode, cadastral)}
@@ -70,6 +71,7 @@ export function buildMapPopupHtml(
   const pricePerSqm = pricePerSqmValue
     ? formatPricePerSqm(pricePerSqmValue, labels.perSqm)
     : "—";
+  const areaSqm = resolveAreaSqm(property);
 
   return `
     <div style="min-width:200px;max-width:260px;font-family:system-ui,sans-serif;">
@@ -83,8 +85,8 @@ export function buildMapPopupHtml(
       <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#00a3e0;">
         ${escapeHtml(formatPrice(property.total_price))}
       </p>
-      ${pricePerSqmValue ? `<p style="margin:0 0 4px;font-size:12px;color:#64748b;">${escapeHtml(pricePerSqm)}</p>` : ""}
-      ${property.area_sqm > 0 ? `<p style="margin:0 0 6px;font-size:12px;color:#64748b;">${property.area_sqm} ${escapeHtml(labels.sqm)}</p>` : ""}
+      ${pricePerSqmValue != null ? `<p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#64748b;">${escapeHtml(pricePerSqm)}</p>` : ""}
+      ${areaSqm > 0 ? `<p style="margin:0 0 6px;font-size:12px;color:#64748b;">${areaSqm} ${escapeHtml(labels.sqm)}</p>` : ""}
       <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;">კად. ${escapeHtml(formatCadastralCode(property.cadastral_code))}</p>
       <p style="margin:0 0 4px;font-size:12px;color:#475569;">${escapeHtml(property.address)}</p>
       <p style="margin:0 0 10px;font-size:12px;color:#475569;">${escapeHtml(property.phone_number)}</p>

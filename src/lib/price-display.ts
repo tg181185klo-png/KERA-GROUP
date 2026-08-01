@@ -1,3 +1,6 @@
+import type { GeoJSON } from "geojson";
+import { computePolygonAreaSqm } from "@/lib/map-geometry";
+
 /** Fixed USD→GEL rate used across listing cards (matches currency toggle). */
 export const USD_TO_GEL = 2.65;
 
@@ -11,15 +14,33 @@ export function computePricePerSqm(
   return Math.round((totalPrice / areaSqm) * 100) / 100;
 }
 
+export function resolveAreaSqm(property: {
+  area_sqm: number;
+  geojson_polygon?: GeoJSON.Polygon | null;
+}): number {
+  if (property.area_sqm > 0) return property.area_sqm;
+
+  if (property.geojson_polygon) {
+    const fromPolygon = computePolygonAreaSqm(property.geojson_polygon);
+    if (fromPolygon > 0) return Math.round(fromPolygon * 100) / 100;
+  }
+
+  return 0;
+}
+
 export function getPricePerSqm(property: {
   total_price: number;
   area_sqm: number;
   price_per_sqm?: number | null;
+  geojson_polygon?: GeoJSON.Polygon | null;
 }): number | null {
   if (property.price_per_sqm != null && property.price_per_sqm > 0) {
     return property.price_per_sqm;
   }
-  return computePricePerSqm(property.total_price, property.area_sqm);
+  return computePricePerSqm(
+    property.total_price,
+    resolveAreaSqm(property),
+  );
 }
 
 export function convertDisplayPrice(
@@ -35,6 +56,7 @@ export function getDisplayPrices(
     total_price: number;
     area_sqm: number;
     price_per_sqm?: number | null;
+    geojson_polygon?: GeoJSON.Polygon | null;
   },
   displayCurrency: DisplayCurrency = "USD",
 ): { price: number; pricePerSqm: number | null; currency: DisplayCurrency } {

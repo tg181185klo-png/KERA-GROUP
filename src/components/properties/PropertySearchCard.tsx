@@ -9,6 +9,7 @@ import {
   formatListingPrice,
   formatListingPricePerSqm,
   getDisplayPrices,
+  resolveAreaSqm,
 } from "@/lib/price-display";
 
 const PLACEHOLDER =
@@ -36,14 +37,15 @@ export function PropertySearchCard({
     property,
     displayCurrency,
   );
+  const areaSqm = resolveAreaSqm(property);
   const timeAgo = formatRelativeTime(property.created_at, t.searchResults.time);
 
   const metaParts: string[] = [getLocationLabel(property.address)];
   if (property.bedrooms != null && property.bedrooms > 0) {
     metaParts.push(t.searchResults.rooms(property.bedrooms));
   }
-  if (property.area_sqm > 0) {
-    metaParts.push(`${property.area_sqm} ${t.common.sqm}`);
+  if (areaSqm > 0) {
+    metaParts.push(`${areaSqm} ${t.common.sqm}`);
   }
 
   const detailHref = returnQuery

@@ -10,6 +10,7 @@ import {
   formatListingPrice,
   formatListingPricePerSqm,
   getDisplayPrices,
+  resolveAreaSqm,
 } from "@/lib/price-display";
 
 interface PropertyCardProps {
@@ -30,6 +31,7 @@ export function PropertyCard({
     property,
     displayCurrency,
   );
+  const areaSqm = resolveAreaSqm(property);
 
   return (
     <Link
@@ -67,10 +69,10 @@ export function PropertyCard({
           <span className="rounded-md bg-slate-50 px-2 py-1 font-medium">
             {property.cadastral_code}
           </span>
-          {property.area_sqm > 0 && (
+          {areaSqm > 0 && (
             <span className="flex items-center gap-1">
               <Maximize2 className="h-3.5 w-3.5" />
-              {property.area_sqm} {t.common.sqm}
+              {areaSqm} {t.common.sqm}
             </span>
           )}
         </div>

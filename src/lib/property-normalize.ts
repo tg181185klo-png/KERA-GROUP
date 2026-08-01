@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MapProperty, ListingType, ListingStatus } from "@/lib/types/property-listing";
 import { extractCadastralCode, formatCadastralCode } from "@/lib/cadastral";
+import { computePolygonAreaSqm } from "@/lib/map-geometry";
 import { computePricePerSqm } from "@/lib/price-display";
 import {
   isPubliclyVisibleListing,
@@ -77,8 +78,47 @@ export function getCadastralCode(row: PropertyRow): string {
 }
 
 export function getTotalPrice(row: PropertyRow): number {
-  if (typeof row.total_price === "number") return row.total_price;
-  if (typeof row.price === "number") return row.price;
+  return toNumber(row.total_price) ?? toNumber(row.price) ?? 0;
+}
+
+function extractAreaFromText(text: string): number {
+  const patterns = [
+    /(\d[\d.,]*)\s*(?:მ²|m²|m2|sqm|კვ\.?\s*მ)/i,
+    /ფართ(?:ობი)?[:\s]+(\d[\d.,]*)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (!match?.[1]) continue;
+    const value = Number(match[1].replace(/,/g, ""));
+    if (!Number.isNaN(value) && value > 0) return value;
+  }
+
+  return 0;
+}
+
+function getAreaSqm(
+  row: PropertyRow,
+  geojson: MapProperty["geojson_polygon"],
+): number {
+  const direct =
+    toNumber(row.area_sqm) ??
+    toNumber(row.area) ??
+    toNumber(row.square_meters) ??
+    toNumber(row.sqm);
+  if (direct != null && direct > 0) return direct;
+
+  const text = [row.title, row.description]
+    .filter((value): value is string => typeof value === "string")
+    .join("\n");
+  const fromText = extractAreaFromText(text);
+  if (fromText > 0) return fromText;
+
+  if (geojson) {
+    const fromPolygon = computePolygonAreaSqm(geojson);
+    if (fromPolygon > 0) return Math.round(fromPolygon * 100) / 100;
+  }
+
   return 0;
 }
 
@@ -164,10 +204,10 @@ export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
 
   const { lat, lng, geojson } = resolveMapCoordinates(row);
   const owners = getOwnerNames(row);
-  const area =
-    typeof row.area_sqm === "number" && row.area_sqm > 0 ? row.area_sqm : 0;
+  const area = getAreaSqm(row, geojson);
   const price = getTotalPrice(row);
   const cadastral = getCadastralCode(row);
+  const storedPerSqm = toNumber(row.price_per_sqm);
 
   return {
     id: String(row.id),
@@ -180,8 +220,8 @@ export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
     total_price: price,
     area_sqm: area,
     price_per_sqm:
-      typeof row.price_per_sqm === "number" && row.price_per_sqm > 0
-        ? row.price_per_sqm
+      storedPerSqm != null && storedPerSqm > 0
+        ? storedPerSqm
         : computePricePerSqm(price, area),
     listing_type: getListingType(row),
     deal_type: getMapDealTypeFromRow(row),
@@ -206,8 +246,9 @@ export function isMappableProperty(property: MapProperty): boolean {
 export function normalizeToAdminListing(row: PropertyRow) {
   const owners = getOwnerNames(row);
   const totalPrice = getTotalPrice(row);
-  const areaSqm =
-    typeof row.area_sqm === "number" && row.area_sqm > 0 ? row.area_sqm : 0;
+  const geojson = parseGeojson(row.geojson_polygon);
+  const areaSqm = getAreaSqm(row, geojson);
+  const storedPerSqm = toNumber(row.price_per_sqm);
   return {
     id: String(row.id),
     title: getListingTitle(row),
@@ -217,8 +258,8 @@ export function normalizeToAdminListing(row: PropertyRow) {
     total_price: totalPrice,
     area_sqm: areaSqm,
     price_per_sqm:
-      typeof row.price_per_sqm === "number" && row.price_per_sqm > 0
-        ? row.price_per_sqm
+      storedPerSqm != null && storedPerSqm > 0
+        ? storedPerSqm
         : computePricePerSqm(totalPrice, areaSqm),
     listing_type: getListingType(row),
     deal_type: getMapDealTypeFromRow(row),

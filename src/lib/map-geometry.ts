@@ -1,4 +1,30 @@
+import type { GeoJSON } from "geojson";
 import type { MapProperty } from "@/lib/types/property-listing";
+
+const EARTH_RADIUS_M = 6378137;
+
+function toRadians(degrees: number): number {
+  return (degrees * Math.PI) / 180;
+}
+
+/** Geodesic area of a GeoJSON polygon in square meters (WGS84). */
+export function computePolygonAreaSqm(polygon: GeoJSON.Polygon): number {
+  const ring = polygon.coordinates[0];
+  if (!ring || ring.length < 4) return 0;
+
+  let area = 0;
+  const len = ring.length - 1;
+
+  for (let i = 0; i < len; i++) {
+    const [lng1, lat1] = ring[i];
+    const [lng2, lat2] = ring[i + 1];
+    area +=
+      toRadians(lng2 - lng1) *
+      (2 + Math.sin(toRadians(lat1)) + Math.sin(toRadians(lat2)));
+  }
+
+  return Math.abs((area * EARTH_RADIUS_M * EARTH_RADIUS_M) / 2);
+}
 
 export function getPropertyCenter(
   property: MapProperty,
