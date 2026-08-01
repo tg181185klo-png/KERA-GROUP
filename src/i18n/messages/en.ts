@@ -246,7 +246,7 @@ export const en = {
     adminHint: "Admin panel → approve listing",
     emptyOnMap:
       "No approved listings on the map yet. Cadastral codes will appear here after admin approval.",
-    cadCode: "Cad. code",
+    cadCode: "Reg. code",
     owner: "Owner",
     address: "Address",
     phone: "Phone",

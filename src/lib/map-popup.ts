@@ -16,17 +16,38 @@ export interface MapTooltipLabels {
   rooms: (count: number) => string;
 }
 
-function detailRow(label: string, value: string): string {
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Strip municipality suffix from cadastral addresses for compact map display. */
+function formatMapAddress(address: string): string {
+  if (!address || address === "—") return address;
+  return address
+    .replace(/\s*მუნიციპალიტეტი\b/giu, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+,/g, ",")
+    .trim();
+}
+
+function detailRow(label: string, value: string, valueClass = ""): string {
   if (!value || value === "—") return "";
+  const valueCls = valueClass
+    ? ` kera-map-hover-tooltip__value ${valueClass}`
+    : " kera-map-hover-tooltip__value";
   return `
     <div class="kera-map-hover-tooltip__detail">
       <dt class="kera-map-hover-tooltip__label">${escapeHtml(label)}</dt>
-      <dd class="kera-map-hover-tooltip__value">${escapeHtml(value)}</dd>
+      <dd class="${valueCls.trim()}">${escapeHtml(value)}</dd>
     </div>
   `;
 }
 
-export function buildMapHoverTooltipHtml(
+function buildMapCardContent(
   property: MapProperty,
   labels: MapTooltipLabels,
 ): string {
@@ -35,26 +56,34 @@ export function buildMapHoverTooltipHtml(
     ? formatPricePerSqm(pricePerSqmValue, labels.perSqm)
     : "—";
   const areaSqm = resolveAreaSqm(property);
-
   const cadastral = formatCadastralCode(property.cadastral_code);
+  const address = formatMapAddress(property.address);
 
   return `
+    <span class="kera-map-hover-tooltip__badge">${escapeHtml(labels.listingType)}</span>
+    <div class="kera-map-hover-tooltip__pricing">
+      <span class="kera-map-hover-tooltip__price">${escapeHtml(formatPrice(property.total_price))}</span>
+      ${pricePerSqmValue != null ? `<span class="kera-map-hover-tooltip__meta">${escapeHtml(pricePerSqm)}</span>` : ""}
+      ${areaSqm > 0 ? `<span class="kera-map-hover-tooltip__meta">${areaSqm} ${escapeHtml(labels.sqm)}</span>` : ""}
+    </div>
+    <dl class="kera-map-hover-tooltip__details">
+      ${detailRow(labels.cadCode, cadastral)}
+      ${detailRow(labels.address, address, "kera-map-hover-tooltip__value--address")}
+      ${detailRow(labels.phone, property.phone_number)}
+    </dl>
+    <div class="kera-map-hover-tooltip__footer">
+      <a class="kera-map-hover-tooltip__link" href="/properties/${escapeHtml(property.id)}">${escapeHtml(labels.fullPage)}</a>
+    </div>
+  `;
+}
+
+export function buildMapHoverTooltipHtml(
+  property: MapProperty,
+  labels: MapTooltipLabels,
+): string {
+  return `
     <div class="kera-map-hover-tooltip__inner">
-      <span class="kera-map-hover-tooltip__badge">${escapeHtml(labels.listingType)}</span>
-      <h3 class="kera-map-hover-tooltip__title">${escapeHtml(property.title)}</h3>
-      <div class="kera-map-hover-tooltip__pricing">
-        <span class="kera-map-hover-tooltip__price">${escapeHtml(formatPrice(property.total_price))}</span>
-        ${pricePerSqmValue != null ? `<span class="kera-map-hover-tooltip__meta">${escapeHtml(pricePerSqm)}</span>` : ""}
-        ${areaSqm > 0 ? `<span class="kera-map-hover-tooltip__meta">${areaSqm} ${escapeHtml(labels.sqm)}</span>` : ""}
-      </div>
-      <dl class="kera-map-hover-tooltip__details">
-        ${detailRow(labels.cadCode, cadastral)}
-        ${detailRow(labels.address, property.address)}
-        ${detailRow(labels.phone, property.phone_number)}
-      </dl>
-      <div class="kera-map-hover-tooltip__footer">
-        <a class="kera-map-hover-tooltip__link" href="/properties/${escapeHtml(property.id)}">${escapeHtml(labels.fullPage)}</a>
-      </div>
+      ${buildMapCardContent(property, labels)}
     </div>
   `;
 }
@@ -64,43 +93,15 @@ export function buildMapPopupHtml(
   labels: MapTooltipLabels,
 ): string {
   const image = property.images[0]
-    ? `<img src="${escapeHtml(property.images[0])}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />`
+    ? `<img class="kera-map-popup__image" src="${escapeHtml(property.images[0])}" alt="" />`
     : "";
 
-  const pricePerSqmValue = getPricePerSqm(property);
-  const pricePerSqm = pricePerSqmValue
-    ? formatPricePerSqm(pricePerSqmValue, labels.perSqm)
-    : "—";
-  const areaSqm = resolveAreaSqm(property);
-
   return `
-    <div style="min-width:200px;max-width:260px;font-family:system-ui,sans-serif;">
+    <div class="kera-map-popup__inner">
       ${image}
-      <p style="margin:0 0 4px;font-size:11px;font-weight:700;text-transform:uppercase;color:#ef7d00;">
-        ${escapeHtml(labels.listingType)}
-      </p>
-      <h3 style="margin:0 0 6px;font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.3;">
-        ${escapeHtml(property.title)}
-      </h3>
-      <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#00a3e0;">
-        ${escapeHtml(formatPrice(property.total_price))}
-      </p>
-      ${pricePerSqmValue != null ? `<p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#64748b;">${escapeHtml(pricePerSqm)}</p>` : ""}
-      ${areaSqm > 0 ? `<p style="margin:0 0 6px;font-size:12px;color:#64748b;">${areaSqm} ${escapeHtml(labels.sqm)}</p>` : ""}
-      <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;">კად. ${escapeHtml(formatCadastralCode(property.cadastral_code))}</p>
-      <p style="margin:0 0 4px;font-size:12px;color:#475569;">${escapeHtml(property.address)}</p>
-      <p style="margin:0 0 10px;font-size:12px;color:#475569;">${escapeHtml(property.phone_number)}</p>
-      <a href="/properties/${escapeHtml(property.id)}" style="display:inline-block;font-size:12px;font-weight:600;color:#00a3e0;text-decoration:none;">
-        ${escapeHtml(labels.fullPage)}
-      </a>
+      <div class="kera-map-hover-tooltip__inner kera-map-popup__body">
+        ${buildMapCardContent(property, labels)}
+      </div>
     </div>
   `;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
