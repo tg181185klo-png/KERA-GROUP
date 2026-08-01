@@ -20,16 +20,30 @@ export default async function EditPropertyPage({
 
   if (!user) redirect("/login");
 
-  const service = createServiceClient();
-  const { data: listing } = await service
-    .from("properties")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  let listing: PropertyRow | null = null;
+
+  try {
+    const service = createServiceClient();
+    const { data, error } = await service
+      .from("properties")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Edit property fetch failed:", error.message);
+      notFound();
+    }
+
+    listing = data as PropertyRow | null;
+  } catch (error) {
+    console.error("Edit property fetch failed:", error);
+    notFound();
+  }
 
   if (!listing) notFound();
 
-  const row = listing as PropertyRow;
+  const row = listing;
   const isOwner =
     row.user_id === user.id ||
     row.owner_email === user.email;

@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { DashboardPageContent } from "@/components/dashboard/DashboardPageContent";
-import { type PropertyRow } from "@/lib/property-normalize";
+import {
+  fetchListingsByOwnerEmail,
+  sanitizePropertyRowForClient,
+  type PropertyRow,
+} from "@/lib/property-normalize";
 
 export default async function DashboardPage({
   searchParams,
@@ -17,29 +21,34 @@ export default async function DashboardPage({
 
   if (!user) redirect("/login");
 
-  const profile = await getProfile(user.id);
-  const service = createServiceClient();
+  let profile = null;
+  let listings: PropertyRow[] = [];
 
-  const email = user.email ?? "";
-  const { data: byUserId } = await service
-    .from("properties")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  try {
+    profile = await getProfile(user.id);
+    const service = createServiceClient();
 
-  const { data: byEmail } = email
-    ? await service
-        .from("properties")
-        .select("*")
-        .eq("owner_email", email)
-        .order("created_at", { ascending: false })
-    : { data: [] };
+    const { data: byUserId, error: byUserError } = await service
+      .from("properties")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
-  const merged = new Map<string, PropertyRow>();
-  for (const row of [...(byUserId ?? []), ...(byEmail ?? [])]) {
-    merged.set(String(row.id), row as PropertyRow);
+    if (byUserError) {
+      throw new Error(byUserError.message);
+    }
+
+    const byEmail = await fetchListingsByOwnerEmail(service, user.email ?? "");
+
+    const merged = new Map<string, PropertyRow>();
+    for (const row of [...(byUserId ?? []), ...byEmail]) {
+      merged.set(String(row.id), row as PropertyRow);
+    }
+    listings = Array.from(merged.values()).map(sanitizePropertyRowForClient);
+  } catch (error) {
+    console.error("Dashboard listings fetch failed:", error);
+    listings = [];
   }
-  const listings = Array.from(merged.values());
 
   return (
     <DashboardPageContent

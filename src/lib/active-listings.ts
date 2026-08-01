@@ -111,7 +111,8 @@ async function fetchActiveRows() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.error("Active listings fetch failed:", error.message);
+    return [] as PropertyRow[];
   }
 
   return (data ?? []).filter((row) =>

@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MapProperty, ListingType, ListingStatus } from "@/lib/types/property-listing";
 import { extractCadastralCode, formatCadastralCode } from "@/lib/cadastral";
 import { computePricePerSqm } from "@/lib/price-display";
@@ -8,6 +9,16 @@ import {
 
 /** Raw row from modern or legacy Supabase `properties` table */
 export type PropertyRow = Record<string, unknown>;
+
+function isMissingColumnError(message: string, column: string): boolean {
+  return new RegExp(`Could not find the '${column}' column`, "i").test(message);
+}
+
+/** Strip DB-only fields before passing rows into client components. */
+export function sanitizePropertyRowForClient(row: PropertyRow): PropertyRow {
+  const { coordinates: _coordinates, ...rest } = row;
+  return rest;
+}
 
 function toNumber(value: unknown): number | null {
   if (typeof value === "number" && !Number.isNaN(value)) return value;
@@ -219,4 +230,27 @@ export function normalizeToAdminListing(row: PropertyRow) {
 
 export function isActiveListing(row: PropertyRow): boolean {
   return isPubliclyVisibleListing(row.status);
+}
+
+/** Owner listings matched by legacy `owner_email` when that column exists. */
+export async function fetchListingsByOwnerEmail(
+  service: SupabaseClient,
+  email: string,
+): Promise<PropertyRow[]> {
+  if (!email) return [];
+
+  const { data, error } = await service
+    .from("properties")
+    .select("*")
+    .eq("owner_email", email)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    if (isMissingColumnError(error.message, "owner_email")) {
+      return [];
+    }
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as PropertyRow[];
 }
