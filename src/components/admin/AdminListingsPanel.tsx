@@ -13,6 +13,7 @@ import {
 import type { Profile } from "@/lib/types/profile";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { getPricePerSqm } from "@/lib/price-display";
+import { downloadCsv } from "@/lib/export-csv";
 import { useT } from "@/i18n/LocaleProvider";
 
 interface ListingRow {
@@ -128,6 +129,35 @@ export function AdminListingsPanel({
     loadData();
   }
 
+  function exportUsersToExcel() {
+    if (users.length === 0) {
+      alert("მომხმარებლები არ არის");
+      return;
+    }
+
+    downloadCsv(
+      `kera-users-${new Date().toISOString().slice(0, 10)}.csv`,
+      [
+        "სახელი",
+        "გვარი",
+        "ელ-ფოსტა",
+        "ტელეფონი",
+        "როლი",
+        "სტატუსი",
+        "რეგისტრაცია",
+      ],
+      users.map((user) => [
+        user.first_name,
+        user.last_name,
+        user.email,
+        user.phone ?? "",
+        user.role,
+        user.is_blocked ? "დაბლოკილი" : "აქტიური",
+        new Date(user.created_at).toLocaleString("ka-GE"),
+      ]),
+    );
+  }
+
   const pendingCount = listings.filter((item) => item.status === "pending").length;
   const filteredListings = useMemo(
     () =>
@@ -178,6 +208,11 @@ export function AdminListingsPanel({
             onClick={syncAllCadastral}
           >
             {syncing ? "სინქრონიზაცია..." : "კადასტრის განახლება (NAPR)"}
+          </Button>
+        )}
+        {tab === "users" && (
+          <Button size="sm" variant="secondary" onClick={exportUsersToExcel}>
+            Excel-ში ჩამოტვირთვა
           </Button>
         )}
       </div>
@@ -314,12 +349,19 @@ export function AdminListingsPanel({
         </Card>
       ) : (
         <Card className="overflow-x-auto">
+          {users.length === 0 ? (
+            <p className="px-4 py-8 text-center text-slate-500">
+              დარეგისტრირებული მომხმარებლები ჯერ არ არის
+            </p>
+          ) : (
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-slate-500">
               <tr>
                 <th className="px-4 py-3">სახელი</th>
                 <th className="px-4 py-3">ელ-ფოსტა</th>
+                <th className="px-4 py-3">ტელეფონი</th>
                 <th className="px-4 py-3">როლი</th>
+                <th className="px-4 py-3">რეგისტრაცია</th>
                 <th className="px-4 py-3">სტატუსი</th>
                 <th className="px-4 py-3">მოქმედება</th>
               </tr>
@@ -331,10 +373,14 @@ export function AdminListingsPanel({
                     {user.first_name} {user.last_name}
                   </td>
                   <td className="px-4 py-3">{user.email}</td>
+                  <td className="px-4 py-3">{user.phone ?? "—"}</td>
                   <td className="px-4 py-3">
                     <Badge variant={user.role === "admin" ? "amber" : "blue"}>
                       {user.role}
                     </Badge>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-slate-600">
+                    {new Date(user.created_at).toLocaleDateString("ka-GE")}
                   </td>
                   <td className="px-4 py-3">
                     {user.is_blocked ? (
@@ -356,6 +402,7 @@ export function AdminListingsPanel({
               ))}
             </tbody>
           </table>
+          )}
         </Card>
       )}
     </div>

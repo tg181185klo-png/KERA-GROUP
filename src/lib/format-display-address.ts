@@ -1,7 +1,9 @@
 /**
  * Compact map popup address.
- * e.g. "წყალტუბოს მუნიციპალიტეტი, სოფ გუმბრა" → "წყალტუბო, სოფ. გუმბრა"
+ * e.g. "წყალტუბოს მუნიციპალიტეტი, სოფელი გუმბრა" → "წყალტუბო, სოფ. გუმბრა"
  */
+
+const VILLAGE_PREFIX = /^ს(?:ოფ(?:ელი)?|\.)\s+/iu;
 
 /** Convert Georgian place-name suffix to nominative (სახელობითი ბრუნვა). */
 export function toNominativePlaceName(name: string): string {
@@ -14,19 +16,14 @@ export function toNominativePlaceName(name: string): string {
     return prefix + toNominativePlaceName(cityPrefix[2]!);
   }
 
-  // ნათესაობითი -ის: თბილისის → თბილისი, ბათუმის → ბათუმი
   if (/^[\p{L}]+ის$/u.test(trimmed)) {
     return `${trimmed.slice(0, -2)}ი`;
   }
 
-  // ნათესაობითი -ოს: წყალტუბოს → წყალტუბო
   if (/^[\p{L}]+ოს$/u.test(trimmed)) {
     return `${trimmed.slice(0, -2)}ო`;
   }
 
-  // ნათესაობითი -ას: ზუგდidას? rare — skip unless needed
-
-  // მიცემითი -ს: თბილისს → თბილისი (not -ოს / -ის)
   if (/^[\p{L}]+[^ოი]ს$/u.test(trimmed) || /^[\p{L}]{3,}ს$/u.test(trimmed)) {
     if (!trimmed.endsWith("ოს") && !trimmed.endsWith("ის")) {
       return `${trimmed.slice(0, -1)}ი`;
@@ -41,11 +38,12 @@ function normalizeCityPart(part: string): string {
 }
 
 function formatVillagePart(part: string): string {
-  const village = part
-    .replace(/^სოფ\.?\s+/iu, "")
-    .replace(/^ს\.?\s+/iu, "")
-    .trim();
+  const village = part.replace(VILLAGE_PREFIX, "").trim();
   return village ? `სოფ. ${village}` : "";
+}
+
+function isVillagePart(part: string): boolean {
+  return VILLAGE_PREFIX.test(part.trim());
 }
 
 export function formatDisplayAddress(address: string): string {
@@ -67,10 +65,9 @@ export function formatDisplayAddress(address: string): string {
       .filter(Boolean);
 
     const formatted = parts.map((part, index) => {
-      if (/^სოფ\.?\s+/iu.test(part) || /^ს\.?\s+/iu.test(part)) {
+      if (isVillagePart(part)) {
         return formatVillagePart(part);
       }
-      // First segment is usually municipality/city — use nominative
       if (index === 0) {
         return normalizeCityPart(part);
       }
@@ -80,7 +77,7 @@ export function formatDisplayAddress(address: string): string {
     return formatted.filter(Boolean).join(", ");
   }
 
-  const villageInline = s.match(/^(.+?)\s+სოფ\.?\s+(.+)$/iu);
+  const villageInline = s.match(/^(.+?)\s+ს(?:ოფ(?:ელი)?|\.)\s+(.+)$/iu);
   if (villageInline) {
     const city = normalizeCityPart(villageInline[1]!);
     const village = formatVillagePart(`სოფ ${villageInline[2]!}`);
