@@ -15,7 +15,7 @@ export async function GET() {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "რუქის ჩატვირთვა ვერ მოხერხდა";
+      error instanceof Error ? error.message : "რუკის ჩატვირთვა ვერ მოხერხდა";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

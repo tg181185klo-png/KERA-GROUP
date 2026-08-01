@@ -17,7 +17,7 @@ export const CONTACT_ADDRESS = "თბილისი, საქართვე�
 
 export const NAV_LINKS = [
   { href: "/#services", label: "სერვისები" },
-  { href: "/map", label: "რუქა" },
+  { href: "/map", label: "რუკა" },
   { href: "/properties", label: "ქონება" },
   { href: "/#calculator", label: "კალკულატორი" },
   { href: "/dashboard/add-property", label: "განთავსება" },
