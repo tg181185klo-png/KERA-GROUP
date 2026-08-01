@@ -35,13 +35,30 @@ export function formatDisplayAddress(address: string): string {
   if (!address || address === "—") return address;
 
   let s = address
-    .replace(/\s*მუნიციპალიტეტი\b/giu, "")
+    .replace(/\s*მუნიციპალიტეტი\s*/giu, " ")
+    .replace(/\s+,/g, ",")
+    .replace(/,\s+/g, ", ")
     .replace(/\s{2,}/g, " ")
     .trim();
 
   if (!s) return address;
 
-  // "წყალტუბოს სოფ გუმბრა" (no comma)
+  if (s.includes(",")) {
+    const parts = s
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    const formatted = parts.map((part) => {
+      if (/^სოფ\.?\s+/iu.test(part) || /^ს\.?\s+/iu.test(part)) {
+        return formatVillagePart(part);
+      }
+      return normalizeCityPart(part);
+    });
+
+    return formatted.filter(Boolean).join(", ");
+  }
+
   const villageInline = s.match(/^(.+?)\s+სოფ\.?\s+(.+)$/iu);
   if (villageInline) {
     const city = normalizeCityPart(villageInline[1]!);
@@ -49,19 +66,5 @@ export function formatDisplayAddress(address: string): string {
     return [city, village].filter(Boolean).join(", ");
   }
 
-  const parts = s
-    .split(",")
-    .map((p) => p.trim())
-    .filter(Boolean);
-
-  if (parts.length === 0) return s;
-
-  const formatted = parts.map((part) => {
-    if (/^სოფ\.?\s+/iu.test(part) || /^ს\.?\s+/iu.test(part)) {
-      return formatVillagePart(part);
-    }
-    return normalizeCityPart(part);
-  });
-
-  return formatted.filter(Boolean).join(", ");
+  return normalizeCityPart(s);
 }

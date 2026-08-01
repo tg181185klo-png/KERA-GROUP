@@ -41,7 +41,6 @@ function detailRow(label: string, value: string, valueClass = ""): string {
 function buildMapCardContent(
   property: MapProperty,
   labels: MapTooltipLabels,
-  formatAddress = false,
 ): string {
   const pricePerSqmValue = getPricePerSqm(property);
   const pricePerSqm = pricePerSqmValue
@@ -49,9 +48,7 @@ function buildMapCardContent(
     : "—";
   const areaSqm = resolveAreaSqm(property);
   const cadastral = formatCadastralCode(property.cadastral_code);
-  const address = formatAddress
-    ? formatDisplayAddress(property.address)
-    : property.address;
+  const address = formatDisplayAddress(property.address);
 
   return `
     <span class="kera-map-hover-tooltip__badge">${escapeHtml(labels.listingType)}</span>
@@ -77,7 +74,7 @@ export function buildMapHoverTooltipHtml(
 ): string {
   return `
     <div class="kera-map-hover-tooltip__inner">
-      ${buildMapCardContent(property, labels, true)}
+      ${buildMapCardContent(property, labels)}
     </div>
   `;
 }
