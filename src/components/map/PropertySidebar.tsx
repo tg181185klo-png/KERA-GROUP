@@ -54,7 +54,7 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
 
           <div className="space-y-4 p-5">
             <Badge variant={property.listing_type === "sale" ? "blue" : "amber"}>
-              {getListingTypeLabel(t, property.listing_type)}
+              {getListingTypeLabel(t, property.deal_type ?? property.listing_type)}
             </Badge>
 
             <DetailRow icon={Hash} label={t.map.cadCode} value={property.cadastral_code} />

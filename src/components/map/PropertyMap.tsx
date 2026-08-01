@@ -100,7 +100,7 @@ export function PropertyMap({
 
   const buildLabels = (property: MapProperty) => ({
     ...tooltipLabels,
-    listingType: getListingTypeLabel(t, property.listing_type),
+    listingType: getListingTypeLabel(t, property.deal_type ?? property.listing_type),
   });
 
   const hoverTooltipOptions = {

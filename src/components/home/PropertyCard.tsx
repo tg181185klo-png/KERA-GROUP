@@ -45,7 +45,7 @@ export function PropertyCard({
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         <span className="absolute left-3 top-3 rounded-lg bg-kera-primary px-2.5 py-1 text-xs font-bold text-white">
-          {getListingTypeLabel(t, property.listing_type)}
+          {getListingTypeLabel(t, property.deal_type ?? property.listing_type)}
         </span>
       </div>
 

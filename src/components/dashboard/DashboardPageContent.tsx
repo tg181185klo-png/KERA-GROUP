@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Map as MapIcon } from "lucide-react";
+import { Plus, Map as MapIcon, Pencil } from "lucide-react";
+import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { LogoutButton } from "@/components/dashboard/LogoutButton";
@@ -18,12 +19,14 @@ interface DashboardPageContentProps {
   profile: { first_name?: string | null; last_name?: string | null; email?: string | null } | null;
   listings: PropertyRow[];
   submittedPending: boolean;
+  editedListing?: boolean;
 }
 
 export function DashboardPageContent({
   profile,
   listings,
   submittedPending,
+  editedListing = false,
 }: DashboardPageContentProps) {
   const { t, locale } = useLocale();
 
@@ -63,7 +66,7 @@ export function DashboardPageContent({
 
       {submittedPending && (
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          {t.dashboard.moderationFull}
+          {editedListing ? t.dashboard.editedResubmitBanner : t.dashboard.moderationFull}
         </div>
       )}
 
@@ -87,6 +90,7 @@ export function DashboardPageContent({
                   <th className="px-6 py-3 font-medium">{t.dashboard.tablePrice}</th>
                   <th className="px-6 py-3 font-medium">{t.dashboard.tableStatus}</th>
                   <th className="px-6 py-3 font-medium">{t.dashboard.tableDate}</th>
+                  <th className="px-6 py-3 font-medium">{t.dashboard.tableActions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -125,6 +129,15 @@ export function DashboardPageContent({
                       {item.created_at
                         ? new Date(String(item.created_at)).toLocaleDateString(dateLocale)
                         : "—"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/dashboard/edit-property/${item.id}`}
+                        className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium text-kera-blue hover:bg-blue-50"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        {t.dashboard.editListing}
+                      </Link>
                     </td>
                   </tr>
                   );

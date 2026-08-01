@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { canManageListings } from "@/lib/admin-access";
 import { buildMapPersistPayload } from "@/lib/cadastral-lookup";
 import { isPubliclyVisibleListing } from "@/lib/listing-status";
+import { buildOwnerListingUpdates } from "@/lib/listing-update";
 import { getCadastralCode } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
 
@@ -115,26 +116,26 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (!isOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-
-    if (existing.status !== "pending") {
-      return NextResponse.json(
-        { error: "Only pending listings can be edited" },
-        { status: 403 },
-      );
-    }
   }
 
   const body = await request.json();
 
-  let updates: Record<string, unknown> = body;
+  let updates: Record<string, unknown>;
 
   if (admin && (body.status === "active" || body.status === "approved")) {
     updates = await buildMapPersistPayload(
       existing as Record<string, unknown>,
       getCadastralCode,
     );
-  } else if (admin && body.status != null) {
+  } else if (admin && body.status != null && Object.keys(body).length === 1) {
     updates = { status: statusForDatabase(body.status) };
+  } else if (admin) {
+    updates = body;
+  } else {
+    const wasActive = isPubliclyVisibleListing(existing.status);
+    updates = await buildOwnerListingUpdates(body, existing, {
+      resetToPending: wasActive,
+    });
   }
 
   const { data, error } = await updateAdaptive(service, id, updates);

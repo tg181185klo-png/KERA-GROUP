@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, Check } from "lucide-react";
 import {
-  getDefaultAreaForCity,
   LocationFields,
 } from "@/components/shared/LocationFields";
 import { Button } from "@/components/ui/Button";
@@ -13,13 +12,16 @@ import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
 import { MapPicker } from "@/components/dashboard/MapPicker";
 import { ImageUpload } from "@/components/submit/ImageUpload";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { getMapDealTypeOptions } from "@/i18n/nav";
 import {
   isValidCadastralCode,
   formatCadastralCode,
   formatPrice,
   formatPricePerSqm,
 } from "@/lib/cadastral";
-import type { PropertyListingFormData, ListingType } from "@/lib/types/property-listing";
+import type { PropertyListingFormData, MapDealType } from "@/lib/types/property-listing";
+import { getMapDealTypeFromRow, type PropertyRow } from "@/lib/property-normalize";
 
 const STEPS = ["ძირითადი", "მფლობელი", "მდებარეობა", "ფოტოები", "შეჯამება"];
 
@@ -33,17 +35,60 @@ const EMPTY_FORM: PropertyListingFormData = {
   phone_number: "",
   total_price: 0,
   area_sqm: 0,
-  listing_type: "sale",
+  deal_type: "sale",
   latitude: null,
   longitude: null,
   geojson_polygon: null,
   images: [],
 };
 
-export function AddPropertyWizard() {
+export function rowToFormData(row: PropertyRow): PropertyListingFormData {
+  return {
+    title: String(row.title ?? ""),
+    description: String(row.description ?? ""),
+    cadastral_code: String(row.cadastral_code ?? ""),
+    owner_first_name: String(row.owner_first_name ?? ""),
+    owner_last_name: String(row.owner_last_name ?? ""),
+    address: String(row.address ?? ""),
+    phone_number: String(row.phone_number ?? row.owner_phone ?? ""),
+    total_price:
+      typeof row.total_price === "number"
+        ? row.total_price
+        : typeof row.price === "number"
+          ? row.price
+          : 0,
+    area_sqm: typeof row.area_sqm === "number" ? row.area_sqm : 0,
+    deal_type: getMapDealTypeFromRow(row),
+    latitude: typeof row.latitude === "number" ? row.latitude : null,
+    longitude: typeof row.longitude === "number" ? row.longitude : null,
+    geojson_polygon:
+      row.geojson_polygon && typeof row.geojson_polygon === "object"
+        ? (row.geojson_polygon as PropertyListingFormData["geojson_polygon"])
+        : null,
+    images: Array.isArray(row.images) ? (row.images as string[]) : [],
+  };
+}
+
+interface AddPropertyWizardProps {
+  mode?: "create" | "edit";
+  listingId?: string;
+  initialForm?: PropertyListingFormData;
+  wasActive?: boolean;
+}
+
+export function AddPropertyWizard({
+  mode = "create",
+  listingId,
+  initialForm,
+  wasActive = false,
+}: AddPropertyWizardProps) {
   const router = useRouter();
+  const { t } = useLocale();
+  const dealTypeOptions = getMapDealTypeOptions(t);
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<PropertyListingFormData>(EMPTY_FORM);
+  const [form, setForm] = useState<PropertyListingFormData>(
+    initialForm ?? EMPTY_FORM,
+  );
   const [locationCity, setLocationCity] = useState("");
   const [locationArea, setLocationArea] = useState("");
   const [locationBase, setLocationBase] = useState("");
@@ -70,7 +115,7 @@ export function AddPropertyWizard() {
   async function lookupCadastral() {
     setCadastralError("");
     if (!isValidCadastralCode(form.cadastral_code)) {
-      setCadastralError("ფორმატი: XX.XX.XX.XXX.XXX (მაგ. 01.10.15.001.002)");
+      setCadastralError(t.wizard.cadastralFormatError);
       return;
     }
 
@@ -82,7 +127,7 @@ export function AddPropertyWizard() {
       const data = await res.json();
 
       if (!res.ok) {
-        setCadastralError(data.error ?? "კადასტრის ძებნა ვერ მოხერხდა");
+        setCadastralError(data.error ?? t.wizard.cadastralLookupFailed);
         return;
       }
 
@@ -95,7 +140,7 @@ export function AddPropertyWizard() {
         address: prev.address || data.address || prev.address,
       }));
     } catch {
-      setCadastralError("კადასტრის სერვისი დროებით მიუწვდომელია");
+      setCadastralError(t.wizard.cadastralUnavailable);
     } finally {
       setCadastralLoading(false);
     }
@@ -132,33 +177,49 @@ export function AddPropertyWizard() {
           };
         }
       } catch {
-        // POST /api/listings also resolves cadastral server-side
+        // POST/PATCH also resolves cadastral server-side
       }
     }
 
-    const res = await fetch("/api/listings", {
-      method: "POST",
+    const url =
+      mode === "edit" && listingId ? `/api/listings/${listingId}` : "/api/listings";
+    const method = mode === "edit" ? "PATCH" : "POST";
+
+    const res = await fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
       const data = await res.json();
-      setSubmitError(data.error ?? "შეცდომა მოხდა");
+      setSubmitError(data.error ?? t.common.error);
       setLoading(false);
       return;
     }
 
-    router.push("/dashboard?submitted=pending");
+    router.push(
+      mode === "edit" && wasActive
+        ? "/dashboard?submitted=pending&edited=1"
+        : "/dashboard?submitted=pending",
+    );
     router.refresh();
   }
 
   const pricePerSqm =
     form.area_sqm > 0 ? form.total_price / form.area_sqm : 0;
 
+  const dealTypeLabel =
+    dealTypeOptions.find((o) => o.value === form.deal_type)?.label ?? form.deal_type;
+
   return (
     <div>
-      {/* Step indicator */}
+      {mode === "edit" && wasActive && (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {t.dashboard.editResubmitNotice}
+        </div>
+      )}
+
       <div className="mb-8 flex gap-2">
         {STEPS.map((label, i) => (
           <div
@@ -184,35 +245,32 @@ export function AddPropertyWizard() {
       </div>
 
       <Card className="p-6">
-        {/* Step 0: Basic info */}
         {step === 0 && (
           <div className="space-y-4">
             <Input
-              label="სათაური"
+              label={t.wizard.fieldTitle}
               required
               value={form.title}
               onChange={(e) => updateField("title", e.target.value)}
-              placeholder="მაგ. 3-ოთახiani ბინა ვაკეში"
+              placeholder={t.wizard.titlePlaceholder}
             />
             <Textarea
-              label="აღწერა"
+              label={t.wizard.fieldDescription}
               value={form.description}
               onChange={(e) => updateField("description", e.target.value)}
             />
             <Select
-              label="ტიპი"
-              value={form.listing_type}
+              label={t.wizard.fieldDealType}
+              required
+              value={form.deal_type}
               onChange={(e) =>
-                updateField("listing_type", e.target.value as ListingType)
+                updateField("deal_type", e.target.value as MapDealType)
               }
-              options={[
-                { value: "sale", label: "იყიდება" },
-                { value: "rent", label: "ქირავდება" },
-              ]}
+              options={[...dealTypeOptions]}
             />
             <div className="grid min-w-0 grid-cols-2 gap-4">
               <Input
-                label="საერთო ფასი (USD)"
+                label={t.wizard.fieldPrice}
                 type="number"
                 required
                 min={0}
@@ -222,7 +280,7 @@ export function AddPropertyWizard() {
                 }
               />
               <Input
-                label="ფართობი (მ²)"
+                label={t.wizard.fieldArea}
                 type="number"
                 required
                 min={1}
@@ -234,18 +292,17 @@ export function AddPropertyWizard() {
             </div>
             {form.area_sqm > 0 && form.total_price > 0 && (
               <p className="text-sm text-slate-500">
-                ფასი მ²-ზე: {formatPricePerSqm(pricePerSqm)}
+                {t.wizard.pricePerSqm}: {formatPricePerSqm(pricePerSqm)}
               </p>
             )}
           </div>
         )}
 
-        {/* Step 1: Owner info */}
         {step === 1 && (
           <div className="space-y-4">
             <div className="grid min-w-0 grid-cols-2 gap-4">
               <Input
-                label="მფლობელის სახელი"
+                label={t.wizard.fieldOwnerFirst}
                 required
                 value={form.owner_first_name}
                 onChange={(e) =>
@@ -253,7 +310,7 @@ export function AddPropertyWizard() {
                 }
               />
               <Input
-                label="მფლობელის გვარი"
+                label={t.wizard.fieldOwnerLast}
                 required
                 value={form.owner_last_name}
                 onChange={(e) =>
@@ -272,17 +329,17 @@ export function AddPropertyWizard() {
               }}
             />
             <Input
-              label="ქუჩა / დეტალი"
+              label={t.wizard.fieldStreet}
               value={addressDetail}
               onChange={(e) => {
                 const detail = e.target.value;
                 setAddressDetail(detail);
                 syncAddress(locationBase, detail);
               }}
-              placeholder="მაგ: 9 აპრილის 20"
+              placeholder={t.wizard.streetPlaceholder}
             />
             <Input
-              label="ტელეფონი"
+              label={t.wizard.fieldPhone}
               required
               value={form.phone_number}
               onChange={(e) => updateField("phone_number", e.target.value)}
@@ -291,12 +348,11 @@ export function AddPropertyWizard() {
           </div>
         )}
 
-        {/* Step 2: Location / cadastral */}
         {step === 2 && (
           <div className="space-y-4">
             <div className="flex gap-3">
               <Input
-                label="საკადასტრო კოდი"
+                label={t.wizard.fieldCadastral}
                 required
                 value={form.cadastral_code}
                 onChange={(e) => updateField("cadastral_code", e.target.value)}
@@ -313,14 +369,11 @@ export function AddPropertyWizard() {
               <div className="flex items-end">
                 <Button type="button" onClick={lookupCadastral} disabled={cadastralLoading}>
                   <Search className="h-4 w-4" />
-                  {cadastralLoading ? "ძებნა..." : "ძებნა"}
+                  {cadastralLoading ? t.wizard.searching : t.wizard.search}
                 </Button>
               </div>
             </div>
-            <p className="text-xs text-slate-400">
-              კადასტრის კოდი იღება საჯარო რეესტრის რუქიდან (NAPR) და ზუსტ პოლიგონზე
-              განთავსდება მონიშვნა.
-            </p>
+            <p className="text-xs text-slate-400">{t.wizard.cadastralHint}</p>
             <MapPicker
               latitude={form.latitude}
               longitude={form.longitude}
@@ -336,7 +389,6 @@ export function AddPropertyWizard() {
           </div>
         )}
 
-        {/* Step 3: Photos */}
         {step === 3 && (
           <ImageUpload
             images={form.images}
@@ -344,28 +396,27 @@ export function AddPropertyWizard() {
           />
         )}
 
-        {/* Step 4: Review */}
         {step === 4 && (
           <div className="space-y-3 text-sm">
-            <ReviewRow label="სათაური" value={form.title} />
-            <ReviewRow label="კად. კოდი" value={formatCadastralCode(form.cadastral_code)} />
+            <ReviewRow label={t.wizard.fieldTitle} value={form.title} />
             <ReviewRow
-              label="მფლობელი"
+              label={t.wizard.fieldCadastral}
+              value={formatCadastralCode(form.cadastral_code)}
+            />
+            <ReviewRow
+              label={t.wizard.fieldOwnerFirst}
               value={`${form.owner_first_name} ${form.owner_last_name}`}
             />
-            <ReviewRow label="მისამართი" value={form.address} />
-            <ReviewRow label="ტელეფონი" value={form.phone_number} />
-            <ReviewRow label="ფასი" value={formatPrice(form.total_price)} />
-            <ReviewRow label="ფართობი" value={`${form.area_sqm} მ²`} />
+            <ReviewRow label={t.wizard.fieldAddress} value={form.address} />
+            <ReviewRow label={t.wizard.fieldPhone} value={form.phone_number} />
+            <ReviewRow label={t.wizard.fieldPrice} value={formatPrice(form.total_price)} />
+            <ReviewRow label={t.wizard.fieldArea} value={`${form.area_sqm} ${t.common.sqm}`} />
             <ReviewRow
-              label="ფასი/მ²"
+              label={t.wizard.pricePerSqm}
               value={formatPricePerSqm(pricePerSqm)}
             />
-            <ReviewRow
-              label="ტიპი"
-              value={form.listing_type === "sale" ? "იყიდება" : "ქირავდება"}
-            />
-            <ReviewRow label="ფოტოები" value={`${form.images.length} ცალი`} />
+            <ReviewRow label={t.wizard.fieldDealType} value={dealTypeLabel} />
+            <ReviewRow label={t.wizard.fieldPhotos} value={`${form.images.length}`} />
             {submitError && (
               <p className="rounded-lg bg-red-50 px-3 py-2 text-red-600">
                 {submitError}
@@ -374,7 +425,6 @@ export function AddPropertyWizard() {
           </div>
         )}
 
-        {/* Navigation */}
         <div className="mt-8 flex justify-between">
           <Button
             variant="ghost"
@@ -382,17 +432,21 @@ export function AddPropertyWizard() {
             disabled={step === 0}
           >
             <ChevronLeft className="h-4 w-4" />
-            უკან
+            {t.wizard.back}
           </Button>
 
           {step < STEPS.length - 1 ? (
             <Button onClick={() => setStep((s) => s + 1)}>
-              შემდეგი
+              {t.wizard.next}
               <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
             <Button onClick={handleSubmit} disabled={loading}>
-              {loading ? "იგზავნება..." : "განთავსება"}
+              {loading
+                ? t.wizard.saving
+                : mode === "edit"
+                  ? t.wizard.saveChanges
+                  : t.wizard.publish}
             </Button>
           )}
         </div>

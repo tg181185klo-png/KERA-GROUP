@@ -1,4 +1,5 @@
 import { enrichRowWithCadastral } from "@/lib/cadastral-lookup";
+import { geocodeAddress } from "@/lib/geocode";
 import {
   publicStatusFilter,
   isPubliclyVisibleListing,
@@ -47,8 +48,35 @@ function rowNeedsCadastralEnrichment(row: PropertyRow): boolean {
   return lat == null || lng == null;
 }
 
+function rowNeedsGeocode(row: PropertyRow): boolean {
+  const { lat, lng } = resolveMapCoordinates(row);
+  if (lat != null && lng != null) return false;
+  const address = String(row.address ?? "").trim();
+  return address.length > 3;
+}
+
+async function enrichRowGeocode(row: PropertyRow): Promise<PropertyRow> {
+  if (!rowNeedsGeocode(row)) return row;
+
+  const address = String(row.address ?? "").trim();
+  const coords = await geocodeAddress(address);
+  if (!coords) return row;
+
+  const updated = {
+    ...row,
+    latitude: coords.lat,
+    longitude: coords.lng,
+  };
+
+  if (row.id) {
+    await persistCadastralCoords(String(row.id), updated, row);
+  }
+
+  return updated;
+}
+
 async function enrichRows(rows: PropertyRow[], forceAll: boolean) {
-  return Promise.all(
+  const cadastralEnriched = await Promise.all(
     rows.map(async (row) => {
       if (!forceAll && !rowNeedsCadastralEnrichment(row)) {
         return row;
@@ -69,6 +97,8 @@ async function enrichRows(rows: PropertyRow[], forceAll: boolean) {
       }
     }),
   );
+
+  return Promise.all(cadastralEnriched.map((row) => enrichRowGeocode(row)));
 }
 
 async function fetchActiveRows() {

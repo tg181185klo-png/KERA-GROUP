@@ -48,7 +48,7 @@ export function ListingMapCard({
           sizes="320px"
         />
         <span className="absolute left-2 top-2 rounded-lg bg-kera-primary px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-          {getListingTypeLabel(t, property.listing_type)}
+          {getListingTypeLabel(t, property.deal_type ?? property.listing_type)}
         </span>
       </div>
 

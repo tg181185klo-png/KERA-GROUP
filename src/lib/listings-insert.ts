@@ -3,6 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { formatCadastralCode } from "@/lib/cadastral";
 
+import type { MapDealType } from "@/lib/types/property-listing";
+
 type ListingBody = {
   title?: string;
   description?: string;
@@ -14,11 +16,26 @@ type ListingBody = {
   total_price: number;
   area_sqm?: number;
   listing_type?: string;
+  deal_type?: MapDealType;
   latitude?: number | null;
   longitude?: number | null;
   geojson_polygon?: unknown;
   images?: string[];
 };
+
+function resolveDealType(body: ListingBody): MapDealType {
+  const raw = String(body.deal_type ?? body.listing_type ?? "sale")
+    .toLowerCase()
+    .trim();
+  if (raw === "rent") return "rent";
+  if (raw === "daily_rent" || raw === "daily") return "daily_rent";
+  if (raw === "pledge" || raw === "gira") return "pledge";
+  return "sale";
+}
+
+function listingTypeFromDeal(dealType: MapDealType): "sale" | "rent" {
+  return dealType === "rent" || dealType === "daily_rent" ? "rent" : "sale";
+}
 
 function isSchemaMismatch(message: string) {
   const m = message.toLowerCase();
@@ -102,13 +119,15 @@ async function insertLegacyListing(
     [body.owner_first_name, body.owner_last_name].filter(Boolean).join(" ").trim() ||
     "მომხმარებელი";
 
+  const dealType = resolveDealType(body);
+
   const payload: Record<string, unknown> = {
     owner_name: ownerName,
     owner_phone: body.phone_number ?? "",
     owner_email: user.email ?? null,
     address: body.address,
     property_type: "apartment",
-    deal_type: body.listing_type === "rent" ? "rent" : "sale",
+    deal_type: dealType,
     price: body.total_price,
     currency: "USD",
     description: buildLegacyDescription(body),
@@ -133,6 +152,8 @@ export async function insertPropertyListing(user: User, body: ListingBody) {
 
   await ensureProfile(user, service);
 
+  const dealType = resolveDealType(body);
+
   const newRow = {
     user_id: user.id,
     title: body.title ?? body.address,
@@ -146,7 +167,8 @@ export async function insertPropertyListing(user: User, body: ListingBody) {
     phone_number: body.phone_number ?? "",
     total_price: body.total_price,
     area_sqm: body.area_sqm,
-    listing_type: body.listing_type ?? "sale",
+    deal_type: dealType,
+    listing_type: listingTypeFromDeal(dealType),
     latitude: body.latitude,
     longitude: body.longitude,
     geojson_polygon: body.geojson_polygon,

@@ -7,7 +7,7 @@ import { type PropertyRow } from "@/lib/property-normalize";
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ submitted?: string }>;
+  searchParams: Promise<{ submitted?: string; edited?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -46,6 +46,7 @@ export default async function DashboardPage({
       profile={profile}
       listings={listings}
       submittedPending={params.submitted === "pending"}
+      editedListing={params.edited === "1"}
     />
   );
 }

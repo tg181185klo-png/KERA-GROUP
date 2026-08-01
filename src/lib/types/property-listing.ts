@@ -1,6 +1,7 @@
 import type { GeoJSON } from "geojson";
 
 export type ListingStatus = "pending" | "active" | "blocked";
+/** Legacy binary type stored in DB; map colors use MapDealType / deal_type. */
 export type ListingType = "sale" | "rent";
 export type MapDealType = "sale" | "rent" | "daily_rent" | "pledge";
 
@@ -18,7 +19,7 @@ export interface PropertyListing {
   area_sqm: number;
   price_per_sqm: number | null;
   listing_type: ListingType;
-  deal_type?: MapDealType | null;
+  deal_type: MapDealType;
   status: ListingStatus;
   latitude: number | null;
   longitude: number | null;
@@ -37,8 +38,7 @@ export interface PropertyListingFormData {
   phone_number: string;
   total_price: number;
   area_sqm: number;
-  listing_type: ListingType;
-  deal_type?: MapDealType | null;
+  deal_type: MapDealType;
   latitude: number | null;
   longitude: number | null;
   geojson_polygon: GeoJSON.Polygon | null;
@@ -65,7 +65,7 @@ export interface MapProperty {
   area_sqm: number;
   price_per_sqm: number | null;
   listing_type: ListingType;
-  deal_type?: MapDealType | null;
+  deal_type: MapDealType;
   latitude: number | null;
   longitude: number | null;
   geojson_polygon: GeoJSON.Polygon | null;
@@ -74,6 +74,13 @@ export interface MapProperty {
   bedrooms?: number | null;
   property_type?: string | null;
 }
+
+export const DEAL_TYPE_LABELS: Record<MapDealType, string> = {
+  sale: "გაყიდვა",
+  rent: "ქირა",
+  daily_rent: "დღიური ქირა",
+  pledge: "გირა",
+};
 
 export const LISTING_TYPE_LABELS: Record<ListingType, string> = {
   sale: "იყიდება",

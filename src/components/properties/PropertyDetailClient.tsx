@@ -116,7 +116,7 @@ export function PropertyDetailClient({
 
           <div>
             <Badge variant={property.listing_type === "sale" ? "blue" : "amber"}>
-              {getListingTypeLabel(t, property.listing_type)}
+              {getListingTypeLabel(t, property.deal_type ?? property.listing_type)}
             </Badge>
 
             <h1 className="mt-3 font-display text-2xl font-bold text-kera-slate sm:text-3xl">

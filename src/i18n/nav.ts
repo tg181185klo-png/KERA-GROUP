@@ -40,6 +40,15 @@ export function getDealTypes(t: Messages) {
   ] as const;
 }
 
+export function getMapDealTypeOptions(t: Messages) {
+  return [
+    { value: "sale", label: t.map.legend.deals.sale },
+    { value: "rent", label: t.map.legend.deals.rent },
+    { value: "daily_rent", label: t.map.legend.deals.daily_rent },
+    { value: "pledge", label: t.map.legend.deals.pledge },
+  ] as const;
+}
+
 export function getPropertyTypes(t: Messages) {
   return [
     { value: "apartment", label: t.propertyTypes.apartment },
@@ -128,9 +137,12 @@ export function getServices(t: Messages) {
 
 export function getListingTypeLabel(
   t: Messages,
-  type: "sale" | "rent",
+  type: "sale" | "rent" | "daily_rent" | "pledge",
 ): string {
-  return type === "rent" ? t.listingTypes.rent : t.listingTypes.sale;
+  if (type === "daily_rent") return t.map.legend.deals.daily_rent;
+  if (type === "pledge") return t.map.legend.deals.pledge;
+  if (type === "rent") return t.listingTypes.rent;
+  return t.listingTypes.sale;
 }
 
 export function getMapDealTypeLabel(

@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import {
+  DEAL_TYPE_LABELS,
   LISTING_STATUS_LABELS,
-  LISTING_TYPE_LABELS,
   type ListingStatus,
+  type MapDealType,
 } from "@/lib/types/property-listing";
 import type { Profile } from "@/lib/types/profile";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
@@ -24,6 +25,7 @@ interface ListingRow {
   area_sqm: number;
   price_per_sqm: number | null;
   listing_type: string;
+  deal_type?: MapDealType;
   status: ListingStatus;
   created_at: string;
   user_id: string;
@@ -36,6 +38,7 @@ export function AdminListingsPanel({
 }) {
   const t = useT();
   const [tab, setTab] = useState<"listings" | "users">("listings");
+  const [statusFilter, setStatusFilter] = useState<ListingStatus | "all">("all");
   const [listings, setListings] = useState<ListingRow[]>(initialListings);
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(!initialListings.length);
@@ -125,6 +128,25 @@ export function AdminListingsPanel({
     loadData();
   }
 
+  const pendingCount = listings.filter((item) => item.status === "pending").length;
+  const filteredListings = useMemo(
+    () =>
+      statusFilter === "all"
+        ? listings
+        : listings.filter((item) => item.status === statusFilter),
+    [listings, statusFilter],
+  );
+
+  const sortedListings = useMemo(
+    () =>
+      [...filteredListings].sort((a, b) => {
+        if (a.status === "pending" && b.status !== "pending") return -1;
+        if (b.status === "pending" && a.status !== "pending") return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }),
+    [filteredListings],
+  );
+
   if (loading) {
     return <p className="py-12 text-center text-slate-500">იტვირთება...</p>;
   }
@@ -160,9 +182,40 @@ export function AdminListingsPanel({
         )}
       </div>
 
+      {tab === "listings" && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          {pendingCount > 0 && (
+            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+              {t.admin.pendingCount.replace("{count}", String(pendingCount))}
+            </span>
+          )}
+          {(["all", "pending", "active", "blocked"] as const).map((status) => (
+            <Button
+              key={status}
+              size="sm"
+              variant={statusFilter === status ? "primary" : "ghost"}
+              onClick={() => setStatusFilter(status)}
+            >
+              {status === "all"
+                ? t.admin.filterAll
+                : status === "pending"
+                  ? t.admin.filterPending
+                  : status === "active"
+                    ? t.admin.filterActive
+                    : t.admin.filterBlocked}
+              {status !== "all" && (
+                <span className="ml-1 opacity-70">
+                  ({listings.filter((item) => item.status === status).length})
+                </span>
+              )}
+            </Button>
+          ))}
+        </div>
+      )}
+
       {tab === "listings" ? (
         <Card className="overflow-x-auto">
-          {listings.length === 0 ? (
+          {sortedListings.length === 0 ? (
             <p className="px-4 py-8 text-center text-slate-500">
               განცხადებები არ მოიძებნა
             </p>
@@ -180,7 +233,7 @@ export function AdminListingsPanel({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {listings.map((item) => {
+              {sortedListings.map((item) => {
                 const pricePerSqm = getPricePerSqm(item);
                 return (
                 <tr key={item.id}>
@@ -198,7 +251,9 @@ export function AdminListingsPanel({
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {LISTING_TYPE_LABELS[item.listing_type as keyof typeof LISTING_TYPE_LABELS]}
+                    {DEAL_TYPE_LABELS[
+                      (item.deal_type ?? item.listing_type) as MapDealType
+                    ] ?? item.listing_type}
                   </td>
                   <td className="px-4 py-3">
                     <Badge

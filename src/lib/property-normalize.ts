@@ -72,8 +72,8 @@ export function getTotalPrice(row: PropertyRow): number {
 }
 
 export function getListingType(row: PropertyRow): ListingType {
-  if (row.listing_type === "rent" || row.deal_type === "rent") return "rent";
-  return "sale";
+  const deal = getMapDealTypeFromRow(row);
+  return deal === "rent" || deal === "daily_rent" ? "rent" : "sale";
 }
 
 export function getMapDealTypeFromRow(row: PropertyRow): MapProperty["deal_type"] {
@@ -210,6 +210,7 @@ export function normalizeToAdminListing(row: PropertyRow) {
         ? row.price_per_sqm
         : computePricePerSqm(totalPrice, areaSqm),
     listing_type: getListingType(row),
+    deal_type: getMapDealTypeFromRow(row),
     status: normalizeListingStatus(row.status),
     created_at: String(row.created_at ?? ""),
     user_id: String(row.user_id ?? ""),
