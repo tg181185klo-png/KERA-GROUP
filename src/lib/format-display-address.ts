@@ -1,26 +1,43 @@
 /**
- * Compact public-facing address for listings (map popup, cards, detail).
+ * Compact map popup address.
  * e.g. "წყალტუბოს მუნიციპალიტეტი, სოფ გუმბრა" → "წყალტუბო, სოფ. გუმბრა"
  */
-function normalizeCityPart(part: string): string {
-  const trimmed = part.trim();
+
+/** Convert Georgian place-name suffix to nominative (სახელობითი ბრუნვა). */
+export function toNominativePlaceName(name: string): string {
+  const trimmed = name.trim();
   if (!trimmed) return trimmed;
 
-  if (/^ქ\.?\s+/iu.test(trimmed)) {
-    return trimmed.replace(/^ქ\.?\s+/iu, "ქ. ").trim();
+  const cityPrefix = trimmed.match(/^(ქ\.?\s*)(.+)$/iu);
+  if (cityPrefix) {
+    const prefix = cityPrefix[1]!.includes(".") ? "ქ. " : "ქ ";
+    return prefix + toNominativePlaceName(cityPrefix[2]!);
   }
 
-  // Single-word Georgian genitive: წყალტუბოს → წყალტუბო
-  if (/^[\p{L}]+ოს$/u.test(trimmed)) {
-    return trimmed.replace(/ოს$/u, "ო");
-  }
-
-  // თბილისის → თბილისი
+  // ნათესაობითი -ის: თბილისის → თბილისი, ბათუმის → ბათუმი
   if (/^[\p{L}]+ის$/u.test(trimmed)) {
-    return trimmed.replace(/ის$/u, "ი");
+    return `${trimmed.slice(0, -2)}ი`;
+  }
+
+  // ნათესაობითი -ოს: წყალტუბოს → წყალტუბო
+  if (/^[\p{L}]+ოს$/u.test(trimmed)) {
+    return `${trimmed.slice(0, -2)}ო`;
+  }
+
+  // ნათესაობითი -ას: ზუგდidას? rare — skip unless needed
+
+  // მიცემითი -ს: თბილისს → თბილისი (not -ოს / -ის)
+  if (/^[\p{L}]+[^ოი]ს$/u.test(trimmed) || /^[\p{L}]{3,}ს$/u.test(trimmed)) {
+    if (!trimmed.endsWith("ოს") && !trimmed.endsWith("ის")) {
+      return `${trimmed.slice(0, -1)}ი`;
+    }
   }
 
   return trimmed;
+}
+
+function normalizeCityPart(part: string): string {
+  return toNominativePlaceName(part);
 }
 
 function formatVillagePart(part: string): string {
@@ -49,11 +66,15 @@ export function formatDisplayAddress(address: string): string {
       .map((p) => p.trim())
       .filter(Boolean);
 
-    const formatted = parts.map((part) => {
+    const formatted = parts.map((part, index) => {
       if (/^სოფ\.?\s+/iu.test(part) || /^ს\.?\s+/iu.test(part)) {
         return formatVillagePart(part);
       }
-      return normalizeCityPart(part);
+      // First segment is usually municipality/city — use nominative
+      if (index === 0) {
+        return normalizeCityPart(part);
+      }
+      return part;
     });
 
     return formatted.filter(Boolean).join(", ");
