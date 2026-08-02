@@ -10,9 +10,15 @@ import {
 } from "@/lib/locations/municipality-villages";
 import type { Locale } from "./types";
 
+export type ServiceKey =
+  | "fullService"
+  | "individualSearch"
+  | "remoteService"
+  | "developerSales"
+  | "propertyRealization";
+
 export function getNavLinks(t: Messages) {
   return [
-    { href: "/#services", label: t.nav.services },
     { href: "/map", label: t.nav.map },
     { href: "/properties", label: t.nav.properties },
     { href: "/#calculator", label: t.nav.calculator },
@@ -23,7 +29,7 @@ export function getNavLinks(t: Messages) {
 export function getFooterLinks(t: Messages) {
   return [
     { href: "/", label: t.nav.home },
-    { href: "/#services", label: t.nav.services },
+    { href: "/#services", label: t.nav.about },
     { href: "/map", label: t.nav.map },
     { href: "/properties", label: t.nav.properties },
     { href: "/dashboard/add-property", label: t.nav.list },
@@ -127,12 +133,60 @@ export function getAreaDisplayLabel(
 
 export function getServices(t: Messages) {
   return [
-    { key: "realty", ...t.services.realty, icon: "building" as const },
-    { key: "developments", ...t.services.developments, icon: "crane" as const },
-    { key: "invest", ...t.services.invest, icon: "chart" as const },
-    { key: "management", ...t.services.management, icon: "key" as const },
-    { key: "media", ...t.services.media, icon: "camera" as const },
+    {
+      key: "fullService" as const,
+      title: t.services.fullService.title,
+      desc: t.services.fullService.shortDesc,
+      detail: t.services.fullService.detail,
+      icon: "home" as const,
+    },
+    {
+      key: "individualSearch" as const,
+      title: t.services.individualSearch.title,
+      desc: t.services.individualSearch.shortDesc,
+      detail: t.services.individualSearch.detail,
+      icon: "search" as const,
+    },
+    {
+      key: "remoteService" as const,
+      title: t.services.remoteService.title,
+      desc: t.services.remoteService.shortDesc,
+      detail: t.services.remoteService.detail,
+      icon: "globe" as const,
+    },
+    {
+      key: "developerSales" as const,
+      title: t.services.developerSales.title,
+      desc: t.services.developerSales.shortDesc,
+      detail: t.services.developerSales.detail,
+      icon: "crane" as const,
+    },
+    {
+      key: "propertyRealization" as const,
+      title: t.services.propertyRealization.title,
+      desc: t.services.propertyRealization.shortDesc,
+      detail: t.services.propertyRealization.detail,
+      icon: "chart" as const,
+    },
   ];
+}
+
+export function serviceHash(key: ServiceKey): string {
+  return `services-${key}`;
+}
+
+export function parseServiceHash(hash: string): ServiceKey | null {
+  const match = hash.replace(/^#/, "").match(/^services-(\w+)$/);
+  if (!match) return null;
+  const key = match[1] as ServiceKey;
+  const valid: ServiceKey[] = [
+    "fullService",
+    "individualSearch",
+    "remoteService",
+    "developerSales",
+    "propertyRealization",
+  ];
+  return valid.includes(key) ? key : null;
 }
 
 export function getListingTypeLabel(

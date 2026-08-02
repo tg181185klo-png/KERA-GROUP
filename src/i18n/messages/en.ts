@@ -11,6 +11,7 @@ export const en = {
       "Premium real estate ecosystem — Real Estate · Development · Investment · Property Management · Media",
   },
   nav: {
+    about: "About Us",
     services: "Services",
     map: "Map",
     properties: "Properties",
@@ -186,29 +187,57 @@ export const en = {
     currency: { label: "Exchange rates", desc: "Official NBG rates" },
   },
   services: {
-    eyebrow: "KERA Ecosystem",
-    title: "Premium Services Ecosystem",
+    eyebrow: "KERA GROUP",
+    title: "Your trusted partner in real estate",
     subtitle:
-      "Five directions, one standard — complete management and development of your property.",
-    realty: {
-      title: "KERA Realty",
-      desc: "Premium property selection, buying and selling across all regions of Georgia.",
+      "Five directions, one standard — full support from purchase to realization.",
+    learnMore: "Learn more →",
+    closeDetail: "Close",
+    contactInMenu: "Contact",
+    fullService: {
+      title: "Full real estate service",
+      shortDesc:
+        "Buy, sell, rent and pledge — complete, secure and comfortable process management.",
+      detail: [
+        "Buying or selling property is one of the most important and emotional steps in life. We understand how valuable every detail, financial resource and peace of mind is to you.",
+        "Our team frees you from routine processes, stress and fruitless searches. We take care of every stage — from accurate market valuation to a legally flawless contract. With us you get not just a service, but reliable support and a guarantee that your investment is in safe hands.",
+      ],
     },
-    developments: {
-      title: "KERA Developments",
-      desc: "Investment and residential projects developed to international standards.",
+    individualSearch: {
+      title: "Individual property search",
+      shortDesc:
+        "Property selection tailored to your wishes, lifestyle and budget.",
+      detail: [
+        "Finding the ideal home, commercial space or land plot often takes months and a lot of energy. We don't offer standard generic options — we listen to your real needs.",
+        "We analyze the market, verify the actual condition of each object and select only what fits your vision and life plans. Save time and energy — we know how to find exactly what you're looking for.",
+      ],
     },
-    invest: {
-      title: "KERA Invest",
-      desc: "Investment consulting, ROI analysis and portfolio management.",
+    remoteService: {
+      title: "Remote service for emigrants",
+      shortDesc:
+        "For compatriots abroad — secure remote property purchase in Georgia (\"Green Corridor\").",
+      detail: [
+        "We know the longing and responsibility that comes with staying connected to your homeland and building your nest there. When you're far away, you need trust and full information most of all.",
+        "KERA GROUP becomes your eyes and official representative in Georgia. We protect you from hidden risks: we inspect properties for you (3D tours and video reports), handle mortgage matters with banks, conduct a strict 3-level legal audit and complete all registry procedures without you needing to be physically present.",
+      ],
     },
-    management: {
-      title: "KERA Property Management",
-      desc: "Full property management — rent, maintenance, oversight and financial reporting.",
+    developerSales: {
+      title: "Developer project sales management",
+      shortDesc:
+        "Full outsourcing of sales and marketing for construction and development companies.",
+      detail: [
+        "Your main mission is quality and reliable construction; ours is generating successful and stable revenue for that project. Frozen capital and weak sales are constant stress that's hard to resolve without professionals.",
+        "We offer two flexible formats: \"Startup setup\" (building your internal sales department foundation) and \"Full cycle management\" (we fully handle project sales). Our goal is to become the strongest engine for your business growth.",
+      ],
     },
-    media: {
-      title: "KERA Media",
-      desc: "Professional photo/video production, 3D tours and marketing materials.",
+    propertyRealization: {
+      title: "Property realization",
+      shortDesc:
+        "For individuals and legal entities — correct positioning and realization on the best terms.",
+      detail: [
+        "For private owners, selling or renting property is often associated with endless calls, meetings and lost time. Wrong pricing or weak positioning slows the process by months.",
+        "We ensure your property appears on the market as a premium product. We handle professional positioning on the KERA GROUP platform, targeted ad campaigns and attract only genuinely interested, creditworthy buyers.",
+      ],
     },
   },
   featured: {

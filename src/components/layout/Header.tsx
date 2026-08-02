@@ -11,6 +11,7 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { UserMenu, useAuthUser } from "@/components/layout/UserMenu";
 import { useT } from "@/i18n/LocaleProvider";
 import { getNavLinks } from "@/i18n/nav";
+import { AboutNavDropdown } from "@/components/layout/AboutNavDropdown";
 import {
   CURRENCY_SECTION_ID,
   queueScrollToSection,
@@ -78,6 +79,7 @@ export function Header() {
             className="hidden shrink-0 items-center gap-0.5 lg:flex xl:gap-1"
             aria-label={t.footer.navigation}
           >
+            <AboutNavDropdown />
             {navLinks.map((link) => (
               <NavLink key={link.href} href={link.href} label={link.label} />
             ))}
@@ -137,6 +139,10 @@ export function Header() {
           />
           <div className="relative z-50 border-t border-slate-100 bg-white px-4 py-4 shadow-lg lg:hidden">
             <nav className="flex flex-col gap-0.5">
+              <AboutNavDropdown
+                variant="mobile"
+                onNavigate={() => setOpen(false)}
+              />
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
