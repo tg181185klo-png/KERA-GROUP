@@ -189,8 +189,6 @@ export const en = {
   services: {
     eyebrow: "KERA GROUP",
     pageTitle: "Services",
-    pageSubtitle:
-      "Remote support for emigrants, developer sales outsourcing and property realization.",
     learnMore: "Learn more →",
     backToServices: "← Services",
     contactInMenu: "Contact",
@@ -201,6 +199,8 @@ export const en = {
     emigrantPurchase: {
       title: "Apartment purchase for emigrants — full remote support",
       subtitle: "\"Green Corridor\"",
+      cardDesc:
+        "\"Green Corridor\" — full remote support for buying an apartment in Georgia.",
       shortDesc:
         "We understand that buying property while living abroad involves significant stress and bureaucracy. KERA GROUP offers emigrants a \"Green Corridor\" — we take full responsibility so you can become the owner of your desired apartment in Georgia simply, safely and without unnecessary worry.",
       intro: [
@@ -240,6 +240,8 @@ export const en = {
     developerServices: {
       title: "Services for developers and construction companies",
       subtitle: "",
+      cardDesc:
+        "Full outsourcing of sales and marketing — from scratch or first to last apartment.",
       shortDesc:
         "KERA GROUP offers construction companies full outsourcing of sales and marketing. We help you build a sales machine from scratch or fully hand over project realization from the first to the last apartment.",
       intro: [
@@ -277,6 +279,7 @@ export const en = {
     propertyListing: {
       title: "Property listing and realization (Sale • Rent • Lease)",
       subtitle: "",
+      cardDesc: "3 flexible formats — property listing, sale and rent.",
       shortDesc:
         "If you want to sell or rent an apartment, house, commercial space or land plot quickly and profitably, KERA GROUP offers 3 flexible service formats. Choose the package that suits you.",
       intro: [
@@ -295,6 +298,8 @@ export const en = {
         {
           number: "2",
           title: "Media listing (website + social media)",
+          cardDesc:
+            "Professional photo, video, 3D tour and social media placement.",
           description:
             "Statistics show professional visuals sell property 3× faster. This package is for those who want maximum impact.",
           includes: [
@@ -306,6 +311,8 @@ export const en = {
         {
           number: "3",
           title: "Full sale/rental support (A to Z)",
+          cardDesc:
+            "Client search, legal support — commission only after result.",
           description:
             "If you don't have time and want professionals to manage the entire process — this is your choice.",
           includes: [

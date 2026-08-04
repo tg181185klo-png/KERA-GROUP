@@ -1,5 +1,5 @@
-import { ServiceDetailContent } from "@/components/services/ServiceDetailContent";
+import { redirect } from "next/navigation";
 
-export default function PropertyListingServicePage() {
-  return <ServiceDetailContent serviceKey="propertyListing" />;
+export default function PropertyListingRedirect() {
+  redirect("/services#propertyListing");
 }

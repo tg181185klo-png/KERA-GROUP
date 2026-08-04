@@ -30,7 +30,7 @@ export function AboutNavDropdown({
   const [open, setOpen] = useState(false);
 
   const menuActive =
-    pathname.startsWith("/services/") || pathname === "/#services";
+    pathname === "/services" || pathname.startsWith("/services/");
 
   if (variant === "mobile") {
     return (
@@ -90,7 +90,7 @@ export function AboutNavDropdown({
       onMouseLeave={() => setOpen(false)}
     >
       <Link
-        href="/#services"
+        href="/services"
         className={cn(
           "inline-flex items-center gap-0.5 whitespace-nowrap rounded-lg px-2 py-1.5 text-sm font-medium transition lg:px-2.5",
           menuActive || open

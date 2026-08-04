@@ -22,10 +22,12 @@ export type ServiceCardKey =
   | "propertyMediaListing"
   | "propertyFullSupport";
 
+export const SERVICES_PAGE = "/services";
+
 export const SERVICE_PATHS: Record<ServiceKey, string> = {
-  emigrantPurchase: "/services/emigrant-purchase",
-  developerServices: "/services/developer-services",
-  propertyListing: "/services/property-listing",
+  emigrantPurchase: `${SERVICES_PAGE}#emigrantPurchase`,
+  developerServices: `${SERVICES_PAGE}#developerServices`,
+  propertyListing: `${SERVICES_PAGE}#propertyListing`,
 };
 
 export function getServicePath(key: ServiceKey): string {
@@ -44,7 +46,7 @@ export function getNavLinks(t: Messages) {
 export function getFooterLinks(t: Messages) {
   return [
     { href: "/", label: t.nav.home },
-    { href: "/#services", label: t.nav.services },
+    { href: SERVICES_PAGE, label: t.nav.services },
     { href: "/map", label: t.nav.map },
     { href: "/properties", label: t.nav.properties },
     { href: "/dashboard/add-property", label: t.nav.list },
@@ -189,37 +191,37 @@ export function getServiceCards(t: Messages) {
   return [
     {
       key: "emigrantPurchase" as const,
-      href: SERVICE_PATHS.emigrantPurchase,
+      href: `${SERVICES_PAGE}#emigrantPurchase`,
       title: emigrant.title,
-      shortDesc: emigrant.shortDesc,
+      cardDesc: emigrant.cardDesc,
       icon: "globe" as const,
     },
     {
       key: "developerServices" as const,
-      href: SERVICE_PATHS.developerServices,
+      href: `${SERVICES_PAGE}#developerServices`,
       title: developer.title,
-      shortDesc: developer.shortDesc,
+      cardDesc: developer.cardDesc,
       icon: "crane" as const,
     },
     {
       key: "propertyListing" as const,
-      href: SERVICE_PATHS.propertyListing,
+      href: `${SERVICES_PAGE}#propertyListing`,
       title: property.title,
-      shortDesc: property.shortDesc,
+      cardDesc: property.cardDesc,
       icon: "building" as const,
     },
     {
       key: "propertyMediaListing" as const,
-      href: `${SERVICE_PATHS.propertyListing}#package-2`,
+      href: `${SERVICES_PAGE}#propertyMediaListing`,
       title: mediaPkg.title,
-      shortDesc: mediaPkg.description,
+      cardDesc: mediaPkg.cardDesc,
       icon: "camera" as const,
     },
     {
       key: "propertyFullSupport" as const,
-      href: `${SERVICE_PATHS.propertyListing}#package-3`,
+      href: `${SERVICES_PAGE}#propertyFullSupport`,
       title: fullPkg.title,
-      shortDesc: fullPkg.description,
+      cardDesc: fullPkg.cardDesc,
       icon: "handshake" as const,
     },
   ];

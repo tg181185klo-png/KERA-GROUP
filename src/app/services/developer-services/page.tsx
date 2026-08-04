@@ -1,5 +1,5 @@
-import { ServiceDetailContent } from "@/components/services/ServiceDetailContent";
+import { redirect } from "next/navigation";
 
-export default function DeveloperServicesPage() {
-  return <ServiceDetailContent serviceKey="developerServices" />;
+export default function DeveloperServicesRedirect() {
+  redirect("/services#developerServices");
 }

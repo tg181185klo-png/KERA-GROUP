@@ -1,5 +1,5 @@
-import { ServiceDetailContent } from "@/components/services/ServiceDetailContent";
+import { redirect } from "next/navigation";
 
-export default function EmigrantPurchaseServicePage() {
-  return <ServiceDetailContent serviceKey="emigrantPurchase" />;
+export default function EmigrantPurchaseRedirect() {
+  redirect("/services#emigrantPurchase");
 }
