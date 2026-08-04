@@ -16,7 +16,7 @@ export const CONTACT_PHONE_HREF = "tel:+995555000000";
 export const CONTACT_ADDRESS = "თბილისი, საქართველო";
 
 export const NAV_LINKS = [
-  { href: "/#services", label: "ჩვენს შესახებ" },
+  { href: "/#services", label: "სერვისები" },
   { href: "/map", label: "რუკა" },
   { href: "/properties", label: "ქონება" },
   { href: "/#calculator", label: "კალკულატორი" },

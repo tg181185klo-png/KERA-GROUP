@@ -65,7 +65,7 @@ export function AboutNavDropdown({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
         >
-          {t.nav.about}
+          {t.nav.services}
           <ChevronDown
             className={cn("h-4 w-4 transition", open && "rotate-180")}
           />
@@ -125,7 +125,7 @@ export function AboutNavDropdown({
             : "text-slate-600 hover:bg-slate-50 hover:text-kera-slate",
         )}
       >
-        {t.nav.about}
+        {t.nav.services}
         <ChevronDown
           className={cn("h-3.5 w-3.5 transition", open && "rotate-180")}
         />

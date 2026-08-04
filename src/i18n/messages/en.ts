@@ -188,55 +188,82 @@ export const en = {
   },
   services: {
     eyebrow: "KERA GROUP",
-    title: "Your trusted partner in real estate",
-    subtitle:
-      "Five directions, one standard — full support from purchase to realization.",
+    pageTitle: "Services",
+    pageSubtitle:
+      "Full remote support for emigrants and professional property listing and realization.",
     learnMore: "Learn more →",
     closeDetail: "Close",
     contactInMenu: "Contact",
-    fullService: {
-      title: "Full real estate service",
-      shortDesc:
-        "Buy, sell, rent and pledge — complete, secure and comfortable process management.",
-      detail: [
-        "Buying or selling property is one of the most important and emotional steps in life. We understand how valuable every detail, financial resource and peace of mind is to you.",
-        "Our team frees you from routine processes, stress and fruitless searches. We take care of every stage — from accurate market valuation to a legally flawless contract. With us you get not just a service, but reliable support and a guarantee that your investment is in safe hands.",
+    whatIncludes: "What does our service include?",
+    choosePackage: "Choose the package that suits you",
+    includesLabel: "Includes",
+    pricingLabel: "Pricing",
+    emigrantPurchase: {
+      title: "Apartment purchase for emigrants — full remote support",
+      subtitle: "\"Green Corridor\"",
+      intro: [
+        "We understand that buying property while living abroad involves significant stress and bureaucracy. KERA GROUP offers emigrants a \"Green Corridor\" — we take full responsibility so you can become the owner of your desired apartment in Georgia simply, safely and without unnecessary worry.",
+        "This service is commission-based, meaning our interests fully align with yours — to find the best option at the most affordable price.",
+      ],
+      features: [
+        {
+          title: "🎯 Property selection (online)",
+          bullets: [
+            "Based on your budget and requirements, we select the best apartments on both the primary (new build) and secondary markets.",
+            "We send detailed 3D tours, video/photo reports from properties and objective information on construction quality.",
+          ],
+        },
+        {
+          title: "🏦 Banking and mortgage support",
+          bullets: [
+            "We help you find special mortgage loans designed for emigrants.",
+            "Through our partner banks, we remotely handle income verification and pre-approval procedures.",
+          ],
+        },
+        {
+          title: "⚖️ Legal and notarial services",
+          bullets: [
+            "We fully verify legal clarity in the public registry (liens, mortgages, disputes).",
+            "We prepare purchase agreements and ensure smooth notarial processes (including power-of-attorney purchase if you cannot travel to Georgia).",
+          ],
+        },
+        {
+          title: "💼 Full representation (A to Z)",
+          bullets: [
+            "We are your \"eyes and ears\" on the ground. You only make the decision — our team handles all remaining bureaucracy, including registry registration.",
+          ],
+        },
       ],
     },
-    individualSearch: {
-      title: "Individual property search",
-      shortDesc:
-        "Property selection tailored to your wishes, lifestyle and budget.",
-      detail: [
-        "Finding the ideal home, commercial space or land plot often takes months and a lot of energy. We don't offer standard generic options — we listen to your real needs.",
-        "We analyze the market, verify the actual condition of each object and select only what fits your vision and life plans. Save time and energy — we know how to find exactly what you're looking for.",
+    propertyListing: {
+      title: "Property listing and realization",
+      subtitle: "Sale • Rent • Lease",
+      intro: [
+        "If you want to sell or rent an apartment, house, commercial space or land plot quickly and profitably, KERA GROUP offers 3 flexible service formats.",
       ],
-    },
-    remoteService: {
-      title: "Remote service for emigrants",
-      shortDesc:
-        "For compatriots abroad — secure remote property purchase in Georgia (\"Green Corridor\").",
-      detail: [
-        "We know the longing and responsibility that comes with staying connected to your homeland and building your nest there. When you're far away, you need trust and full information most of all.",
-        "KERA GROUP becomes your eyes and official representative in Georgia. We protect you from hidden risks: we inspect properties for you (3D tours and video reports), handle mortgage matters with banks, conduct a strict 3-level legal audit and complete all registry procedures without you needing to be physically present.",
-      ],
-    },
-    developerSales: {
-      title: "Developer project sales management",
-      shortDesc:
-        "Full outsourcing of sales and marketing for construction and development companies.",
-      detail: [
-        "Your main mission is quality and reliable construction; ours is generating successful and stable revenue for that project. Frozen capital and weak sales are constant stress that's hard to resolve without professionals.",
-        "We offer two flexible formats: \"Startup setup\" (building your internal sales department foundation) and \"Full cycle management\" (we fully handle project sales). Our goal is to become the strongest engine for your business growth.",
-      ],
-    },
-    propertyRealization: {
-      title: "Property realization",
-      shortDesc:
-        "For individuals and legal entities — correct positioning and realization on the best terms.",
-      detail: [
-        "For private owners, selling or renting property is often associated with endless calls, meetings and lost time. Wrong pricing or weak positioning slows the process by months.",
-        "We ensure your property appears on the market as a premium product. We handle professional positioning on the KERA GROUP platform, targeted ad campaigns and attract only genuinely interested, creditworthy buyers.",
+      packages: [
+        {
+          number: "1",
+          title: "💻 Simple platform listing",
+          includes:
+            "Best for owners who want to showcase their property to a premium audience. Your listing on the official KERA GROUP website with an easy-to-use filter system.",
+          pricing: "One-time fixed commission when the listing is published.",
+        },
+        {
+          number: "2",
+          title: "📸 Media listing (website + social media)",
+          includes:
+            "Statistics show professional visuals sell property 3× faster. Professional photography and videography (high-quality photos, video teasers, 3D tours). Premium placement on the website and KERA GROUP social channels (Facebook, Instagram) with targeted advertising.",
+          pricing: "One-time service commission (media package fee).",
+        },
+        {
+          number: "3",
+          title: "🤝 Full sale/rental support (A to Z)",
+          includes:
+            "Finding clients, answering calls, on-site viewings and negotiations. Full legal support, purchase/lease agreement preparation and registry registration.",
+          pricing:
+            "No upfront payment. We charge commission (percentage) only after a real result — when the property is sold or rented.",
+        },
       ],
     },
   },

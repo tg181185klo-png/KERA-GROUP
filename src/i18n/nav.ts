@@ -10,12 +10,7 @@ import {
 } from "@/lib/locations/municipality-villages";
 import type { Locale } from "./types";
 
-export type ServiceKey =
-  | "fullService"
-  | "individualSearch"
-  | "remoteService"
-  | "developerSales"
-  | "propertyRealization";
+export type ServiceKey = "emigrantPurchase" | "propertyListing";
 
 export function getNavLinks(t: Messages) {
   return [
@@ -29,7 +24,7 @@ export function getNavLinks(t: Messages) {
 export function getFooterLinks(t: Messages) {
   return [
     { href: "/", label: t.nav.home },
-    { href: "/#services", label: t.nav.about },
+    { href: "/#services", label: t.nav.services },
     { href: "/map", label: t.nav.map },
     { href: "/properties", label: t.nav.properties },
     { href: "/dashboard/add-property", label: t.nav.list },
@@ -134,39 +129,20 @@ export function getAreaDisplayLabel(
 export function getServices(t: Messages) {
   return [
     {
-      key: "fullService" as const,
-      title: t.services.fullService.title,
-      desc: t.services.fullService.shortDesc,
-      detail: t.services.fullService.detail,
-      icon: "home" as const,
-    },
-    {
-      key: "individualSearch" as const,
-      title: t.services.individualSearch.title,
-      desc: t.services.individualSearch.shortDesc,
-      detail: t.services.individualSearch.detail,
-      icon: "search" as const,
-    },
-    {
-      key: "remoteService" as const,
-      title: t.services.remoteService.title,
-      desc: t.services.remoteService.shortDesc,
-      detail: t.services.remoteService.detail,
+      key: "emigrantPurchase" as const,
+      title: t.services.emigrantPurchase.title,
+      subtitle: t.services.emigrantPurchase.subtitle,
+      intro: t.services.emigrantPurchase.intro,
+      features: t.services.emigrantPurchase.features,
       icon: "globe" as const,
     },
     {
-      key: "developerSales" as const,
-      title: t.services.developerSales.title,
-      desc: t.services.developerSales.shortDesc,
-      detail: t.services.developerSales.detail,
-      icon: "crane" as const,
-    },
-    {
-      key: "propertyRealization" as const,
-      title: t.services.propertyRealization.title,
-      desc: t.services.propertyRealization.shortDesc,
-      detail: t.services.propertyRealization.detail,
-      icon: "chart" as const,
+      key: "propertyListing" as const,
+      title: t.services.propertyListing.title,
+      subtitle: t.services.propertyListing.subtitle,
+      intro: t.services.propertyListing.intro,
+      packages: t.services.propertyListing.packages,
+      icon: "building" as const,
     },
   ];
 }
@@ -179,13 +155,7 @@ export function parseServiceHash(hash: string): ServiceKey | null {
   const match = hash.replace(/^#/, "").match(/^services-(\w+)$/);
   if (!match) return null;
   const key = match[1] as ServiceKey;
-  const valid: ServiceKey[] = [
-    "fullService",
-    "individualSearch",
-    "remoteService",
-    "developerSales",
-    "propertyRealization",
-  ];
+  const valid: ServiceKey[] = ["emigrantPurchase", "propertyListing"];
   return valid.includes(key) ? key : null;
 }
 
