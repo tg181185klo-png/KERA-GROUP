@@ -1,18 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Building2, Globe } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  Camera,
+  Globe,
+  Handshake,
+  HardHat,
+} from "lucide-react";
 import { useT } from "@/i18n/LocaleProvider";
-import { getServices } from "@/i18n/nav";
+import { getServiceCards } from "@/i18n/nav";
 
 const ICONS = {
   globe: Globe,
+  crane: HardHat,
   building: Building2,
+  camera: Camera,
+  handshake: Handshake,
 } as const;
 
 export function ServicesSection() {
   const t = useT();
-  const services = getServices(t);
+  const services = getServiceCards(t);
 
   return (
     <section id="services" className="kera-section bg-white">
@@ -25,7 +35,7 @@ export function ServicesSection() {
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {services.map((service) => {
             const Icon = ICONS[service.icon];
             return (
@@ -36,7 +46,7 @@ export function ServicesSection() {
                 <div className="kera-icon-box mb-5 w-fit">
                   <Icon className="h-6 w-6" strokeWidth={2.25} />
                 </div>
-                <h3 className="font-display text-xl font-bold text-kera-slate sm:text-2xl">
+                <h3 className="font-display text-lg font-bold leading-snug text-kera-slate sm:text-xl">
                   {service.title}
                 </h3>
                 <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-600 sm:text-base">

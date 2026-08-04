@@ -29,6 +29,11 @@ export function ServiceDetailContent({ serviceKey }: ServiceDetailContentProps) 
 
   if (!service) return null;
 
+  const showPackageHeading =
+    service.packages &&
+    service.packages.length > 0 &&
+    serviceKey !== "propertyListing";
+
   return (
     <section className="kera-section bg-white">
       <div className="kera-container max-w-4xl">
@@ -85,11 +90,17 @@ export function ServiceDetailContent({ serviceKey }: ServiceDetailContentProps) 
 
         {service.packages && service.packages.length > 0 && (
           <div className="mt-12">
+            {showPackageHeading && (
+              <h2 className="mb-6 font-display text-xl font-bold text-kera-slate">
+                {t.services.choosePackage}
+              </h2>
+            )}
             <div className="grid gap-4 lg:grid-cols-1">
               {service.packages.map((pkg) => (
                 <div
                   key={pkg.number}
-                  className="kera-card border-kera-primary/20 p-5 sm:p-6"
+                  id={`package-${pkg.number}`}
+                  className="scroll-mt-28 kera-card border-kera-primary/20 p-5 sm:p-6"
                 >
                   <div className="flex items-start gap-4">
                     <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-kera-primary-light text-sm font-bold text-kera-primary">
@@ -110,12 +121,14 @@ export function ServiceDetailContent({ serviceKey }: ServiceDetailContentProps) 
                         </span>
                         <PackageIncludes includes={pkg.includes} />
                       </div>
-                      <p className="mt-4 rounded-lg bg-kera-primary-light/60 px-3 py-2 text-sm text-slate-700">
-                        <span className="block font-semibold text-kera-primary">
-                          {t.services.pricingLabel}
-                        </span>
-                        {pkg.pricing}
-                      </p>
+                      {pkg.pricing && (
+                        <p className="mt-4 rounded-lg bg-kera-primary-light/60 px-3 py-2 text-sm text-slate-700">
+                          <span className="block font-semibold text-kera-primary">
+                            {t.services.pricingLabel}
+                          </span>
+                          {pkg.pricing}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

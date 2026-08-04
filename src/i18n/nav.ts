@@ -10,10 +10,21 @@ import {
 } from "@/lib/locations/municipality-villages";
 import type { Locale } from "./types";
 
-export type ServiceKey = "emigrantPurchase" | "propertyListing";
+export type ServiceKey =
+  | "emigrantPurchase"
+  | "developerServices"
+  | "propertyListing";
+
+export type ServiceCardKey =
+  | "emigrantPurchase"
+  | "developerServices"
+  | "propertyListing"
+  | "propertyMediaListing"
+  | "propertyFullSupport";
 
 export const SERVICE_PATHS: Record<ServiceKey, string> = {
   emigrantPurchase: "/services/emigrant-purchase",
+  developerServices: "/services/developer-services",
   propertyListing: "/services/property-listing",
 };
 
@@ -135,27 +146,81 @@ export function getAreaDisplayLabel(
   return areaValue.trim();
 }
 
+function buildDetailService(
+  t: Messages,
+  key: ServiceKey,
+  icon: "globe" | "crane" | "building",
+) {
+  const data = t.services[key];
+  return {
+    key,
+    href: SERVICE_PATHS[key],
+    title: data.title,
+    subtitle: data.subtitle,
+    shortDesc: data.shortDesc,
+    intro: data.intro,
+    icon,
+    ...("features" in data && data.features
+      ? { features: data.features }
+      : {}),
+    ...("packages" in data && data.packages
+      ? { packages: data.packages }
+      : {}),
+  };
+}
+
+/** Full detail pages (3 routes). */
 export function getServices(t: Messages) {
+  return [
+    buildDetailService(t, "emigrantPurchase", "globe"),
+    buildDetailService(t, "developerServices", "crane"),
+    buildDetailService(t, "propertyListing", "building"),
+  ];
+}
+
+/** Homepage and nav teaser cards (5 items). */
+export function getServiceCards(t: Messages) {
+  const emigrant = t.services.emigrantPurchase;
+  const developer = t.services.developerServices;
+  const property = t.services.propertyListing;
+  const mediaPkg = property.packages[1];
+  const fullPkg = property.packages[2];
+
   return [
     {
       key: "emigrantPurchase" as const,
       href: SERVICE_PATHS.emigrantPurchase,
-      title: t.services.emigrantPurchase.title,
-      subtitle: t.services.emigrantPurchase.subtitle,
-      shortDesc: t.services.emigrantPurchase.shortDesc,
-      intro: t.services.emigrantPurchase.intro,
-      features: t.services.emigrantPurchase.features,
+      title: emigrant.title,
+      shortDesc: emigrant.shortDesc,
       icon: "globe" as const,
+    },
+    {
+      key: "developerServices" as const,
+      href: SERVICE_PATHS.developerServices,
+      title: developer.title,
+      shortDesc: developer.shortDesc,
+      icon: "crane" as const,
     },
     {
       key: "propertyListing" as const,
       href: SERVICE_PATHS.propertyListing,
-      title: t.services.propertyListing.title,
-      subtitle: t.services.propertyListing.subtitle,
-      shortDesc: t.services.propertyListing.shortDesc,
-      intro: t.services.propertyListing.intro,
-      packages: t.services.propertyListing.packages,
+      title: property.title,
+      shortDesc: property.shortDesc,
       icon: "building" as const,
+    },
+    {
+      key: "propertyMediaListing" as const,
+      href: `${SERVICE_PATHS.propertyListing}#package-2`,
+      title: mediaPkg.title,
+      shortDesc: mediaPkg.description,
+      icon: "camera" as const,
+    },
+    {
+      key: "propertyFullSupport" as const,
+      href: `${SERVICE_PATHS.propertyListing}#package-3`,
+      title: fullPkg.title,
+      shortDesc: fullPkg.description,
+      icon: "handshake" as const,
     },
   ];
 }

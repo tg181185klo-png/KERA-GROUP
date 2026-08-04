@@ -190,7 +190,7 @@ export const en = {
     eyebrow: "KERA GROUP",
     pageTitle: "Services",
     pageSubtitle:
-      "Full remote support for emigrants and professional property listing and realization.",
+      "Remote support for emigrants, developer sales outsourcing and property realization.",
     learnMore: "Learn more →",
     backToServices: "← Services",
     contactInMenu: "Contact",
@@ -234,6 +234,43 @@ export const en = {
           bullets: [
             "We are your \"eyes and ears\" on the ground. You only make the decision — our team handles all remaining bureaucracy, including registry registration.",
           ],
+        },
+      ],
+    },
+    developerServices: {
+      title: "Services for developers and construction companies",
+      subtitle: "",
+      shortDesc:
+        "KERA GROUP offers construction companies full outsourcing of sales and marketing. We help you build a sales machine from scratch or fully hand over project realization from the first to the last apartment.",
+      intro: [
+        "KERA GROUP offers construction companies full outsourcing of sales and marketing. We help you build a sales machine from scratch or fully hand over project realization from the first to the last apartment.",
+        "Choose the cooperation format that suits you:",
+      ],
+      packages: [
+        {
+          number: "1",
+          title: "Package 1: \"Startup setup\" (2–3 month project)",
+          description:
+            "A short-term, paid project aimed at full preparation for market entry and creating a sales system for your construction project.",
+          includes: [
+            "Staff selection: we find and hire a qualified sales manager oriented to your project.",
+            "Digital infrastructure: we prepare and set up a modern website and social networks (Facebook, Instagram, LinkedIn).",
+            "KERA Media package: professional photos, videos and presentation materials for your project.",
+            "Market launch: we prepare sales strategy, scripts and a full base for independent and effective operation on the market.",
+          ],
+          pricing: "",
+        },
+        {
+          number: "2",
+          title: "Package 2: Full cycle management (first to last apartment)",
+          description:
+            "Long-term, commission-based partnership where we become your company's exclusive sales and marketing department.",
+          includes: [
+            "Full realization: we take responsibility for selling absolutely all spaces in the project (apartments, commercial, parking).",
+            "Ongoing marketing: with our budget and resources we maintain continuous ad campaigns, lead generation and brand awareness.",
+            "Commission compensation: you pay no fixed monthly costs — our compensation depends directly on actual sales (percentage of each apartment sold).",
+          ],
+          pricing: "",
         },
       ],
     },

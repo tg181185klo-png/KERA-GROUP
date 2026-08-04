@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Mail, Phone } from "lucide-react";
 import { useState } from "react";
 import { useT } from "@/i18n/LocaleProvider";
-import { getServices } from "@/i18n/nav";
+import { getServiceCards } from "@/i18n/nav";
 import {
   CONTACT_EMAIL,
   CONTACT_PHONE,
@@ -26,7 +26,7 @@ export function AboutNavDropdown({
 }: AboutNavDropdownProps) {
   const t = useT();
   const pathname = usePathname();
-  const services = getServices(t);
+  const services = getServiceCards(t);
   const [open, setOpen] = useState(false);
 
   const menuActive =
