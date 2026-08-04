@@ -12,6 +12,15 @@ import type { Locale } from "./types";
 
 export type ServiceKey = "emigrantPurchase" | "propertyListing";
 
+export const SERVICE_PATHS: Record<ServiceKey, string> = {
+  emigrantPurchase: "/services/emigrant-purchase",
+  propertyListing: "/services/property-listing",
+};
+
+export function getServicePath(key: ServiceKey): string {
+  return SERVICE_PATHS[key];
+}
+
 export function getNavLinks(t: Messages) {
   return [
     { href: "/map", label: t.nav.map },
@@ -130,33 +139,25 @@ export function getServices(t: Messages) {
   return [
     {
       key: "emigrantPurchase" as const,
+      href: SERVICE_PATHS.emigrantPurchase,
       title: t.services.emigrantPurchase.title,
       subtitle: t.services.emigrantPurchase.subtitle,
+      shortDesc: t.services.emigrantPurchase.shortDesc,
       intro: t.services.emigrantPurchase.intro,
       features: t.services.emigrantPurchase.features,
       icon: "globe" as const,
     },
     {
       key: "propertyListing" as const,
+      href: SERVICE_PATHS.propertyListing,
       title: t.services.propertyListing.title,
       subtitle: t.services.propertyListing.subtitle,
+      shortDesc: t.services.propertyListing.shortDesc,
       intro: t.services.propertyListing.intro,
       packages: t.services.propertyListing.packages,
       icon: "building" as const,
     },
   ];
-}
-
-export function serviceHash(key: ServiceKey): string {
-  return `services-${key}`;
-}
-
-export function parseServiceHash(hash: string): ServiceKey | null {
-  const match = hash.replace(/^#/, "").match(/^services-(\w+)$/);
-  if (!match) return null;
-  const key = match[1] as ServiceKey;
-  const valid: ServiceKey[] = ["emigrantPurchase", "propertyListing"];
-  return valid.includes(key) ? key : null;
 }
 
 export function getListingTypeLabel(

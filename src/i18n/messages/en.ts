@@ -192,7 +192,7 @@ export const en = {
     pageSubtitle:
       "Full remote support for emigrants and professional property listing and realization.",
     learnMore: "Learn more →",
-    closeDetail: "Close",
+    backToServices: "← Services",
     contactInMenu: "Contact",
     whatIncludes: "What does our service include?",
     choosePackage: "Choose the package that suits you",
@@ -201,34 +201,36 @@ export const en = {
     emigrantPurchase: {
       title: "Apartment purchase for emigrants — full remote support",
       subtitle: "\"Green Corridor\"",
+      shortDesc:
+        "We understand that buying property while living abroad involves significant stress and bureaucracy. KERA GROUP offers emigrants a \"Green Corridor\" — we take full responsibility so you can become the owner of your desired apartment in Georgia simply, safely and without unnecessary worry.",
       intro: [
         "We understand that buying property while living abroad involves significant stress and bureaucracy. KERA GROUP offers emigrants a \"Green Corridor\" — we take full responsibility so you can become the owner of your desired apartment in Georgia simply, safely and without unnecessary worry.",
         "This service is commission-based, meaning our interests fully align with yours — to find the best option at the most affordable price.",
       ],
       features: [
         {
-          title: "🎯 Property selection (online)",
+          title: "Property selection (online):",
           bullets: [
             "Based on your budget and requirements, we select the best apartments on both the primary (new build) and secondary markets.",
             "We send detailed 3D tours, video/photo reports from properties and objective information on construction quality.",
           ],
         },
         {
-          title: "🏦 Banking and mortgage support",
+          title: "Banking and mortgage support:",
           bullets: [
             "We help you find special mortgage loans designed for emigrants.",
             "Through our partner banks, we remotely handle income verification and pre-approval procedures.",
           ],
         },
         {
-          title: "⚖️ Legal and notarial services",
+          title: "Legal and notarial services:",
           bullets: [
             "We fully verify legal clarity in the public registry (liens, mortgages, disputes).",
             "We prepare purchase agreements and ensure smooth notarial processes (including power-of-attorney purchase if you cannot travel to Georgia).",
           ],
         },
         {
-          title: "💼 Full representation (A to Z)",
+          title: "Full representation (A to Z):",
           bullets: [
             "We are your \"eyes and ears\" on the ground. You only make the decision — our team handles all remaining bureaucracy, including registry registration.",
           ],
@@ -236,31 +238,43 @@ export const en = {
       ],
     },
     propertyListing: {
-      title: "Property listing and realization",
-      subtitle: "Sale • Rent • Lease",
+      title: "Property listing and realization (Sale • Rent • Lease)",
+      subtitle: "",
+      shortDesc:
+        "If you want to sell or rent an apartment, house, commercial space or land plot quickly and profitably, KERA GROUP offers 3 flexible service formats. Choose the package that suits you.",
       intro: [
-        "If you want to sell or rent an apartment, house, commercial space or land plot quickly and profitably, KERA GROUP offers 3 flexible service formats.",
+        "If you want to sell or rent an apartment, house, commercial space or land plot quickly and profitably, KERA GROUP offers 3 flexible service formats. Choose the package that suits you:",
       ],
       packages: [
         {
           number: "1",
-          title: "💻 Simple platform listing",
+          title: "Simple platform listing",
+          description:
+            "Best for owners who want to showcase their property to a premium audience.",
           includes:
-            "Best for owners who want to showcase their property to a premium audience. Your listing on the official KERA GROUP website with an easy-to-use filter system.",
-          pricing: "One-time fixed commission when the listing is published.",
+            "Your listing on the official KERA GROUP website with an easy-to-use filter system.",
+          pricing: "One-time fixed commission when the listing is published.[1]",
         },
         {
           number: "2",
-          title: "📸 Media listing (website + social media)",
-          includes:
-            "Statistics show professional visuals sell property 3× faster. Professional photography and videography (high-quality photos, video teasers, 3D tours). Premium placement on the website and KERA GROUP social channels (Facebook, Instagram) with targeted advertising.",
+          title: "Media listing (website + social media)",
+          description:
+            "Statistics show professional visuals sell property 3× faster. This package is for those who want maximum impact.",
+          includes: [
+            "Professional photography and videography by our team (high-quality photos, video teasers, 3D tours).",
+            "Premium placement on the website and KERA GROUP social channels (Facebook, Instagram) with targeted advertising.",
+          ],
           pricing: "One-time service commission (media package fee).",
         },
         {
           number: "3",
-          title: "🤝 Full sale/rental support (A to Z)",
-          includes:
-            "Finding clients, answering calls, on-site viewings and negotiations. Full legal support, purchase/lease agreement preparation and registry registration.",
+          title: "Full sale/rental support (A to Z)",
+          description:
+            "If you don't have time and want professionals to manage the entire process — this is your choice.",
+          includes: [
+            "Finding clients, answering calls, on-site viewings and negotiations.",
+            "Full legal support, purchase/lease agreement preparation and registry registration.",
+          ],
           pricing:
             "No upfront payment. We charge commission (percentage) only after a real result — when the property is sold or rented.",
         },

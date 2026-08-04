@@ -1,31 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ChevronDown, Mail, Phone } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useT } from "@/i18n/LocaleProvider";
-import {
-  getServices,
-  parseServiceHash,
-  serviceHash,
-  type ServiceKey,
-} from "@/i18n/nav";
+import { getServices } from "@/i18n/nav";
 import {
   CONTACT_EMAIL,
   CONTACT_PHONE,
   CONTACT_PHONE_HREF,
 } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-
-function openService(key: ServiceKey, pathname: string, router: ReturnType<typeof useRouter>) {
-  if (pathname === "/") {
-    window.location.hash = serviceHash(key);
-    window.dispatchEvent(new HashChangeEvent("hashchange"));
-    return;
-  }
-  router.push(`/#${serviceHash(key)}`);
-}
 
 interface AboutNavDropdownProps {
   className?: string;
@@ -40,21 +26,11 @@ export function AboutNavDropdown({
 }: AboutNavDropdownProps) {
   const t = useT();
   const pathname = usePathname();
-  const router = useRouter();
   const services = getServices(t);
   const [open, setOpen] = useState(false);
-  const [menuActive, setMenuActive] = useState(false);
 
-  useEffect(() => {
-    const sync = () => {
-      setMenuActive(
-        pathname === "/" && parseServiceHash(window.location.hash) != null,
-      );
-    };
-    sync();
-    window.addEventListener("hashchange", sync);
-    return () => window.removeEventListener("hashchange", sync);
-  }, [pathname]);
+  const menuActive =
+    pathname.startsWith("/services/") || pathname === "/#services";
 
   if (variant === "mobile") {
     return (
@@ -73,17 +49,14 @@ export function AboutNavDropdown({
         {open && (
           <div className="ml-2 border-l-2 border-kera-primary/20 pl-3">
             {services.map((service) => (
-              <button
+              <Link
                 key={service.key}
-                type="button"
-                className="block w-full rounded-lg py-2.5 text-left text-sm text-slate-600 transition hover:text-kera-primary"
-                onClick={() => {
-                  openService(service.key, pathname, router);
-                  onNavigate?.();
-                }}
+                href={service.href}
+                className="block rounded-lg py-2.5 text-sm text-slate-600 transition hover:text-kera-primary"
+                onClick={onNavigate}
               >
                 {service.title}
-              </button>
+              </Link>
             ))}
             <div className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
               <p className="mb-1 font-semibold text-slate-600">
@@ -137,16 +110,13 @@ export function AboutNavDropdown({
             <ul className="py-1">
               {services.map((service) => (
                 <li key={service.key}>
-                  <button
-                    type="button"
-                    className="w-full px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-kera-primary-light hover:text-kera-primary"
-                    onClick={() => {
-                      openService(service.key, pathname, router);
-                      setOpen(false);
-                    }}
+                  <Link
+                    href={service.href}
+                    className="block px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-kera-primary-light hover:text-kera-primary"
+                    onClick={() => setOpen(false)}
                   >
                     {service.title}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
