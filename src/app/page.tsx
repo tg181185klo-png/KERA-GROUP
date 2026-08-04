@@ -1,6 +1,7 @@
 import { HeroSearch } from "@/components/home/HeroSearch";
 import { HomeMapSection } from "@/components/home/HomeMapSection";
 import { QuickActions } from "@/components/home/QuickActions";
+import { HomeServicesSection } from "@/components/home/HomeServicesSection";
 import { FeaturedProperties } from "@/components/home/FeaturedProperties";
 import { ToolsSection } from "@/components/home/ToolsSection";
 import { fetchActiveMapListings } from "@/lib/active-listings";
@@ -23,6 +24,7 @@ export default async function Home() {
       <HeroSearch />
       <HomeMapSection />
       <QuickActions />
+      <HomeServicesSection />
       <FeaturedProperties initialProperties={properties} searchParams={{}} />
       <ToolsSection />
     </>
