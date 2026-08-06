@@ -69,7 +69,7 @@ export function QuickActions() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
           {actions.map(({ key, href, icon: Icon, label, description, onClick }) => {
             const className =
-              "kera-card group flex min-h-[88px] items-center gap-3 p-4 sm:gap-4 sm:p-5";
+              "kera-card kera-hover-lift group flex min-h-[88px] items-center gap-3 p-4 sm:gap-4 sm:p-5";
 
             const content = (
               <>

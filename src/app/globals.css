@@ -121,6 +121,26 @@ body {
     @apply rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-shadow hover:shadow-md;
   }
 
+  .kera-hover-lift {
+    @apply transition-all duration-300 ease-out will-change-transform;
+  }
+
+  .kera-hover-lift:hover {
+    @apply -translate-y-0.5 scale-[1.02] border-kera-primary/25 shadow-lg;
+  }
+
+  .kera-nav-link {
+    @apply whitespace-nowrap rounded-lg px-2 py-1.5 text-sm font-medium transition-all duration-200 lg:px-2.5;
+  }
+
+  .kera-nav-link:hover {
+    @apply bg-kera-primary text-white;
+  }
+
+  .kera-nav-link-active {
+    @apply bg-kera-primary-light text-kera-primary;
+  }
+
   .kera-section-title {
     @apply font-display text-2xl font-bold leading-tight tracking-tight text-kera-slate sm:text-3xl lg:text-4xl;
   }

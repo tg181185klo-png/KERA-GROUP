@@ -37,7 +37,7 @@ export function AboutNavDropdown({
       <div className={className}>
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          className="kera-nav-link flex w-full items-center justify-between rounded-xl px-3 py-3 text-slate-700"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
         >
@@ -92,10 +92,10 @@ export function AboutNavDropdown({
       <Link
         href="/services"
         className={cn(
-          "inline-flex items-center gap-0.5 whitespace-nowrap rounded-lg px-2 py-1.5 text-sm font-medium transition lg:px-2.5",
+          "kera-nav-link inline-flex items-center gap-0.5",
           menuActive || open
-            ? "bg-kera-primary-light text-kera-primary"
-            : "text-slate-600 hover:bg-slate-50 hover:text-kera-slate",
+            ? "kera-nav-link-active"
+            : "text-slate-600",
         )}
       >
         {t.nav.services}

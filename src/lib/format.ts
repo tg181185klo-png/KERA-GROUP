@@ -30,11 +30,10 @@ export function formatPrice(price: number, currency: string): string {
 
 export function calculateMortgage(
   principal: number,
-  years: number,
+  months: number,
   annualRate: number
 ) {
   const monthlyRate = annualRate / 100 / 12;
-  const months = years * 12;
 
   if (monthlyRate === 0) {
     const monthly = principal / months;

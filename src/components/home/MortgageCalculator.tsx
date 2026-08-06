@@ -13,7 +13,7 @@ export function MortgageCalculator() {
   const t = useT();
   const [currency, setCurrency] = useState<"USD" | "GEL">("USD");
   const [amount, setAmount] = useState(150000);
-  const [years, setYears] = useState(20);
+  const [months, setMonths] = useState(240);
   const [rate, setRate] = useState(8);
 
   const maxAmount = currency === "USD" ? MAX_USD : MAX_GEL;
@@ -21,8 +21,8 @@ export function MortgageCalculator() {
   const step = currency === "USD" ? 5000 : 13250;
 
   const result = useMemo(
-    () => calculateMortgage(amount, years, rate),
-    [amount, years, rate],
+    () => calculateMortgage(amount, months, rate),
+    [amount, months, rate],
   );
 
   function handleCurrencyChange(next: "USD" | "GEL") {
@@ -89,17 +89,18 @@ export function MortgageCalculator() {
 
         <div>
           <label className="mb-2 flex justify-between text-sm font-medium text-slate-700">
-            <span>{t.mortgage.years}</span>
+            <span>{t.mortgage.months}</span>
             <span className="font-bold text-kera-primary">
-              {years} {t.mortgage.yearsUnit}
+              {months} {t.mortgage.monthsUnit}
             </span>
           </label>
           <input
             type="range"
-            min={1}
-            max={30}
-            value={years}
-            onChange={(e) => setYears(Number(e.target.value))}
+            min={6}
+            max={360}
+            step={1}
+            value={months}
+            onChange={(e) => setMonths(Number(e.target.value))}
             className="w-full accent-kera-primary"
           />
         </div>
@@ -112,7 +113,7 @@ export function MortgageCalculator() {
           <input
             type="range"
             min={1}
-            max={20}
+            max={50}
             step={0.1}
             value={rate}
             onChange={(e) => setRate(Number(e.target.value))}
