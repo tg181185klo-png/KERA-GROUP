@@ -4,6 +4,8 @@ import { buildMapPersistPayload } from "@/lib/cadastral-lookup";
 import { isPubliclyVisibleListing } from "@/lib/listing-status";
 import { buildOwnerListingUpdates } from "@/lib/listing-update";
 import { getCadastralCode } from "@/lib/property-normalize";
+import { isListingOwnedByUser } from "@/lib/user-listings";
+import { getProfile } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export const maxDuration = 60;
@@ -109,11 +111,8 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const isOwner =
-      existing.user_id === user.id ||
-      existing.owner_email === user.email;
-
-    if (!isOwner) {
+    const profile = await getProfile(user.id);
+    if (!isListingOwnedByUser(existing, user, profile)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
@@ -164,7 +163,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     const service = createServiceClient();
     const { data: existing } = await service
       .from("properties")
-      .select("user_id, owner_email, status")
+      .select("*")
       .eq("id", id)
       .single();
 
@@ -172,11 +171,11 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const isOwner =
-      existing.user_id === user!.id ||
-      existing.owner_email === user!.email;
-
-    if (!isOwner || existing.status !== "pending") {
+    const profile = await getProfile(user!.id);
+    if (
+      !isListingOwnedByUser(existing, user!, profile) ||
+      existing.status !== "pending"
+    ) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }

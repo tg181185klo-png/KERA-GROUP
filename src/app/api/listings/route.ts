@@ -5,6 +5,8 @@ import { lookupCadastralParcel } from "@/lib/cadastral-lookup";
 import { isValidCadastralCode, formatCadastralCode } from "@/lib/cadastral";
 import { insertPropertyListing } from "@/lib/listings-insert";
 import { normalizeToAdminListingFull } from "@/lib/property-normalize";
+import { fetchUserDashboardListings } from "@/lib/user-listings";
+import { getProfile } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -46,18 +48,21 @@ export async function GET(request: Request) {
     );
   }
 
-  let query = supabase.from("properties").select("*").order("created_at", {
-    ascending: false,
-  });
-
   if (mine) {
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    query = query.eq("user_id", user.id);
-  } else {
-    query = query.in("status", publicStatusFilter());
+    const serviceClient = createServiceClient();
+    const profile = await getProfile(user.id);
+    const listings = await fetchUserDashboardListings(serviceClient, user, profile);
+    return NextResponse.json(listings);
   }
+
+  const query = supabase
+    .from("properties")
+    .select("*")
+    .in("status", publicStatusFilter())
+    .order("created_at", { ascending: false });
 
   const { data, error } = await query;
 

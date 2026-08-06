@@ -308,7 +308,7 @@ export async function fetchListingsByOwnerEmail(
   const { data, error } = await service
     .from("properties")
     .select("*")
-    .eq("owner_email", email)
+    .ilike("owner_email", email)
     .order("created_at", { ascending: false });
 
   if (error) {

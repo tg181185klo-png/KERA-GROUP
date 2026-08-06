@@ -3,10 +3,10 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { DashboardPageContent } from "@/components/dashboard/DashboardPageContent";
 import {
-  fetchListingsByOwnerEmail,
   sanitizePropertyRowForClient,
   type PropertyRow,
 } from "@/lib/property-normalize";
+import { fetchUserDashboardListings } from "@/lib/user-listings";
 
 export default async function DashboardPage({
   searchParams,
@@ -27,24 +27,8 @@ export default async function DashboardPage({
   try {
     profile = await getProfile(user.id);
     const service = createServiceClient();
-
-    const { data: byUserId, error: byUserError } = await service
-      .from("properties")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (byUserError) {
-      throw new Error(byUserError.message);
-    }
-
-    const byEmail = await fetchListingsByOwnerEmail(service, user.email ?? "");
-
-    const merged = new Map<string, PropertyRow>();
-    for (const row of [...(byUserId ?? []), ...byEmail]) {
-      merged.set(String(row.id), row as PropertyRow);
-    }
-    listings = Array.from(merged.values()).map(sanitizePropertyRowForClient);
+    const rows = await fetchUserDashboardListings(service, user, profile);
+    listings = rows.map(sanitizePropertyRowForClient);
   } catch (error) {
     console.error("Dashboard listings fetch failed:", error);
     listings = [];

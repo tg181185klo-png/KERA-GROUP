@@ -137,6 +137,7 @@ async function insertLegacyListing(
   const dealType = resolveDealType(body);
 
   const payload: Record<string, unknown> = {
+    user_id: user.id,
     owner_name: ownerName,
     owner_phone: body.phone_number ?? "",
     owner_email: user.email ?? null,

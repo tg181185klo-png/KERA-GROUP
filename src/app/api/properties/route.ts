@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/utils/supabase";
 
 function parseMissingColumn(message: string): string | null {
@@ -61,11 +62,15 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const supabase = createAdminSupabaseClient();
+    const authClient = await createClient();
+    const {
+      data: { user },
+    } = await authClient.auth.getUser();
 
     const payload: Record<string, unknown> = {
       owner_name: body.owner_name,
       owner_phone: body.owner_phone,
-      owner_email: body.owner_email || null,
+      owner_email: body.owner_email || user?.email || null,
       address: body.address,
       property_type: body.property_type,
       deal_type: body.deal_type,
@@ -78,6 +83,10 @@ export async function POST(request: Request) {
       features: body.features ?? [],
       listing_type: body.listing_type ?? "seller",
     };
+
+    if (user) {
+      payload.user_id = user.id;
+    }
 
     if (body.area_sqm) {
       payload.area_sqm = body.area_sqm;
