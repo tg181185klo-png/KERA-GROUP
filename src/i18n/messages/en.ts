@@ -531,7 +531,7 @@ export const en = {
     editListing: "Edit",
     editListingTitle: "Edit listing",
     editResubmitNotice:
-      "After editing an active listing, it goes back to moderation. It will reappear on the map after admin approval.",
+      "After you save changes, the listing goes back to moderation. An admin must approve it again before it appears on the map.",
     editedResubmitBanner:
       "Listing updated and pending moderation. It will appear on the map after admin approval.",
   },

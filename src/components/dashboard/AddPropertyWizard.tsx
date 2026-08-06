@@ -21,7 +21,7 @@ import {
   formatPricePerSqm,
 } from "@/lib/cadastral";
 import type { PropertyListingFormData, MapDealType } from "@/lib/types/property-listing";
-import { getMapDealTypeFromRow, type PropertyRow } from "@/lib/property-normalize";
+import { getMapDealTypeFromRow, getOwnerNames, getListingTitle, getCadastralCode, type PropertyRow } from "@/lib/property-normalize";
 
 const STEPS = ["ძირითადი", "მფლობელი", "მდებარეობა", "ფოტოები", "შეჯამება"];
 
@@ -43,12 +43,14 @@ const EMPTY_FORM: PropertyListingFormData = {
 };
 
 export function rowToFormData(row: PropertyRow): PropertyListingFormData {
+  const owners = getOwnerNames(row);
+  const cadastral = getCadastralCode(row);
   return {
-    title: String(row.title ?? ""),
+    title: getListingTitle(row),
     description: String(row.description ?? ""),
-    cadastral_code: String(row.cadastral_code ?? ""),
-    owner_first_name: String(row.owner_first_name ?? ""),
-    owner_last_name: String(row.owner_last_name ?? ""),
+    cadastral_code: cadastral !== "—" ? cadastral : "",
+    owner_first_name: owners.first,
+    owner_last_name: owners.last,
     address: String(row.address ?? ""),
     phone_number: String(row.phone_number ?? row.owner_phone ?? ""),
     total_price:
@@ -80,7 +82,7 @@ export function AddPropertyWizard({
   mode = "create",
   listingId,
   initialForm,
-  wasActive = false,
+  wasActive: _wasActive = false,
 }: AddPropertyWizardProps) {
   const router = useRouter();
   const { t } = useLocale();
@@ -198,11 +200,7 @@ export function AddPropertyWizard({
       return;
     }
 
-    router.push(
-      mode === "edit" && wasActive
-        ? "/dashboard?submitted=pending&edited=1"
-        : "/dashboard?submitted=pending",
-    );
+    router.push("/dashboard?submitted=pending&edited=1");
     router.refresh();
   }
 
@@ -214,7 +212,7 @@ export function AddPropertyWizard({
 
   return (
     <div>
-      {mode === "edit" && wasActive && (
+      {mode === "edit" && (
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           {t.dashboard.editResubmitNotice}
         </div>

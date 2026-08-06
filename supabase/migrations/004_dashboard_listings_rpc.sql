@@ -1,9 +1,12 @@
 -- KERA GROUP — Dashboard listings visibility for registered users
 -- Run in Supabase SQL Editor: https://supabase.com/dashboard/project/rtseufuxngkgwmaipqui/sql
 
--- Ensure user_id exists on hybrid/legacy properties table
+-- Ensure columns exist on hybrid/legacy properties table
 alter table public.properties add column if not exists user_id uuid references public.profiles (id) on delete set null;
 alter table public.properties add column if not exists owner_email text;
+alter table public.properties add column if not exists owner_phone text;
+alter table public.properties add column if not exists owner_name text;
+alter table public.properties add column if not exists phone_number text;
 
 create index if not exists properties_user_id_idx on public.properties (user_id);
 create index if not exists properties_owner_email_idx on public.properties (lower(trim(owner_email)));

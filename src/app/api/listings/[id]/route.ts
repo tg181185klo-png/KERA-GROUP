@@ -20,6 +20,24 @@ function statusForDatabase(status: string): string {
   return status;
 }
 
+function isSchemaMismatch(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    m.includes("schema cache") ||
+    m.includes("could not find") ||
+    m.includes("column") ||
+    m.includes("does not exist") ||
+    m.includes("violates check constraint")
+  );
+}
+
+function parseConstraintColumn(message: string): string | null {
+  const checkMatch = message.match(/check constraint "([^"]+)"/i);
+  if (checkMatch?.[1]?.includes("listing_type")) return "listing_type";
+  if (checkMatch?.[1]?.includes("deal_type")) return "deal_type";
+  return null;
+}
+
 async function updateAdaptive(
   service: ReturnType<typeof createServiceClient>,
   id: string,
@@ -42,14 +60,20 @@ async function updateAdaptive(
 
     lastError = error;
     const missing = parseMissingColumn(error.message);
-    if (!missing) {
-      return { data: null, error };
+    if (missing) {
+      delete current[missing];
+      if (Object.keys(current).length === 0) break;
+      continue;
     }
 
-    delete current[missing];
-    if (Object.keys(current).length === 0) {
-      break;
+    const constraintColumn = parseConstraintColumn(error.message);
+    if (constraintColumn && isSchemaMismatch(error.message)) {
+      delete current[constraintColumn];
+      if (Object.keys(current).length === 0) break;
+      continue;
     }
+
+    return { data: null, error };
   }
 
   return { data: null, error: lastError };
@@ -131,9 +155,8 @@ export async function PATCH(request: Request, context: RouteContext) {
   } else if (admin) {
     updates = body;
   } else {
-    const wasActive = isPubliclyVisibleListing(existing.status);
     updates = await buildOwnerListingUpdates(body, existing, {
-      resetToPending: wasActive,
+      resetToPending: true,
     });
   }
 
