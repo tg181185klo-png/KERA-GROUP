@@ -281,13 +281,13 @@ export async function fetchUserDashboardListings(
   if (profilePhone) phoneCandidates.add(profilePhone);
 
   const [byUserId, byEmail, byPhone, byName] = await Promise.all([
-    fetchListingsByUserId(authClient ?? service, user.id),
-    fetchListingsByOwnerEmail(authClient ?? service, email),
+    fetchListingsByUserId(service, user.id),
+    fetchListingsByOwnerEmail(service, email),
     profilePhone
-      ? fetchListingsByPhone(authClient ?? service, profilePhone)
+      ? fetchListingsByPhone(service, profilePhone)
       : Promise.resolve([]),
     firstName || lastName
-      ? fetchListingsByOwnerName(authClient ?? service, firstName, lastName)
+      ? fetchListingsByOwnerName(service, firstName, lastName)
       : Promise.resolve([]),
   ]);
 
@@ -302,7 +302,7 @@ export async function fetchUserDashboardListings(
   if (!profilePhone && phoneCandidates.size > 0) {
     const extra = await Promise.all(
       Array.from(phoneCandidates).map((phone) =>
-        fetchListingsByPhone(authClient ?? service, phone),
+        fetchListingsByPhone(service, phone),
       ),
     );
     byDiscoveredPhone = extra.flat();
