@@ -17,8 +17,42 @@ function isMissingColumnError(message: string, column: string): boolean {
 
 /** Strip DB-only fields before passing rows into client components. */
 export function sanitizePropertyRowForClient(row: PropertyRow): PropertyRow {
-  const { coordinates: _coordinates, ...rest } = row;
-  return rest;
+  const cleaned: PropertyRow = { ...row };
+  delete cleaned.coordinates;
+
+  if (typeof cleaned.geojson_polygon === "string") {
+    cleaned.geojson_polygon = parseGeojsonForClient(cleaned.geojson_polygon);
+  }
+
+  try {
+    return JSON.parse(JSON.stringify(cleaned)) as PropertyRow;
+  } catch {
+    return {
+      id: cleaned.id,
+      title: cleaned.title,
+      description: cleaned.description,
+      address: cleaned.address,
+      status: cleaned.status,
+      owner_name: cleaned.owner_name,
+      owner_first_name: cleaned.owner_first_name,
+      owner_last_name: cleaned.owner_last_name,
+      owner_phone: cleaned.owner_phone,
+      owner_email: cleaned.owner_email,
+      phone_number: cleaned.phone_number,
+      price: cleaned.price,
+      total_price: cleaned.total_price,
+      area_sqm: cleaned.area_sqm,
+      deal_type: cleaned.deal_type,
+      listing_type: cleaned.listing_type,
+      cadastral_code: cleaned.cadastral_code,
+      latitude: cleaned.latitude,
+      longitude: cleaned.longitude,
+      geojson_polygon: cleaned.geojson_polygon,
+      images: cleaned.images,
+      created_at: cleaned.created_at,
+      user_id: cleaned.user_id,
+    };
+  }
 }
 
 function toNumber(value: unknown): number | null {
@@ -43,6 +77,13 @@ function parseGeojson(value: unknown): MapProperty["geojson_polygon"] | null {
     }
   }
   return null;
+}
+
+/** Parse geojson for client/server form props. */
+export function parseGeojsonForClient(
+  value: unknown,
+): MapProperty["geojson_polygon"] | null {
+  return parseGeojson(value);
 }
 
 export function getListingTitle(row: PropertyRow): string {

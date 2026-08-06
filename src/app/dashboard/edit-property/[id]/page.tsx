@@ -1,12 +1,13 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
-import {
-  AddPropertyWizard,
-  rowToFormData,
-} from "@/components/dashboard/AddPropertyWizard";
+import { AddPropertyWizard } from "@/components/dashboard/AddPropertyWizard";
+import { rowToFormData } from "@/lib/listing-form";
 import { isPubliclyVisibleListing } from "@/lib/listing-status";
-import { type PropertyRow } from "@/lib/property-normalize";
+import {
+  sanitizePropertyRowForClient,
+  type PropertyRow,
+} from "@/lib/property-normalize";
 import { isListingOwnedByUser } from "@/lib/user-listings";
 
 export default async function EditPropertyPage({
@@ -22,10 +23,11 @@ export default async function EditPropertyPage({
 
   if (!user) redirect("/login");
 
-  const profile = await getProfile(user.id);
+  let profile = null;
   let listing: PropertyRow | null = null;
 
   try {
+    profile = await getProfile(user.id);
     const service = createServiceClient();
     const { data, error } = await service
       .from("properties")
@@ -46,8 +48,16 @@ export default async function EditPropertyPage({
 
   if (!listing) notFound();
 
-  const row = listing;
+  const row = sanitizePropertyRowForClient(listing);
   if (!isListingOwnedByUser(row, user, profile)) notFound();
+
+  let initialForm;
+  try {
+    initialForm = rowToFormData(row);
+  } catch (error) {
+    console.error("Edit property form mapping failed:", error);
+    redirect("/dashboard");
+  }
 
   const wasActive = isPubliclyVisibleListing(row.status);
 
@@ -60,7 +70,7 @@ export default async function EditPropertyPage({
       <AddPropertyWizard
         mode="edit"
         listingId={id}
-        initialForm={rowToFormData(row)}
+        initialForm={initialForm}
         wasActive={wasActive}
       />
     </div>

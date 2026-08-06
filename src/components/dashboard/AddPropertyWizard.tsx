@@ -21,55 +21,9 @@ import {
   formatPricePerSqm,
 } from "@/lib/cadastral";
 import type { PropertyListingFormData, MapDealType } from "@/lib/types/property-listing";
-import { getMapDealTypeFromRow, getOwnerNames, getListingTitle, getCadastralCode, type PropertyRow } from "@/lib/property-normalize";
+import { EMPTY_LISTING_FORM, rowToFormData } from "@/lib/listing-form";
 
 const STEPS = ["ძირითადი", "მფლობელი", "მდებარეობა", "ფოტოები", "შეჯამება"];
-
-const EMPTY_FORM: PropertyListingFormData = {
-  title: "",
-  description: "",
-  cadastral_code: "",
-  owner_first_name: "",
-  owner_last_name: "",
-  address: "",
-  phone_number: "",
-  total_price: 0,
-  area_sqm: 0,
-  deal_type: "sale",
-  latitude: null,
-  longitude: null,
-  geojson_polygon: null,
-  images: [],
-};
-
-export function rowToFormData(row: PropertyRow): PropertyListingFormData {
-  const owners = getOwnerNames(row);
-  const cadastral = getCadastralCode(row);
-  return {
-    title: getListingTitle(row),
-    description: String(row.description ?? ""),
-    cadastral_code: cadastral !== "—" ? cadastral : "",
-    owner_first_name: owners.first,
-    owner_last_name: owners.last,
-    address: String(row.address ?? ""),
-    phone_number: String(row.phone_number ?? row.owner_phone ?? ""),
-    total_price:
-      typeof row.total_price === "number"
-        ? row.total_price
-        : typeof row.price === "number"
-          ? row.price
-          : 0,
-    area_sqm: typeof row.area_sqm === "number" ? row.area_sqm : 0,
-    deal_type: getMapDealTypeFromRow(row),
-    latitude: typeof row.latitude === "number" ? row.latitude : null,
-    longitude: typeof row.longitude === "number" ? row.longitude : null,
-    geojson_polygon:
-      row.geojson_polygon && typeof row.geojson_polygon === "object"
-        ? (row.geojson_polygon as PropertyListingFormData["geojson_polygon"])
-        : null,
-    images: Array.isArray(row.images) ? (row.images as string[]) : [],
-  };
-}
 
 interface AddPropertyWizardProps {
   mode?: "create" | "edit";
@@ -89,7 +43,7 @@ export function AddPropertyWizard({
   const dealTypeOptions = getMapDealTypeOptions(t);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<PropertyListingFormData>(
-    initialForm ?? EMPTY_FORM,
+    initialForm ?? EMPTY_LISTING_FORM,
   );
   const [locationCity, setLocationCity] = useState("");
   const [locationArea, setLocationArea] = useState("");

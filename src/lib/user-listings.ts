@@ -2,6 +2,7 @@ import type { SupabaseClient, User } from "@supabase/supabase-js";
 import type { Profile } from "@/lib/types/profile";
 import {
   fetchListingsByOwnerEmail,
+  sanitizePropertyRowForClient,
   type PropertyRow,
 } from "@/lib/property-normalize";
 
@@ -270,7 +271,7 @@ export async function fetchUserDashboardListings(
       if (rpcRows) {
         await backfillUserId(service, user.id, rpcRows);
         await syncProfilePhoneFromListings(service, user.id, profile, rpcRows);
-        return rpcRows;
+        return rpcRows.map(sanitizePropertyRowForClient);
       }
     } catch (error) {
       console.warn("Dashboard RPC fetch failed, falling back:", error);
@@ -317,5 +318,5 @@ export async function fetchUserDashboardListings(
   await backfillUserId(service, user.id, listings);
   await syncProfilePhoneFromListings(service, user.id, profile, listings);
 
-  return listings;
+  return listings.map(sanitizePropertyRowForClient);
 }

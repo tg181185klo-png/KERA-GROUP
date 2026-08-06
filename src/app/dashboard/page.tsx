@@ -2,10 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { DashboardPageContent } from "@/components/dashboard/DashboardPageContent";
-import {
-  sanitizePropertyRowForClient,
-  type PropertyRow,
-} from "@/lib/property-normalize";
+import { type PropertyRow } from "@/lib/property-normalize";
 import { fetchUserDashboardListings } from "@/lib/user-listings";
 
 export default async function DashboardPage({
@@ -28,7 +25,7 @@ export default async function DashboardPage({
     profile = await getProfile(user.id);
     const service = createServiceClient();
     const rows = await fetchUserDashboardListings(service, user, profile, supabase);
-    listings = rows.map(sanitizePropertyRowForClient);
+    listings = rows;
   } catch (error) {
     console.error("Dashboard listings fetch failed:", error);
     listings = [];
