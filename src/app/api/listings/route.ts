@@ -54,7 +54,12 @@ export async function GET(request: Request) {
     }
     const serviceClient = createServiceClient();
     const profile = await getProfile(user.id);
-    const listings = await fetchUserDashboardListings(serviceClient, user, profile);
+    const listings = await fetchUserDashboardListings(
+      serviceClient,
+      user,
+      profile,
+      supabase,
+    );
     return NextResponse.json(listings);
   }
 

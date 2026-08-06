@@ -27,7 +27,7 @@ export default async function DashboardPage({
   try {
     profile = await getProfile(user.id);
     const service = createServiceClient();
-    const rows = await fetchUserDashboardListings(service, user, profile);
+    const rows = await fetchUserDashboardListings(service, user, profile, supabase);
     listings = rows.map(sanitizePropertyRowForClient);
   } catch (error) {
     console.error("Dashboard listings fetch failed:", error);
