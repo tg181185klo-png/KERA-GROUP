@@ -47,17 +47,32 @@ function isSchemaMismatch(message: string) {
   );
 }
 
-async function ensureProfile(user: User, service: SupabaseClient) {
+async function ensureProfile(
+  user: User,
+  service: SupabaseClient,
+  listingPhone?: string,
+) {
   try {
-    await service.from("profiles").upsert(
-      {
-        id: user.id,
-        email: user.email ?? "",
-        first_name: (user.user_metadata?.first_name as string | undefined) ?? "",
-        last_name: (user.user_metadata?.last_name as string | undefined) ?? "",
-      },
-      { onConflict: "id" },
-    );
+    const payload: Record<string, unknown> = {
+      id: user.id,
+      email: user.email ?? "",
+      first_name: (user.user_metadata?.first_name as string | undefined) ?? "",
+      last_name: (user.user_metadata?.last_name as string | undefined) ?? "",
+    };
+
+    if (listingPhone?.trim()) {
+      const { data: existing } = await service
+        .from("profiles")
+        .select("phone")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!existing?.phone?.trim()) {
+        payload.phone = listingPhone.trim();
+      }
+    }
+
+    await service.from("profiles").upsert(payload, { onConflict: "id" });
   } catch {
     // profiles table may not exist yet — legacy insert still works
   }
@@ -150,7 +165,7 @@ export async function insertPropertyListing(user: User, body: ListingBody) {
   const supabase = await createClient();
   const service = createServiceClient();
 
-  await ensureProfile(user, service);
+  await ensureProfile(user, service, body.phone_number);
 
   const dealType = resolveDealType(body);
 

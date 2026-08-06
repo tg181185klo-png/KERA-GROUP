@@ -1,7 +1,9 @@
 "use client";
 
-import { Plus, Map as MapIcon, Pencil } from "lucide-react";
+import { useState } from "react";
+import { Plus, Map as MapIcon, Pencil, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { LogoutButton } from "@/components/dashboard/LogoutButton";
@@ -11,15 +13,25 @@ import {
   getCadastralCode,
   getListingTitle,
   getTotalPrice,
+  getMapDealTypeFromRow,
+  getOwnerNames,
+  normalizeListingStatus,
   type PropertyRow,
 } from "@/lib/property-normalize";
 import { computePricePerSqm } from "@/lib/price-display";
+import { DEAL_TYPE_LABELS, type ListingStatus } from "@/lib/types/property-listing";
 
 interface DashboardPageContentProps {
   profile: { first_name?: string | null; last_name?: string | null; email?: string | null } | null;
   listings: PropertyRow[];
   submittedPending: boolean;
   editedListing?: boolean;
+}
+
+function statusBadgeClass(status: ListingStatus): string {
+  if (status === "pending") return "bg-amber-50 text-amber-700 ring-amber-100";
+  if (status === "active") return "bg-emerald-50 text-emerald-700 ring-emerald-100";
+  return "bg-red-50 text-red-700 ring-red-100";
 }
 
 export function DashboardPageContent({
@@ -29,18 +41,28 @@ export function DashboardPageContent({
   editedListing = false,
 }: DashboardPageContentProps) {
   const { t, locale } = useLocale();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  function statusLabel(status: string) {
-    const labels: Record<string, string> = {
+  function statusLabel(status: ListingStatus) {
+    const labels: Record<ListingStatus, string> = {
       pending: t.status.pending,
       active: t.status.active,
-      archived: t.status.archived,
       blocked: t.status.blocked,
     };
     return labels[status] ?? status;
   }
 
+  function statusMessage(status: ListingStatus) {
+    if (status === "pending") return t.dashboard.statusPending;
+    if (status === "active") return t.dashboard.statusActive;
+    return t.dashboard.statusBlocked;
+  }
+
   const dateLocale = locale === "en" ? "en-US" : "ka-GE";
+
+  function toggleExpanded(id: string) {
+    setExpandedId((current) => (current === id ? null : id));
+  }
 
   return (
     <div className="kera-container py-10 sm:py-12 lg:py-14">
@@ -66,7 +88,7 @@ export function DashboardPageContent({
 
       {submittedPending && (
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          {editedListing ? t.dashboard.editedResubmitBanner : t.dashboard.moderationFull}
+          {editedListing ? t.dashboard.editedResubmitBanner : t.dashboard.statusPending}
         </div>
       )}
 
@@ -81,72 +103,172 @@ export function DashboardPageContent({
             <LinkButton href="/dashboard/add-property">{t.dashboard.addFirst}</LinkButton>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-slate-500">
-                <tr>
-                  <th className="px-6 py-3 font-medium">{t.dashboard.tableTitle}</th>
-                  <th className="px-6 py-3 font-medium">{t.dashboard.tableCadCode}</th>
-                  <th className="px-6 py-3 font-medium">{t.dashboard.tablePrice}</th>
-                  <th className="px-6 py-3 font-medium">{t.dashboard.tableStatus}</th>
-                  <th className="px-6 py-3 font-medium">{t.dashboard.tableDate}</th>
-                  <th className="px-6 py-3 font-medium">{t.dashboard.tableActions}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {listings.map((item) => {
-                  const totalPrice = getTotalPrice(item);
-                  const areaSqm =
-                    typeof item.area_sqm === "number" && item.area_sqm > 0
-                      ? item.area_sqm
-                      : 0;
-                  const pricePerSqm =
-                    typeof item.price_per_sqm === "number" &&
-                    item.price_per_sqm > 0
-                      ? item.price_per_sqm
-                      : computePricePerSqm(totalPrice, areaSqm);
+          <div className="divide-y divide-slate-100">
+            {listings.map((item) => {
+              const id = String(item.id);
+              const expanded = expandedId === id;
+              const totalPrice = getTotalPrice(item);
+              const areaSqm =
+                typeof item.area_sqm === "number" && item.area_sqm > 0
+                  ? item.area_sqm
+                  : 0;
+              const pricePerSqm =
+                typeof item.price_per_sqm === "number" && item.price_per_sqm > 0
+                  ? item.price_per_sqm
+                  : computePricePerSqm(totalPrice, areaSqm);
+              const status = normalizeListingStatus(item.status);
+              const owners = getOwnerNames(item);
+              const dealType = getMapDealTypeFromRow(item);
+              const images = Array.isArray(item.images) ? (item.images as string[]) : [];
+              const phone = String(item.phone_number ?? item.owner_phone ?? "");
+              const description = String(item.description ?? "");
+              const address = String(item.address ?? "");
+              const latitude =
+                typeof item.latitude === "number" ? item.latitude : null;
+              const longitude =
+                typeof item.longitude === "number" ? item.longitude : null;
 
-                  return (
-                  <tr key={String(item.id)} className="hover:bg-slate-50">
-                    <td className="px-6 py-4 font-medium text-slate-900">
-                      {getListingTitle(item)}
-                    </td>
-                    <td className="px-6 py-4 text-slate-600">{getCadastralCode(item)}</td>
-                    <td className="px-6 py-4">
-                      <div>{formatPrice(totalPrice)}</div>
-                      {pricePerSqm != null && (
-                        <div className="text-xs text-slate-500">
-                          {formatPricePerSqm(pricePerSqm, t.common.perSqm)}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium">
-                        {statusLabel(String(item.status ?? "pending"))}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500">
-                      {item.created_at
-                        ? new Date(String(item.created_at)).toLocaleDateString(dateLocale)
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-4">
+              return (
+                <div key={id} className="px-6 py-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-medium text-slate-900">
+                          {getListingTitle(item)}
+                        </h3>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${statusBadgeClass(status)}`}
+                        >
+                          {statusLabel(status)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {getCadastralCode(item)} · {formatPrice(totalPrice)}
+                        {pricePerSqm != null && (
+                          <span className="ml-1">
+                            ({formatPricePerSqm(pricePerSqm, t.common.perSqm)})
+                          </span>
+                        )}
+                      </p>
+                      <p className="mt-2 text-sm text-slate-600">{statusMessage(status)}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
                       <Link
-                        href={`/dashboard/edit-property/${item.id}`}
+                        href={`/dashboard/edit-property/${id}`}
                         className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium text-kera-blue hover:bg-blue-50"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                         {t.dashboard.editListing}
                       </Link>
-                    </td>
-                  </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      <button
+                        type="button"
+                        onClick={() => toggleExpanded(id)}
+                        className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        {expanded ? (
+                          <>
+                            <ChevronUp className="h-3.5 w-3.5" />
+                            {t.dashboard.collapseDetails}
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-3.5 w-3.5" />
+                            {t.dashboard.expandDetails}
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {expanded && (
+                    <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+                      <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                        <DetailField label={t.wizard.fieldTitle} value={getListingTitle(item)} />
+                        <DetailField label={t.wizard.fieldCadastral} value={getCadastralCode(item)} />
+                        <DetailField label={t.wizard.fieldDealType} value={DEAL_TYPE_LABELS[dealType]} />
+                        <DetailField
+                          label={t.wizard.fieldPrice}
+                          value={formatPrice(totalPrice)}
+                        />
+                        <DetailField
+                          label={t.wizard.fieldArea}
+                          value={areaSqm > 0 ? `${areaSqm} ${t.common.sqm}` : "—"}
+                        />
+                        <DetailField
+                          label={t.wizard.fieldOwnerFirst}
+                          value={owners.first || "—"}
+                        />
+                        <DetailField
+                          label={t.wizard.fieldOwnerLast}
+                          value={owners.last || "—"}
+                        />
+                        <DetailField label={t.wizard.fieldPhone} value={phone || "—"} />
+                        <DetailField label={t.wizard.fieldAddress} value={address || "—"} />
+                        <DetailField
+                          label={t.dashboard.tableDate}
+                          value={
+                            item.created_at
+                              ? new Date(String(item.created_at)).toLocaleDateString(dateLocale)
+                              : "—"
+                          }
+                        />
+                        {(latitude != null || longitude != null) && (
+                          <DetailField
+                            label={t.dashboard.fieldCoordinates}
+                            value={`${latitude ?? "—"}, ${longitude ?? "—"}`}
+                          />
+                        )}
+                      </dl>
+                      {description && (
+                        <div className="mt-3">
+                          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                            {t.wizard.fieldDescription}
+                          </p>
+                          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">
+                            {description}
+                          </p>
+                        </div>
+                      )}
+                      {images.length > 0 && (
+                        <div className="mt-4">
+                          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+                            {t.wizard.fieldPhotos} ({images.length})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {images.map((src, index) => (
+                              <div
+                                key={`${id}-img-${index}`}
+                                className="relative h-20 w-20 overflow-hidden rounded-lg border border-slate-200"
+                              >
+                                <Image
+                                  src={src}
+                                  alt=""
+                                  fill
+                                  className="object-cover"
+                                  sizes="80px"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </Card>
+    </div>
+  );
+}
+
+function DetailField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
+      <dd className="mt-0.5 text-slate-800">{value}</dd>
     </div>
   );
 }

@@ -14,22 +14,14 @@ import type { Profile } from "@/lib/types/profile";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { getPricePerSqm } from "@/lib/price-display";
 import { downloadCsv } from "@/lib/export-csv";
+import {
+  exportListingsToExcel,
+  type ListingExportRow,
+} from "@/lib/export-listings";
 import { useT } from "@/i18n/LocaleProvider";
 
-interface ListingRow {
-  id: string;
-  title: string;
-  cadastral_code: string;
-  owner_first_name: string;
-  owner_last_name: string;
-  total_price: number;
-  area_sqm: number;
+interface ListingRow extends ListingExportRow {
   price_per_sqm: number | null;
-  listing_type: string;
-  deal_type?: MapDealType;
-  status: ListingStatus;
-  created_at: string;
-  user_id: string;
 }
 
 export function AdminListingsPanel({
@@ -129,6 +121,14 @@ export function AdminListingsPanel({
     loadData();
   }
 
+  function exportListingsToExcelHandler() {
+    if (listings.length === 0) {
+      alert("განცხადებები არ არის");
+      return;
+    }
+    exportListingsToExcel(listings);
+  }
+
   function exportUsersToExcel() {
     if (users.length === 0) {
       alert("მომხმარებლები არ არის");
@@ -201,14 +201,23 @@ export function AdminListingsPanel({
         </Button>
         </div>
         {tab === "listings" && (
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={syncing}
-            onClick={syncAllCadastral}
-          >
-            {syncing ? "სინქრონიზაცია..." : "კადასტრის განახლება (NAPR)"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={exportListingsToExcelHandler}
+            >
+              Excel-ში ჩამოტვირთვა
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={syncing}
+              onClick={syncAllCadastral}
+            >
+              {syncing ? "სინქრონიზაცია..." : "კადასტრის განახლება (NAPR)"}
+            </Button>
+          </div>
         )}
         {tab === "users" && (
           <Button size="sm" variant="secondary" onClick={exportUsersToExcel}>

@@ -513,6 +513,12 @@ export const en = {
     moderationBanner: "Your listing is pending moderation.",
     moderationFull:
       "Listing received and pending moderation. It will appear on the map and homepage after admin approval.",
+    statusPending: "Your listing is awaiting approval",
+    statusActive: "Listing is active and published on the map",
+    statusBlocked: "Listing is blocked. Contact us for more information.",
+    expandDetails: "Details",
+    collapseDetails: "Hide",
+    fieldCoordinates: "Coordinates",
     myListingsTitle: "My Listings",
     emptyFirst: "You have no listings yet.",
     addFirst: "Add your first property",

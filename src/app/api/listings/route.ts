@@ -4,7 +4,7 @@ import { publicStatusFilter } from "@/lib/listing-status";
 import { lookupCadastralParcel } from "@/lib/cadastral-lookup";
 import { isValidCadastralCode, formatCadastralCode } from "@/lib/cadastral";
 import { insertPropertyListing } from "@/lib/listings-insert";
-import { normalizeToAdminListing } from "@/lib/property-normalize";
+import { normalizeToAdminListingFull } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -22,15 +22,28 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const serviceClient = createServiceClient();
-    const { data, error } = await serviceClient
-      .from("properties")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const [{ data, error }, { data: profiles }] = await Promise.all([
+      serviceClient
+        .from("properties")
+        .select("*")
+        .order("created_at", { ascending: false }),
+      serviceClient.from("profiles").select("id, email"),
+    ]);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json((data ?? []).map(normalizeToAdminListing));
+
+    const emailByUserId = new Map(
+      (profiles ?? []).map((p) => [String(p.id), String(p.email ?? "")]),
+    );
+
+    return NextResponse.json(
+      (data ?? []).map((row) => ({
+        ...normalizeToAdminListingFull(row),
+        user_email: emailByUserId.get(String(row.user_id)) ?? "",
+      })),
+    );
   }
 
   let query = supabase.from("properties").select("*").order("created_at", {

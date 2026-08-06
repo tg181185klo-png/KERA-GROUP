@@ -244,17 +244,38 @@ export function isMappableProperty(property: MapProperty): boolean {
 }
 
 export function normalizeToAdminListing(row: PropertyRow) {
+  const full = normalizeToAdminListingFull(row);
+  const {
+    description: _d,
+    address: _a,
+    phone_number: _p,
+    latitude: _lat,
+    longitude: _lng,
+    images: _i,
+    updated_at: _u,
+    ...summary
+  } = full;
+  return summary;
+}
+
+export function normalizeToAdminListingFull(row: PropertyRow) {
   const owners = getOwnerNames(row);
   const totalPrice = getTotalPrice(row);
   const geojson = parseGeojson(row.geojson_polygon);
   const areaSqm = getAreaSqm(row, geojson);
   const storedPerSqm = toNumber(row.price_per_sqm);
+  const { lat, lng } = resolveMapCoordinates(row);
+  const images = Array.isArray(row.images) ? (row.images as string[]) : [];
+
   return {
     id: String(row.id),
     title: getListingTitle(row),
+    description: String(row.description ?? ""),
     cadastral_code: getCadastralCode(row),
     owner_first_name: owners.first,
     owner_last_name: owners.last,
+    address: String(row.address ?? ""),
+    phone_number: String(row.phone_number ?? row.owner_phone ?? ""),
     total_price: totalPrice,
     area_sqm: areaSqm,
     price_per_sqm:
@@ -264,7 +285,11 @@ export function normalizeToAdminListing(row: PropertyRow) {
     listing_type: getListingType(row),
     deal_type: getMapDealTypeFromRow(row),
     status: normalizeListingStatus(row.status),
+    latitude: lat,
+    longitude: lng,
+    images,
     created_at: String(row.created_at ?? ""),
+    updated_at: String(row.updated_at ?? ""),
     user_id: String(row.user_id ?? ""),
   };
 }
