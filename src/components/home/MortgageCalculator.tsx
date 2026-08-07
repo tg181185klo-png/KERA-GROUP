@@ -19,7 +19,7 @@ type SliderFieldProps = {
   min: number;
   max: number;
   step: number;
-  suffix?: string;
+  suffix: string;
   onChange: (value: number) => void;
 };
 
@@ -50,7 +50,7 @@ function SliderField({
     <div>
       <label className="mb-2 flex items-center justify-between gap-3 text-sm font-medium text-slate-700">
         <span>{label}</span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <input
             type="number"
             min={min}
@@ -64,13 +64,11 @@ function SliderField({
                 event.currentTarget.blur();
               }
             }}
-            className="w-[5.5rem] rounded-lg border border-slate-200 bg-white px-2 py-1 text-right text-sm font-semibold text-kera-primary shadow-sm outline-none transition focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
+            className="w-[5.75rem] border-0 bg-transparent px-2.5 py-1.5 text-right text-sm font-semibold text-kera-primary outline-none focus:ring-2 focus:ring-inset focus:ring-kera-primary/20"
           />
-          {suffix ? (
-            <span className="min-w-[1.25rem] text-xs font-semibold text-slate-500">
-              {suffix}
-            </span>
-          ) : null}
+          <span className="flex min-w-[2.75rem] items-center justify-center border-l border-slate-200 bg-slate-50 px-2 text-xs font-semibold tracking-wide text-slate-500">
+            {suffix}
+          </span>
         </div>
       </label>
       <input
@@ -148,11 +146,13 @@ export function MortgageCalculator() {
 
       <div className="space-y-5">
         <SliderField
-          label={`${t.mortgage.amount} (${currency})`}
+          key={`amount-${currency}`}
+          label={t.mortgage.amount}
           value={Math.min(amount, maxAmount)}
           min={minAmount}
           max={maxAmount}
           step={step}
+          suffix={currency}
           onChange={setAmount}
         />
 
