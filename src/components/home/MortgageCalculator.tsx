@@ -9,6 +9,86 @@ const MAX_USD = 5_000_000;
 const GEL_USD_RATE = 2.65;
 const MAX_GEL = Math.round(MAX_USD * GEL_USD_RATE);
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+type SliderFieldProps = {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  suffix?: string;
+  onChange: (value: number) => void;
+};
+
+function SliderField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  suffix,
+  onChange,
+}: SliderFieldProps) {
+  const [draft, setDraft] = useState<string | null>(null);
+
+  const displayValue = draft ?? String(value);
+
+  function commitDraft(raw: string) {
+    const parsed = Number(raw.replace(",", "."));
+    if (!Number.isFinite(parsed)) {
+      setDraft(null);
+      return;
+    }
+    onChange(clamp(parsed, min, max));
+    setDraft(null);
+  }
+
+  return (
+    <div>
+      <label className="mb-2 flex items-center justify-between gap-3 text-sm font-medium text-slate-700">
+        <span>{label}</span>
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number"
+            min={min}
+            max={max}
+            step={step}
+            value={displayValue}
+            onChange={(event) => setDraft(event.target.value)}
+            onBlur={(event) => commitDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.currentTarget.blur();
+              }
+            }}
+            className="w-[5.5rem] rounded-lg border border-slate-200 bg-white px-2 py-1 text-right text-sm font-semibold text-kera-primary shadow-sm outline-none transition focus:border-kera-primary focus:ring-2 focus:ring-kera-primary/20"
+          />
+          {suffix ? (
+            <span className="min-w-[1.25rem] text-xs font-semibold text-slate-500">
+              {suffix}
+            </span>
+          ) : null}
+        </div>
+      </label>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => {
+          setDraft(null);
+          onChange(Number(event.target.value));
+        }}
+        className="w-full accent-kera-primary"
+      />
+    </div>
+  );
+}
+
 export function MortgageCalculator() {
   const t = useT();
   const [currency, setCurrency] = useState<"USD" | "GEL">("USD");
@@ -67,62 +147,37 @@ export function MortgageCalculator() {
       </div>
 
       <div className="space-y-5">
-        <div>
-          <label className="mb-2 flex justify-between text-sm font-medium text-slate-700">
-            <span>
-              {t.mortgage.amount} ({currency})
-            </span>
-            <span className="font-bold text-kera-primary">
-              {formatPrice(amount, currency)}
-            </span>
-          </label>
-          <input
-            type="range"
-            min={minAmount}
-            max={maxAmount}
-            step={step}
-            value={Math.min(amount, maxAmount)}
-            onChange={(e) => setAmount(Number(e.target.value))}
-            className="w-full accent-kera-primary"
-          />
-        </div>
+        <SliderField
+          label={`${t.mortgage.amount} (${currency})`}
+          value={Math.min(amount, maxAmount)}
+          min={minAmount}
+          max={maxAmount}
+          step={step}
+          onChange={setAmount}
+        />
 
-        <div>
-          <label className="mb-2 flex justify-between text-sm font-medium text-slate-700">
-            <span>{t.mortgage.months}</span>
-            <span className="font-bold text-kera-primary">
-              {months} {t.mortgage.monthsUnit}
-            </span>
-          </label>
-          <input
-            type="range"
-            min={6}
-            max={360}
-            step={1}
-            value={months}
-            onChange={(e) => setMonths(Number(e.target.value))}
-            className="w-full accent-kera-primary"
-          />
-        </div>
+        <SliderField
+          label={t.mortgage.months}
+          value={months}
+          min={6}
+          max={360}
+          step={1}
+          suffix={t.mortgage.monthsUnit}
+          onChange={setMonths}
+        />
 
-        <div>
-          <label className="mb-2 flex justify-between text-sm font-medium text-slate-700">
-            <span>{t.mortgage.annualRate}</span>
-            <span className="font-bold text-kera-primary">{rate}%</span>
-          </label>
-          <input
-            type="range"
-            min={1}
-            max={50}
-            step={0.1}
-            value={rate}
-            onChange={(e) => setRate(Number(e.target.value))}
-            className="w-full accent-kera-tbc"
-          />
-        </div>
+        <SliderField
+          label={t.mortgage.annualRate}
+          value={rate}
+          min={1}
+          max={50}
+          step={0.1}
+          suffix="%"
+          onChange={setRate}
+        />
       </div>
 
-      <div className="mt-auto rounded-2xl bg-kera-slate p-5 text-white sm:p-6">
+      <div className="mt-6 rounded-2xl bg-kera-slate p-5 text-white sm:p-6">
         <p className="text-sm text-white/70">{t.mortgage.monthly}</p>
         <p className="font-display mt-1 text-3xl font-bold sm:text-4xl">
           {formatPrice(result.monthlyPayment, currency)}

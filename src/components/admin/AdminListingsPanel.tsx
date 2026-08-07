@@ -13,11 +13,15 @@ import {
 import type { Profile } from "@/lib/types/profile";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { getPricePerSqm } from "@/lib/price-display";
-import { downloadCsv } from "@/lib/export-csv";
 import {
   exportListingsToExcel,
   type ListingExportRow,
 } from "@/lib/export-listings";
+import {
+  exportUsersToExcel,
+  exportUsersWithListingsToExcel,
+} from "@/lib/export-users";
+import { buildUserListingStats } from "@/lib/admin-users";
 import { useT } from "@/i18n/LocaleProvider";
 
 interface ListingRow extends ListingExportRow {
@@ -34,6 +38,7 @@ export function AdminListingsPanel({
   const [statusFilter, setStatusFilter] = useState<ListingStatus | "all">("all");
   const [listings, setListings] = useState<ListingRow[]>(initialListings);
   const [users, setUsers] = useState<Profile[]>([]);
+  const [usersError, setUsersError] = useState<string | null>(null);
   const [loading, setLoading] = useState(!initialListings.length);
   const [syncing, setSyncing] = useState(false);
 
@@ -57,6 +62,16 @@ export function AdminListingsPanel({
     if (usersRes.ok) {
       const data = await usersRes.json();
       setUsers(data);
+      setUsersError(null);
+    } else {
+      const data = await usersRes.json().catch(() => ({}));
+      setUsers([]);
+      setUsersError(
+        data.error ??
+          (usersRes.status === 403
+            ? "მომხმარებლების ნახვა არ არის ნებადართული"
+            : "მომხმარებლების ჩატვირთვა ვერ მოხერხდა"),
+      );
     }
 
     setLoading(false);
@@ -129,33 +144,25 @@ export function AdminListingsPanel({
     exportListingsToExcel(listings);
   }
 
-  function exportUsersToExcel() {
+  const userListingStats = useMemo(
+    () => buildUserListingStats(listings, users),
+    [listings, users],
+  );
+
+  function exportUsersOnly() {
     if (users.length === 0) {
       alert("მომხმარებლები არ არის");
       return;
     }
+    exportUsersToExcel(users, userListingStats);
+  }
 
-    downloadCsv(
-      `kera-users-${new Date().toISOString().slice(0, 10)}.csv`,
-      [
-        "სახელი",
-        "გვარი",
-        "ელ-ფოსტა",
-        "ტელეფონი",
-        "როლი",
-        "სტატუსი",
-        "რეგისტრაცია",
-      ],
-      users.map((user) => [
-        user.first_name,
-        user.last_name,
-        user.email,
-        user.phone ?? "",
-        user.role,
-        user.is_blocked ? "დაბლოკილი" : "აქტიური",
-        new Date(user.created_at).toLocaleString("ka-GE"),
-      ]),
-    );
+  function exportUsersWithListings() {
+    if (users.length === 0 && listings.length === 0) {
+      alert("მონაცემები არ არის");
+      return;
+    }
+    exportUsersWithListingsToExcel(users, listings);
   }
 
   const pendingCount = listings.filter((item) => item.status === "pending").length;
@@ -220,9 +227,14 @@ export function AdminListingsPanel({
           </div>
         )}
         {tab === "users" && (
-          <Button size="sm" variant="secondary" onClick={exportUsersToExcel}>
-            Excel-ში ჩამოტვირთვა
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="secondary" onClick={exportUsersOnly}>
+              მომხმარებლები
+            </Button>
+            <Button size="sm" variant="secondary" onClick={exportUsersWithListings}>
+              მომხმარებლები + განცხადები
+            </Button>
+          </div>
         )}
       </div>
 
@@ -358,7 +370,9 @@ export function AdminListingsPanel({
         </Card>
       ) : (
         <Card className="overflow-x-auto">
-          {users.length === 0 ? (
+          {usersError ? (
+            <p className="px-4 py-8 text-center text-red-600">{usersError}</p>
+          ) : users.length === 0 ? (
             <p className="px-4 py-8 text-center text-slate-500">
               დარეგისტრირებული მომხმარებლები ჯერ არ არის
             </p>
@@ -369,6 +383,7 @@ export function AdminListingsPanel({
                 <th className="px-4 py-3">სახელი</th>
                 <th className="px-4 py-3">ელ-ფოსტა</th>
                 <th className="px-4 py-3">ტელეფონი</th>
+                <th className="px-4 py-3">განცხადები</th>
                 <th className="px-4 py-3">როლი</th>
                 <th className="px-4 py-3">რეგისტრაცია</th>
                 <th className="px-4 py-3">სტატუსი</th>
@@ -376,13 +391,33 @@ export function AdminListingsPanel({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {users.map((user) => (
+              {users.map((user) => {
+                const stats = userListingStats.get(user.id) ?? {
+                  total: 0,
+                  pending: 0,
+                  active: 0,
+                  blocked: 0,
+                };
+
+                return (
                 <tr key={user.id}>
                   <td className="px-4 py-3 font-medium">
                     {user.first_name} {user.last_name}
                   </td>
                   <td className="px-4 py-3">{user.email}</td>
                   <td className="px-4 py-3">{user.phone ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {stats.total > 0 ? (
+                      <span>
+                        {stats.total}{" "}
+                        <span className="text-xs text-slate-400">
+                          ({stats.pending} მოლოდ., {stats.active} აქტ.)
+                        </span>
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <Badge variant={user.role === "admin" ? "amber" : "blue"}>
                       {user.role}
@@ -408,7 +443,8 @@ export function AdminListingsPanel({
                     </Button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
           )}
