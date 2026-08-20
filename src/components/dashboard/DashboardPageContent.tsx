@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { Plus, Map as MapIcon, Pencil, ChevronDown, ChevronUp } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { LogoutButton } from "@/components/dashboard/LogoutButton";
+import { ProfileEditCard } from "@/components/dashboard/ProfileEditCard";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import {
@@ -20,9 +20,10 @@ import {
 } from "@/lib/property-normalize";
 import { computePricePerSqm } from "@/lib/price-display";
 import { DEAL_TYPE_LABELS, type ListingStatus } from "@/lib/types/property-listing";
+import type { Profile } from "@/lib/types/profile";
 
 interface DashboardPageContentProps {
-  profile: { first_name?: string | null; last_name?: string | null; email?: string | null } | null;
+  profile: Profile | null;
   listings: PropertyRow[];
   submittedPending: boolean;
   editedListing?: boolean;
@@ -72,6 +73,8 @@ export function DashboardPageContent({
 
   return (
     <div className="kera-container py-10 sm:py-12 lg:py-14">
+      <ProfileEditCard initialProfile={profile} />
+
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="kera-page-header">{t.dashboard.panelTitle}</h1>
@@ -145,13 +148,15 @@ export function DashboardPageContent({
                       </div>
                       <p className="mt-1 text-xs text-slate-500">{createdAt}</p>
                     </div>
-                    <Link
+                    <LinkButton
                       href={`/dashboard/edit-property/${id}`}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-kera-blue shadow-sm hover:bg-blue-50"
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0 text-kera-blue hover:bg-blue-50"
                     >
                       <Pencil className="h-3.5 w-3.5" />
                       {t.dashboard.editListing}
-                    </Link>
+                    </LinkButton>
                   </div>
                 </div>
 

@@ -1,8 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 
 const BUCKET = "property-images";
+const MAX_DIMENSION = 1920;
+const WEBP_QUALITY = 82;
 
 async function ensureBucket() {
   const admin = createAdminSupabaseClient();
@@ -25,6 +28,17 @@ async function ensureBucket() {
   }
 
   return admin;
+}
+
+async function toWebpBuffer(input: Buffer): Promise<Buffer> {
+  return sharp(input)
+    .rotate()
+    .resize(MAX_DIMENSION, MAX_DIMENSION, {
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .webp({ quality: WEBP_QUALITY })
+    .toBuffer();
 }
 
 export async function POST(request: Request) {
@@ -53,15 +67,15 @@ export async function POST(request: Request) {
     }
 
     const admin = await ensureBucket();
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const rawBuffer = Buffer.from(await file.arrayBuffer());
+    const webpBuffer = await toWebpBuffer(rawBuffer);
+    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
 
     const { error: uploadError } = await admin.storage
       .from(BUCKET)
-      .upload(path, buffer, {
-        contentType: file.type,
-        cacheControl: "3600",
+      .upload(path, webpBuffer, {
+        contentType: "image/webp",
+        cacheControl: "31536000",
         upsert: false,
       });
 

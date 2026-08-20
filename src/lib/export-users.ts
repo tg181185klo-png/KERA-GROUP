@@ -1,11 +1,54 @@
 import { downloadCsv } from "@/lib/export-csv";
-import type { Profile } from "@/lib/types/profile";
+import type { Profile, ProfileChange } from "@/lib/types/profile";
 import type { UserListingStats } from "@/lib/admin-users";
 import type { ListingExportRow } from "@/lib/export-listings";
 import {
   DEAL_TYPE_LABELS,
   LISTING_STATUS_LABELS,
 } from "@/lib/types/property-listing";
+
+const PROFILE_FIELD_LABELS: Record<ProfileChange["field"], string> = {
+  first_name: "სახელი",
+  last_name: "გვარი",
+  phone: "ტელეფონი",
+};
+
+export function exportProfileChangesToExcel(
+  users: Profile[],
+  changes: ProfileChange[],
+): void {
+  if (changes.length === 0) return;
+
+  const usersById = new Map(users.map((user) => [user.id, user]));
+
+  downloadCsv(
+    `kera-profile-changes-${new Date().toISOString().slice(0, 10)}.csv`,
+    [
+      "user_id",
+      "ელ-ფოსტა",
+      "სახელი",
+      "გვარი",
+      "ველი",
+      "ძველი მნიშვნელობა",
+      "ახალი მნიშვნელობა",
+      "ცვლილების თარიღი",
+    ],
+    changes.map((change) => {
+      const user = usersById.get(change.user_id);
+
+      return [
+        change.user_id,
+        user?.email ?? "",
+        user?.first_name ?? "",
+        user?.last_name ?? "",
+        PROFILE_FIELD_LABELS[change.field] ?? change.field,
+        change.old_value ?? "",
+        change.new_value ?? "",
+        new Date(change.changed_at).toLocaleString("ka-GE"),
+      ];
+    }),
+  );
+}
 
 export function exportUsersToExcel(
   users: Profile[],

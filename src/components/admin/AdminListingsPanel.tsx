@@ -18,6 +18,7 @@ import {
   type ListingExportRow,
 } from "@/lib/export-listings";
 import {
+  exportProfileChangesToExcel,
   exportUsersToExcel,
   exportUsersWithListingsToExcel,
 } from "@/lib/export-users";
@@ -41,6 +42,7 @@ export function AdminListingsPanel({
   const [usersError, setUsersError] = useState<string | null>(null);
   const [loading, setLoading] = useState(!initialListings.length);
   const [syncing, setSyncing] = useState(false);
+  const [exportingHistory, setExportingHistory] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -165,6 +167,33 @@ export function AdminListingsPanel({
     exportUsersWithListingsToExcel(users, listings);
   }
 
+  async function exportProfileHistory() {
+    if (users.length === 0) {
+      alert("მომხმარებლები არ არის");
+      return;
+    }
+
+    setExportingHistory(true);
+    try {
+      const res = await fetch("/api/admin/profile-changes");
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error ?? "პროფილის ისტორიის ჩატვირთვა ვერ მოხერხდა");
+        return;
+      }
+
+      if (!Array.isArray(data) || data.length === 0) {
+        alert("პროფილის ცვლილებები ჯერ არ არის");
+        return;
+      }
+
+      exportProfileChangesToExcel(users, data);
+    } finally {
+      setExportingHistory(false);
+    }
+  }
+
   const pendingCount = listings.filter((item) => item.status === "pending").length;
   const filteredListings = useMemo(
     () =>
@@ -233,6 +262,14 @@ export function AdminListingsPanel({
             </Button>
             <Button size="sm" variant="secondary" onClick={exportUsersWithListings}>
               მომხმარებლები + განცხადები
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={exportingHistory}
+              onClick={exportProfileHistory}
+            >
+              {exportingHistory ? "იტვირთება..." : "პროფილის ისტორია"}
             </Button>
           </div>
         )}
