@@ -3,7 +3,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { AddPropertyWizard } from "@/components/dashboard/AddPropertyWizard";
 import { rowToFormData } from "@/lib/listing-form";
-import { isPubliclyVisibleListing } from "@/lib/listing-status";
+import { isListingMapPeriodActive, shouldRequireModerationOnEdit } from "@/lib/listing-expiry";
 import {
   sanitizePropertyRowForClient,
   type PropertyRow,
@@ -59,19 +59,22 @@ export default async function EditPropertyPage({
     redirect("/dashboard");
   }
 
-  const wasActive = isPubliclyVisibleListing(row.status);
+  const requiresModerationOnSave = shouldRequireModerationOnEdit(row);
+  const isCurrentlyOnMap = isListingMapPeriodActive(row);
 
   return (
     <div className="kera-container max-w-3xl py-10 sm:py-12 lg:py-14">
       <h1 className="kera-page-header mb-2">განცხადების რედაქტირება</h1>
       <p className="mb-8 text-sm leading-relaxed text-slate-500 sm:text-base">
-        შეცვალეთ ველები და შეინახეთ — განახლებული განცხადება მოდერაციაში გადავა
+        {isCurrentlyOnMap
+          ? "შეცვალეთ ველები და შეინახეთ — აქტიური განცხადის ცვლილებები მაშინვე აისახება რუკაზე."
+          : "შეცვალეთ ველები და შეინახეთ — განახლებული განცხადი მოდერაციაში გადავა."}
       </p>
       <AddPropertyWizard
         mode="edit"
         listingId={id}
         initialForm={initialForm}
-        wasActive={wasActive}
+        requiresModerationOnSave={requiresModerationOnSave}
       />
     </div>
   );

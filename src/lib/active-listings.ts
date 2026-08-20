@@ -4,6 +4,7 @@ import {
   publicStatusFilter,
   isPubliclyVisibleListing,
 } from "@/lib/listing-status";
+import { expireStaleMapListings } from "@/lib/listing-expiry";
 import {
   getCadastralCode,
   isMappableProperty,
@@ -104,6 +105,8 @@ async function enrichRows(rows: PropertyRow[], forceAll: boolean) {
 async function fetchActiveRows() {
   const service = createServiceClient();
 
+  await expireStaleMapListings(service);
+
   const { data, error } = await service
     .from("properties")
     .select("*")
@@ -116,7 +119,7 @@ async function fetchActiveRows() {
   }
 
   return (data ?? []).filter((row) =>
-    isPubliclyVisibleListing((row as PropertyRow).status),
+    isPubliclyVisibleListing(row as PropertyRow),
   ) as PropertyRow[];
 }
 
@@ -149,7 +152,7 @@ export async function fetchActiveListingById(id: string) {
   if (error || !data) return null;
 
   const row = data as PropertyRow;
-  if (!isPubliclyVisibleListing(row.status)) return null;
+  if (!isPubliclyVisibleListing(row)) return null;
 
   let enriched = row;
   if (rowNeedsCadastralEnrichment(row)) {

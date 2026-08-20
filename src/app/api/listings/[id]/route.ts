@@ -2,6 +2,10 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { canManageListings } from "@/lib/admin-access";
 import { buildMapPersistPayload } from "@/lib/cadastral-lookup";
 import { isPubliclyVisibleListing } from "@/lib/listing-status";
+import {
+  buildApprovalTimestamps,
+  shouldRequireModerationOnEdit,
+} from "@/lib/listing-expiry";
 import { buildOwnerListingUpdates } from "@/lib/listing-update";
 import { getCadastralCode } from "@/lib/property-normalize";
 import { isListingOwnedByUser } from "@/lib/user-listings";
@@ -102,7 +106,7 @@ export async function GET(_request: Request, context: RouteContext) {
   } = await supabase.auth.getUser();
   const admin = await canManageListings(user?.id);
 
-  if (!admin && !isPubliclyVisibleListing(data.status)) {
+  if (!admin && !isPubliclyVisibleListing(data)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -146,17 +150,23 @@ export async function PATCH(request: Request, context: RouteContext) {
   let updates: Record<string, unknown>;
 
   if (admin && (body.status === "active" || body.status === "approved")) {
-    updates = await buildMapPersistPayload(
-      existing as Record<string, unknown>,
-      getCadastralCode,
-    );
+    updates = {
+      ...(await buildMapPersistPayload(
+        existing as Record<string, unknown>,
+        getCadastralCode,
+      )),
+      ...buildApprovalTimestamps(),
+    };
   } else if (admin && body.status != null && Object.keys(body).length === 1) {
     updates = { status: statusForDatabase(body.status) };
+    if (body.status === "active" || body.status === "approved") {
+      Object.assign(updates, buildApprovalTimestamps());
+    }
   } else if (admin) {
     updates = body;
   } else {
     updates = await buildOwnerListingUpdates(body, existing, {
-      resetToPending: true,
+      resetToPending: shouldRequireModerationOnEdit(existing),
     });
   }
 

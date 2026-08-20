@@ -180,6 +180,7 @@ export function getMapDealTypeFromRow(row: PropertyRow): MapProperty["deal_type"
 }
 
 export function normalizeListingStatus(status: unknown): ListingStatus {
+  if (status === "expired") return "expired";
   const normalized = normalizePublicStatus(status);
   if (normalized === "active") return "active";
   if (normalized === "blocked") return "blocked";
@@ -336,7 +337,7 @@ export function normalizeToAdminListingFull(row: PropertyRow) {
 }
 
 export function isActiveListing(row: PropertyRow): boolean {
-  return isPubliclyVisibleListing(row.status);
+  return isPubliclyVisibleListing(row);
 }
 
 /** Owner listings matched by legacy `owner_email` when that column exists. */

@@ -27,17 +27,20 @@ interface DashboardPageContentProps {
   listings: PropertyRow[];
   submittedPending: boolean;
   editedListing?: boolean;
+  updatedListing?: boolean;
 }
 
 function statusBadgeClass(status: ListingStatus): string {
   if (status === "pending") return "bg-amber-50 text-amber-800 ring-amber-200";
   if (status === "active") return "bg-emerald-50 text-emerald-800 ring-emerald-200";
+  if (status === "expired") return "bg-slate-100 text-slate-700 ring-slate-200";
   return "bg-red-50 text-red-800 ring-red-200";
 }
 
 function statusPanelClass(status: ListingStatus): string {
   if (status === "pending") return "border-amber-100 bg-amber-50/80 text-amber-900";
   if (status === "active") return "border-emerald-100 bg-emerald-50/80 text-emerald-900";
+  if (status === "expired") return "border-slate-200 bg-slate-50/80 text-slate-800";
   return "border-red-100 bg-red-50/80 text-red-900";
 }
 
@@ -46,6 +49,7 @@ export function DashboardPageContent({
   listings,
   submittedPending,
   editedListing = false,
+  updatedListing = false,
 }: DashboardPageContentProps) {
   const { t, locale } = useLocale();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -55,6 +59,7 @@ export function DashboardPageContent({
       pending: t.status.pending,
       active: t.status.active,
       blocked: t.status.blocked,
+      expired: t.status.expired,
     };
     return labels[status] ?? status;
   }
@@ -62,6 +67,7 @@ export function DashboardPageContent({
   function statusMessage(status: ListingStatus) {
     if (status === "pending") return t.dashboard.statusPending;
     if (status === "active") return t.dashboard.statusActive;
+    if (status === "expired") return t.dashboard.statusExpired;
     return t.dashboard.statusBlocked;
   }
 
@@ -94,6 +100,12 @@ export function DashboardPageContent({
           <LogoutButton />
         </div>
       </div>
+
+      {updatedListing && (
+        <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          {t.dashboard.editedActiveBanner}
+        </div>
+      )}
 
       {submittedPending && (
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">

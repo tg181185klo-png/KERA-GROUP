@@ -179,6 +179,7 @@ export const en = {
     active: "Active",
     archived: "Archived",
     blocked: "Blocked",
+    expired: "Expired",
   },
   quickActions: {
     search: { label: "Search properties", desc: "Filters and parameters" },
@@ -500,6 +501,7 @@ export const en = {
     filterPending: "Pending",
     filterActive: "Active",
     filterBlocked: "Blocked",
+    filterExpired: "Expired",
     pendingCount: "{count} pending",
   },
   dashboard: {
@@ -515,6 +517,8 @@ export const en = {
       "Listing received and pending moderation. It will appear on the map and homepage after admin approval.",
     statusPending: "Your listing is awaiting approval",
     statusActive: "Listing is active and published on the map",
+    statusExpired:
+      "The 30-day map period has ended. Admin approval is required to show it on the map again.",
     statusBlocked: "Listing is blocked. Contact us for more information.",
     expandDetails: "Details",
     collapseDetails: "Hide",
@@ -531,9 +535,13 @@ export const en = {
     editListing: "Edit listing",
     editListingTitle: "Edit listing",
     editResubmitNotice:
-      "After you save changes, the listing goes back to moderation. An admin must approve it again before it appears on the map.",
+      "The map period has ended or the listing is not approved yet. After saving, it will go back to moderation.",
+    editActiveNotice:
+      "Changes to an active listing update the map immediately — no re-approval needed.",
     editedResubmitBanner:
       "Listing updated and pending moderation. It will appear on the map after admin approval.",
+    editedActiveBanner:
+      "Listing updated successfully and remains visible on the map.",
     profileTitle: "Profile",
     profileEdit: "Edit profile",
     profileCancel: "Cancel",

@@ -1,6 +1,6 @@
 import type { GeoJSON } from "geojson";
 
-export type ListingStatus = "pending" | "active" | "blocked";
+export type ListingStatus = "pending" | "active" | "blocked" | "expired";
 /** Legacy binary type stored in DB; map colors use MapDealType / deal_type. */
 export type ListingType = "sale" | "rent";
 export type MapDealType = "sale" | "rent" | "daily_rent" | "pledge";
@@ -91,4 +91,5 @@ export const LISTING_STATUS_LABELS: Record<ListingStatus, string> = {
   pending: "მოდერაციაში",
   active: "აქტიური",
   blocked: "დაბლოკილი",
+  expired: "ვადაგასული",
 };

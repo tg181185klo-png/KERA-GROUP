@@ -29,14 +29,14 @@ interface AddPropertyWizardProps {
   mode?: "create" | "edit";
   listingId?: string;
   initialForm?: PropertyListingFormData;
-  wasActive?: boolean;
+  requiresModerationOnSave?: boolean;
 }
 
 export function AddPropertyWizard({
   mode = "create",
   listingId,
   initialForm,
-  wasActive: _wasActive = false,
+  requiresModerationOnSave = true,
 }: AddPropertyWizardProps) {
   const router = useRouter();
   const { t } = useLocale();
@@ -154,7 +154,17 @@ export function AddPropertyWizard({
       return;
     }
 
-    router.push("/dashboard?submitted=pending&edited=1");
+    const saved = await res.json();
+    const stillActive =
+      saved?.status === "active" || saved?.status === "approved";
+
+    if (mode === "edit" && stillActive) {
+      router.push("/dashboard?updated=1");
+    } else if (mode === "edit") {
+      router.push("/dashboard?submitted=pending&edited=1");
+    } else {
+      router.push("/dashboard?submitted=pending");
+    }
     router.refresh();
   }
 
@@ -166,9 +176,14 @@ export function AddPropertyWizard({
 
   return (
     <div>
-      {mode === "edit" && (
+      {mode === "edit" && requiresModerationOnSave && (
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           {t.dashboard.editResubmitNotice}
+        </div>
+      )}
+      {mode === "edit" && !requiresModerationOnSave && (
+        <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          {t.dashboard.editActiveNotice}
         </div>
       )}
 

@@ -8,7 +8,7 @@ import { fetchUserDashboardListings } from "@/lib/user-listings";
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ submitted?: string; edited?: string }>;
+  searchParams: Promise<{ submitted?: string; edited?: string; updated?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -37,6 +37,7 @@ export default async function DashboardPage({
       listings={listings}
       submittedPending={params.submitted === "pending"}
       editedListing={params.edited === "1"}
+      updatedListing={params.updated === "1"}
     />
   );
 }

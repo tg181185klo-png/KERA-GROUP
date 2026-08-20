@@ -282,7 +282,7 @@ export function AdminListingsPanel({
               {t.admin.pendingCount.replace("{count}", String(pendingCount))}
             </span>
           )}
-          {(["all", "pending", "active", "blocked"] as const).map((status) => (
+          {(["all", "pending", "active", "expired", "blocked"] as const).map((status) => (
             <Button
               key={status}
               size="sm"
@@ -295,6 +295,8 @@ export function AdminListingsPanel({
                   ? t.admin.filterPending
                   : status === "active"
                     ? t.admin.filterActive
+                    : status === "expired"
+                      ? t.admin.filterExpired
                     : t.admin.filterBlocked}
               {status !== "all" && (
                 <span className="ml-1 opacity-70">
