@@ -4,6 +4,7 @@ import {
   cadastralCoordsPayload,
   lookupCadastralParcel,
 } from "@/lib/cadastral-lookup";
+import { geocodeListingRow } from "@/lib/geocode-listing";
 import { getCadastralCode } from "@/lib/property-normalize";
 import { NextResponse } from "next/server";
 
@@ -41,10 +42,8 @@ export async function POST() {
 
     const parcel = await lookupCadastralParcel(cadastral);
     if (!parcel) {
-      const address = String(row.address ?? "").trim();
-      if (address.length > 3 && (row.latitude == null || row.longitude == null)) {
-        const { geocodeAddress } = await import("@/lib/geocode");
-        const coords = await geocodeAddress(address);
+      if (row.latitude == null || row.longitude == null) {
+        const coords = await geocodeListingRow(row);
         if (coords) {
           const payload = {
             latitude: coords.lat,

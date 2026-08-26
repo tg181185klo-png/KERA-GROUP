@@ -176,10 +176,27 @@ function uniqCodeVariants(cadastralCode: string): string[] {
   if (base.length < 12) {
     variants.add(base.padStart(12, "0"));
   }
+  if (base.length === 9) {
+    variants.add(`${base}000`);
+  }
   const trimmed = base.replace(/^0+/, "");
   if (trimmed) variants.add(trimmed);
 
   return [...variants];
+}
+
+async function lookupParcelAcrossLayers(
+  cadastralCode: string,
+  uniqCode: string,
+): Promise<CadastralParcel | null> {
+  const preferred = layerOrderForCadastral(cadastralCode);
+  const allLayers = [...new Set([...preferred, ...PARCEL_LAYER_IDS])];
+
+  const results = await Promise.all(
+    allLayers.map((layerId) => queryLayer(layerId, uniqCode)),
+  );
+
+  return results.find((parcel) => parcel != null) ?? null;
 }
 
 /** Fetch real parcel polygon + coordinates from NAPR CadRepGeo service. */
@@ -191,7 +208,7 @@ export async function lookupCadastralParcel(
   const variants = uniqCodeVariants(cadastralCode);
   if (!variants.length) return null;
 
-  for (const uniqCode of variants.slice(0, 2)) {
+  for (const uniqCode of variants) {
     const cachedAt = cacheTimestamps.get(uniqCode);
     if (cachedAt && Date.now() - cachedAt < CACHE_TTL_MS && cache.has(uniqCode)) {
       const cached = cache.get(uniqCode) ?? null;
@@ -199,17 +216,13 @@ export async function lookupCadastralParcel(
       continue;
     }
 
-    const layers = layerOrderForCadastral(cadastralCode);
-
-    for (const layerId of layers) {
-      const parcel = await queryLayer(layerId, uniqCode);
-      if (parcel) {
-        for (const alias of variants) {
-          cache.set(alias, parcel);
-          cacheTimestamps.set(alias, Date.now());
-        }
-        return parcel;
+    const parcel = await lookupParcelAcrossLayers(cadastralCode, uniqCode);
+    if (parcel) {
+      for (const alias of variants) {
+        cache.set(alias, parcel);
+        cacheTimestamps.set(alias, Date.now());
       }
+      return parcel;
     }
 
     cache.set(uniqCode, null);

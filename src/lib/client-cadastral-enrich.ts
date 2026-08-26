@@ -1,5 +1,6 @@
 import type { MapProperty } from "@/lib/types/property-listing";
 import { cadastralToUniqCode, formatCadastralCode } from "@/lib/cadastral";
+import { buildMapPropertyGeocodeQueries } from "@/lib/geocode-listing";
 import { isMappableProperty } from "@/lib/property-normalize";
 
 const enrichCache = new Map<string, MapProperty>();
@@ -30,31 +31,35 @@ async function persistMapCoords(
 }
 
 async function geocodeProperty(property: MapProperty): Promise<MapProperty> {
-  const address = property.address?.trim();
-  if (!address || address.length <= 3) return property;
+  const queries = buildMapPropertyGeocodeQueries(property);
+  if (queries.length === 0) return property;
 
-  try {
-    const geoRes = await fetch(
-      `/api/geocode?address=${encodeURIComponent(address)}`,
-      { cache: "no-store" },
-    );
-    const geo = await geoRes.json();
-    if (!geoRes.ok || geo.lat == null || geo.lng == null) return property;
+  for (const query of queries) {
+    try {
+      const geoRes = await fetch(
+        `/api/geocode?address=${encodeURIComponent(query)}`,
+        { cache: "no-store" },
+      );
+      const geo = await geoRes.json();
+      if (!geoRes.ok || geo.lat == null || geo.lng == null) continue;
 
-    const geocoded: MapProperty = {
-      ...property,
-      latitude: geo.lat,
-      longitude: geo.lng,
-    };
-    enrichCache.set(property.id, geocoded);
-    await persistMapCoords(property, {
-      latitude: geocoded.latitude,
-      longitude: geocoded.longitude,
-    });
-    return geocoded;
-  } catch {
-    return property;
+      const geocoded: MapProperty = {
+        ...property,
+        latitude: geo.lat,
+        longitude: geo.lng,
+      };
+      enrichCache.set(property.id, geocoded);
+      await persistMapCoords(property, {
+        latitude: geocoded.latitude,
+        longitude: geocoded.longitude,
+      });
+      return geocoded;
+    } catch {
+      // try next query
+    }
   }
+
+  return property;
 }
 
 export async function fetchCadastralForProperty(

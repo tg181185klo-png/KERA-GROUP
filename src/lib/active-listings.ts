@@ -1,5 +1,5 @@
 import { enrichRowWithCadastral, isLikelyRealParcel } from "@/lib/cadastral-lookup";
-import { geocodeAddress } from "@/lib/geocode";
+import { geocodeListingRow } from "@/lib/geocode-listing";
 import {
   publicStatusFilter,
   isPubliclyVisibleListing,
@@ -86,10 +86,7 @@ async function enrichRowCadastral(row: PropertyRow): Promise<PropertyRow> {
 async function enrichRowGeocode(row: PropertyRow): Promise<PropertyRow> {
   if (!rowMissingMapCoords(row)) return row;
 
-  const address = String(row.address ?? "").trim();
-  if (address.length <= 3) return row;
-
-  const coords = await geocodeAddress(address);
+  const coords = await geocodeListingRow(row);
   if (!coords) return row;
 
   const updated = {
