@@ -1,10 +1,24 @@
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const NULL_CACHE_TTL_MS = 5 * 60 * 1000;
 const cache = new Map<string, { lat: number; lng: number } | null>();
 const cacheTimestamps = new Map<string, number>();
 
 function cacheKey(address: string): string {
   return address.trim().toLowerCase();
+}
+
+function readCached(key: string): { lat: number; lng: number } | null | undefined {
+  const cachedAt = cacheTimestamps.get(key);
+  if (!cachedAt || !cache.has(key)) return undefined;
+
+  const hit = cache.get(key) ?? null;
+  const ttl = hit == null ? NULL_CACHE_TTL_MS : CACHE_TTL_MS;
+  if (Date.now() - cachedAt < ttl) return hit;
+
+  cache.delete(key);
+  cacheTimestamps.delete(key);
+  return undefined;
 }
 
 /** Geocode a Georgian address via OpenStreetMap Nominatim (fallback when cadastral coords missing). */
@@ -15,10 +29,8 @@ export async function geocodeAddress(
   if (!trimmed) return null;
 
   const key = cacheKey(trimmed);
-  const cachedAt = cacheTimestamps.get(key);
-  if (cachedAt && Date.now() - cachedAt < CACHE_TTL_MS && cache.has(key)) {
-    return cache.get(key) ?? null;
-  }
+  const cached = readCached(key);
+  if (cached !== undefined) return cached;
 
   const query = trimmed.includes("საქართველო") || /georgia/i.test(trimmed)
     ? trimmed

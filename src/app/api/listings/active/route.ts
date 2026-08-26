@@ -1,7 +1,7 @@
 import { fetchMapListingsForSync } from "@/lib/active-listings";
 import { NextResponse } from "next/server";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
