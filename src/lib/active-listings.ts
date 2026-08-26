@@ -32,10 +32,18 @@ async function persistCadastralCoords(
   const payload: Record<string, unknown> = {};
 
   if (enriched.latitude != null && enriched.latitude !== original.latitude) {
-    payload.latitude = enriched.latitude;
+    const hadLat =
+      original.latitude != null &&
+      original.latitude !== "" &&
+      !Number.isNaN(Number(original.latitude));
+    if (!hadLat) payload.latitude = enriched.latitude;
   }
   if (enriched.longitude != null && enriched.longitude !== original.longitude) {
-    payload.longitude = enriched.longitude;
+    const hadLng =
+      original.longitude != null &&
+      original.longitude !== "" &&
+      !Number.isNaN(Number(original.longitude));
+    if (!hadLng) payload.longitude = enriched.longitude;
   }
 
   if (
@@ -103,12 +111,14 @@ async function enrichRowGeocode(row: PropertyRow): Promise<PropertyRow> {
 }
 
 async function enrichRows(rows: PropertyRow[]) {
-  const withGeocode = await Promise.all(
-    rows.map(async (row) => {
-      if (!rowMissingMapCoords(row)) return row;
-      return enrichRowGeocode(row);
-    }),
-  );
+  const withGeocode: PropertyRow[] = [];
+  for (const row of rows) {
+    if (!rowMissingMapCoords(row)) {
+      withGeocode.push(row);
+      continue;
+    }
+    withGeocode.push(await enrichRowGeocode(row));
+  }
 
   const withCadastral = await Promise.all(
     withGeocode.map((row) => enrichRowCadastral(row)),

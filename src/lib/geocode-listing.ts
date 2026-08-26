@@ -104,9 +104,13 @@ export function buildMapPropertyGeocodeQueries(property: MapProperty): string[] 
 export async function geocodeListingRow(
   row: PropertyRow,
 ): Promise<{ lat: number; lng: number } | null> {
-  for (const query of buildListingGeocodeQueries(row)) {
-    const coords = await geocodeAddress(query);
+  const queries = buildListingGeocodeQueries(row);
+  for (let i = 0; i < queries.length; i++) {
+    const coords = await geocodeAddress(queries[i]);
     if (coords) return coords;
+    if (i < queries.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 1_100));
+    }
   }
   return null;
 }
@@ -114,9 +118,13 @@ export async function geocodeListingRow(
 export async function geocodeMapProperty(
   property: MapProperty,
 ): Promise<{ lat: number; lng: number } | null> {
-  for (const query of buildMapPropertyGeocodeQueries(property)) {
-    const coords = await geocodeAddress(query);
+  const queries = buildMapPropertyGeocodeQueries(property);
+  for (let i = 0; i < queries.length; i++) {
+    const coords = await geocodeAddress(queries[i]);
     if (coords) return coords;
+    if (i < queries.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 1_100));
+    }
   }
   return null;
 }

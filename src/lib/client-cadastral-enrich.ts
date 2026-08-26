@@ -23,10 +23,31 @@ async function persistMapCoords(
     cadastral_code?: string;
   },
 ) {
+  const body: Record<string, unknown> = {};
+
+  if (
+    payload.latitude != null &&
+    (property.latitude == null || property.longitude == null)
+  ) {
+    body.latitude = payload.latitude;
+    body.longitude = payload.longitude ?? property.longitude;
+  } else if (
+    payload.longitude != null &&
+    (property.latitude == null || property.longitude == null)
+  ) {
+    body.longitude = payload.longitude;
+    body.latitude = payload.latitude ?? property.latitude;
+  }
+
+  if (payload.geojson_polygon) body.geojson_polygon = payload.geojson_polygon;
+  if (payload.cadastral_code) body.cadastral_code = payload.cadastral_code;
+
+  if (Object.keys(body).length === 0) return;
+
   fetch(`/api/listings/${property.id}/cadastral`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   }).catch(() => undefined);
 }
 
