@@ -4,6 +4,10 @@ import { CADASTRAL_API_BASE } from "@/lib/constants";
 
 /** Parcel (ნაკვეთი) layer IDs — one per Georgian region in CadRepGeo */
 const PARCEL_LAYER_IDS = [10, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59];
+const LAYER_QUERY_TIMEOUT_MS = 2_500;
+const MAX_LAYER_ATTEMPTS = 4;
+
+let naprUnavailableUntil = 0;
 
 /** Cadastral region prefix (first segment) → NAPR CadRepGeo layer ID */
 const REGION_LAYER_MAP: Record<string, number> = {
@@ -33,11 +37,11 @@ function layerOrderForCadastral(cadastralCode: string): number[] {
   if (preferred) {
     return [
       preferred,
-      ...PARCEL_LAYER_IDS.filter((id) => id !== preferred),
+      ...PARCEL_LAYER_IDS.filter((id) => id !== preferred).slice(0, MAX_LAYER_ATTEMPTS - 1),
     ];
   }
 
-  return [...PARCEL_LAYER_IDS];
+  return PARCEL_LAYER_IDS.slice(0, MAX_LAYER_ATTEMPTS);
 }
 
 export type CadastralParcel = {
@@ -117,7 +121,7 @@ async function queryLayer(
   url.searchParams.set("f", "json");
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12_000);
+  const timeout = setTimeout(() => controller.abort(), LAYER_QUERY_TIMEOUT_MS);
 
   try {
     const res = await fetch(url.toString(), {
@@ -127,7 +131,20 @@ async function queryLayer(
 
     if (!res.ok) return null;
 
-    const data = (await res.json()) as ArcGISQueryResponse;
+    const contentType = res.headers.get("content-type") ?? "";
+    const raw = await res.text();
+    if (!contentType.includes("json") || raw.trimStart().startsWith("<")) {
+      naprUnavailableUntil = Date.now() + 5 * 60 * 1000;
+      return null;
+    }
+
+    let data: ArcGISQueryResponse;
+    try {
+      data = JSON.parse(raw) as ArcGISQueryResponse;
+    } catch {
+      naprUnavailableUntil = Date.now() + 5 * 60 * 1000;
+      return null;
+    }
     const feature = data.features?.[0];
     if (!feature?.geometry?.rings?.length) return null;
 
@@ -169,10 +186,12 @@ function uniqCodeVariants(cadastralCode: string): string[] {
 export async function lookupCadastralParcel(
   cadastralCode: string,
 ): Promise<CadastralParcel | null> {
+  if (Date.now() < naprUnavailableUntil) return null;
+
   const variants = uniqCodeVariants(cadastralCode);
   if (!variants.length) return null;
 
-  for (const uniqCode of variants) {
+  for (const uniqCode of variants.slice(0, 2)) {
     const cachedAt = cacheTimestamps.get(uniqCode);
     if (cachedAt && Date.now() - cachedAt < CACHE_TTL_MS && cache.has(uniqCode)) {
       const cached = cache.get(uniqCode) ?? null;

@@ -31,18 +31,10 @@ async function persistCadastralCoords(
 ) {
   const payload: Record<string, unknown> = {};
 
-  const nextLat = enriched.latitude ?? original.latitude;
-  const nextLng = enriched.longitude ?? original.longitude;
-  const nextGeo = enriched.geojson_polygon ?? original.geojson_polygon;
-  const nextCadastral = enriched.cadastral_code ?? original.cadastral_code;
-
-  if (nextLat != null && nextLat !== original.latitude) payload.latitude = nextLat;
-  else if (original.latitude == null && enriched.latitude != null) {
+  if (enriched.latitude != null && enriched.latitude !== original.latitude) {
     payload.latitude = enriched.latitude;
   }
-
-  if (nextLng != null && nextLng !== original.longitude) payload.longitude = nextLng;
-  else if (original.longitude == null && enriched.longitude != null) {
+  if (enriched.longitude != null && enriched.longitude !== original.longitude) {
     payload.longitude = enriched.longitude;
   }
 
@@ -51,17 +43,15 @@ async function persistCadastralCoords(
     (isLikelyRealParcel(enriched.geojson_polygon) || !original.geojson_polygon)
   ) {
     payload.geojson_polygon = enriched.geojson_polygon;
-    if (enriched.latitude != null) payload.latitude = enriched.latitude;
-    if (enriched.longitude != null) payload.longitude = enriched.longitude;
   }
 
   if (
-    typeof nextCadastral === "string" &&
-    nextCadastral &&
-    nextCadastral !== original.cadastral_code &&
-    !String(nextCadastral).startsWith("TEMP-")
+    typeof enriched.cadastral_code === "string" &&
+    enriched.cadastral_code &&
+    enriched.cadastral_code !== original.cadastral_code &&
+    !String(enriched.cadastral_code).startsWith("TEMP-")
   ) {
-    payload.cadastral_code = nextCadastral;
+    payload.cadastral_code = enriched.cadastral_code;
   }
 
   if (Object.keys(payload).length === 0) return;
@@ -116,8 +106,18 @@ async function enrichRowGeocode(row: PropertyRow): Promise<PropertyRow> {
 }
 
 async function enrichRows(rows: PropertyRow[]) {
-  const withCadastral = await Promise.all(rows.map((row) => enrichRowCadastral(row)));
-  return Promise.all(withCadastral.map((row) => enrichRowGeocode(row)));
+  const withGeocode = await Promise.all(
+    rows.map(async (row) => {
+      if (!rowMissingMapCoords(row)) return row;
+      return enrichRowGeocode(row);
+    }),
+  );
+
+  const withCadastral = await Promise.all(
+    withGeocode.map((row) => enrichRowCadastral(row)),
+  );
+
+  return withCadastral;
 }
 
 async function fetchActiveRows() {

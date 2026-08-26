@@ -153,6 +153,12 @@ export function PropertyMap({
         },
       ).addTo(map);
 
+      L.tileLayer("/api/napr/tiles/{z}/{x}/{y}", {
+        attribution: "© NAPR / reestri.gov.ge",
+        maxZoom: 19,
+        opacity: 0.92,
+      }).addTo(map);
+
       L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
         {
@@ -403,17 +409,15 @@ export function PropertyMap({
   useEffect(() => {
     if (!ready || !mapRef.current) return;
 
-    if (fitOnLoad && !initialFitDone.current) {
-      const bounds = collectBounds(properties, preview);
-      if (bounds.length === 1) {
-        mapRef.current.setView(bounds[0], forcePolygons ? 17 : 15);
-        initialFitDone.current = true;
-      } else if (bounds.length > 1) {
-        mapRef.current.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
-        initialFitDone.current = true;
-      } else if (properties.length === 0 && !preview) {
-        mapRef.current.setView([41.7151, 44.8271], 7);
-      }
+    const bounds = collectBounds(properties, preview);
+    if (bounds.length === 1) {
+      mapRef.current.setView(bounds[0], forcePolygons ? 17 : 14);
+      initialFitDone.current = true;
+    } else if (bounds.length > 1) {
+      mapRef.current.fitBounds(bounds, { padding: [48, 48], maxZoom: 14 });
+      initialFitDone.current = true;
+    } else if (fitOnLoad && !initialFitDone.current && properties.length === 0 && !preview) {
+      mapRef.current.setView([41.7151, 44.8271], 7);
     }
 
     mapRef.current.invalidateSize();

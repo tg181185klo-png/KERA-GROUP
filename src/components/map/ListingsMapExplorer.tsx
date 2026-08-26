@@ -44,11 +44,7 @@ export function ListingsMapExplorer({
 
       const raw = Array.isArray(data) ? data : [];
       const enriched = await enrichPropertiesCadastral(raw);
-      setProperties(
-        layout === "map-only"
-          ? enriched.filter(isMappableProperty)
-          : enriched,
-      );
+      setProperties(enriched.filter(isMappableProperty));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.error);

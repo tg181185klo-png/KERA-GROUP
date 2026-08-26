@@ -41,6 +41,25 @@ export async function POST() {
 
     const parcel = await lookupCadastralParcel(cadastral);
     if (!parcel) {
+      const address = String(row.address ?? "").trim();
+      if (address.length > 3 && (row.latitude == null || row.longitude == null)) {
+        const { geocodeAddress } = await import("@/lib/geocode");
+        const coords = await geocodeAddress(address);
+        if (coords) {
+          const payload = {
+            latitude: coords.lat,
+            longitude: coords.lng,
+          };
+          const { error: updateError } = await service
+            .from("properties")
+            .update(payload)
+            .eq("id", row.id);
+          if (!updateError) {
+            updated++;
+            continue;
+          }
+        }
+      }
       failed++;
       continue;
     }
