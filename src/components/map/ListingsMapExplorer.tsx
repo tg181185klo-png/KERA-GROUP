@@ -34,8 +34,7 @@ export function ListingsMapExplorer({
     else setRefreshing(true);
 
     try {
-      const endpoint =
-        layout === "map-only" ? "/api/listings/map" : "/api/listings/active";
+      const endpoint = "/api/listings/active";
       const res = await fetch(endpoint, { cache: "no-store" });
       const data = await res.json();
 
@@ -45,7 +44,11 @@ export function ListingsMapExplorer({
 
       const raw = Array.isArray(data) ? data : [];
       const enriched = await enrichPropertiesCadastral(raw);
-      setProperties(enriched);
+      setProperties(
+        layout === "map-only"
+          ? enriched.filter(isMappableProperty)
+          : enriched,
+      );
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.error);

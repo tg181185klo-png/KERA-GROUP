@@ -18,6 +18,7 @@ const REGION_LAYER_MAP: Record<string, number> = {
   "09": 49, // სამtskheto-javakheti
   "10": 54, // ქვემო kartli
   "11": 59, // შida kartli
+  "29": 44, // სამეგრelo / აფხაზეთი
   "30": 24, // იმერეთი / ბაღდათი
   "31": 24,
   "32": 24,
@@ -150,31 +151,51 @@ async function queryLayer(
   }
 }
 
+function uniqCodeVariants(cadastralCode: string): string[] {
+  const base = cadastralToUniqCode(cadastralCode);
+  if (!base) return [];
+
+  const variants = new Set<string>([base]);
+  if (base.length < 12) {
+    variants.add(base.padStart(12, "0"));
+  }
+  const trimmed = base.replace(/^0+/, "");
+  if (trimmed) variants.add(trimmed);
+
+  return [...variants];
+}
+
 /** Fetch real parcel polygon + coordinates from NAPR CadRepGeo service. */
 export async function lookupCadastralParcel(
   cadastralCode: string,
 ): Promise<CadastralParcel | null> {
-  const uniqCode = cadastralToUniqCode(cadastralCode);
-  if (!uniqCode) return null;
+  const variants = uniqCodeVariants(cadastralCode);
+  if (!variants.length) return null;
 
-  const cachedAt = cacheTimestamps.get(uniqCode);
-  if (cachedAt && Date.now() - cachedAt < CACHE_TTL_MS && cache.has(uniqCode)) {
-    return cache.get(uniqCode) ?? null;
-  }
-
-  const layers = layerOrderForCadastral(cadastralCode);
-
-  for (const layerId of layers) {
-    const parcel = await queryLayer(layerId, uniqCode);
-    if (parcel) {
-      cache.set(uniqCode, parcel);
-      cacheTimestamps.set(uniqCode, Date.now());
-      return parcel;
+  for (const uniqCode of variants) {
+    const cachedAt = cacheTimestamps.get(uniqCode);
+    if (cachedAt && Date.now() - cachedAt < CACHE_TTL_MS && cache.has(uniqCode)) {
+      const cached = cache.get(uniqCode) ?? null;
+      if (cached) return cached;
+      continue;
     }
-  }
 
-  cache.set(uniqCode, null);
-  cacheTimestamps.set(uniqCode, Date.now());
+    const layers = layerOrderForCadastral(cadastralCode);
+
+    for (const layerId of layers) {
+      const parcel = await queryLayer(layerId, uniqCode);
+      if (parcel) {
+        for (const alias of variants) {
+          cache.set(alias, parcel);
+          cacheTimestamps.set(alias, Date.now());
+        }
+        return parcel;
+      }
+    }
+
+    cache.set(uniqCode, null);
+    cacheTimestamps.set(uniqCode, Date.now());
+  }
 
   return null;
 }
@@ -227,11 +248,11 @@ export async function enrichRowWithCadastral(
 
   return {
     ...row,
-    cadastral_code: parcel.cadastral_code,
-    latitude: parcel.latitude,
-    longitude: parcel.longitude,
-    geojson_polygon: parcel.geojson_polygon,
-    address: row.address ?? parcel.address ?? row.address,
+    cadastral_code: parcel.cadastral_code || row.cadastral_code,
+    latitude: parcel.latitude ?? row.latitude,
+    longitude: parcel.longitude ?? row.longitude,
+    geojson_polygon: parcel.geojson_polygon ?? row.geojson_polygon,
+    address: String(row.address ?? "").trim() || parcel.address || row.address,
   };
 }
 
