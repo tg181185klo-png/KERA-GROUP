@@ -1,5 +1,6 @@
 import type { MapProperty } from "@/lib/types/property-listing";
 import type { PropertyRow } from "@/lib/property-normalize";
+import { getCadastralCode } from "@/lib/property-normalize";
 import { extractCadastralCode } from "@/lib/cadastral";
 import { geocodeAddress } from "@/lib/geocode";
 
@@ -71,9 +72,9 @@ export function buildListingGeocodeQueries(row: PropertyRow): string[] {
   const title = String(row.title ?? "").trim();
   const address = String(row.address ?? "").trim();
   const description = String(row.description ?? "").trim();
-  const cadastral = String(row.cadastral_code ?? "").trim();
+  const cadastral = getCadastralCode(row);
   const cityHints = cityQueriesFromText(title, address, description);
-  const regionQuery = cadastralRegionQuery(cadastral);
+  const regionQuery = cadastralRegionQuery(cadastral !== "—" ? cadastral : null);
 
   return uniqueQueries([
     ...cityHints,
