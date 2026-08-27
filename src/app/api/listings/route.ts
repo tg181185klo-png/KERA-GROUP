@@ -1,7 +1,10 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { canManageListings } from "@/lib/admin-access";
 import { publicStatusFilter } from "@/lib/listing-status";
-import { lookupCadastralParcel } from "@/lib/cadastral-lookup";
+import {
+  applyCadastralParcelToPayload,
+  fetchCadastralForStorage,
+} from "@/lib/cadastral-persist";
 import { isValidCadastralCode, formatCadastralCode } from "@/lib/cadastral";
 import { insertPropertyListing } from "@/lib/listings-insert";
 import { normalizeToAdminListingFull } from "@/lib/property-normalize";
@@ -91,18 +94,14 @@ export async function POST(request: Request) {
   const body = await request.json();
 
   if (body.cadastral_code && isValidCadastralCode(body.cadastral_code)) {
-    const parcel = await lookupCadastralParcel(body.cadastral_code);
-    if (parcel) {
-      body.cadastral_code = parcel.cadastral_code;
-      body.latitude = parcel.latitude;
-      body.longitude = parcel.longitude;
-      body.geojson_polygon = parcel.geojson_polygon;
-      if (parcel.address && !body.address) {
-        body.address = parcel.address;
-      }
-    } else {
-      body.cadastral_code = formatCadastralCode(body.cadastral_code);
-    }
+    const parcel = await fetchCadastralForStorage(body.cadastral_code);
+    applyCadastralParcelToPayload(body, parcel, {
+      cadastral_code: formatCadastralCode(body.cadastral_code),
+      latitude: body.latitude,
+      longitude: body.longitude,
+      geojson_polygon: body.geojson_polygon,
+      address: body.address,
+    });
   }
 
   const { data, error } = await insertPropertyListing(user, body);

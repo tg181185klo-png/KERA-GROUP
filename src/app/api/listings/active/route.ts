@@ -5,7 +5,7 @@ export const maxDuration = 120;
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-/** Public active listings for grid + map sync (includes cadastral enrichment). */
+/** Public active listings — geometry from DB cache (no NAPR on read). */
 export async function GET() {
   try {
     const properties = await fetchMapListingsForSync();

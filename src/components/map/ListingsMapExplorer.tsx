@@ -5,7 +5,6 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import { ListingMapCard } from "@/components/map/ListingMapCard";
 import { useLocale } from "@/i18n/LocaleProvider";
-import { enrichPropertiesCadastral, fetchCadastralForProperty } from "@/lib/client-cadastral-enrich";
 import { isMappableProperty } from "@/lib/property-normalize";
 import type { MapProperty } from "@/lib/types/property-listing";
 
@@ -43,8 +42,7 @@ export function ListingsMapExplorer({
       }
 
       const raw = Array.isArray(data) ? data : [];
-      const enriched = await enrichPropertiesCadastral(raw);
-      setProperties(enriched.filter(isMappableProperty));
+      setProperties(raw.filter(isMappableProperty));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.error);
@@ -54,20 +52,12 @@ export function ListingsMapExplorer({
     }
   }, [layout, t.common.error, t.map.loadFailed]);
 
-  async function handleSelect(property: MapProperty | null) {
+  function handleSelect(property: MapProperty | null) {
     if (!property) {
       setSelectedId(null);
       return;
     }
-
     setSelectedId(property.id);
-
-    if (!isMappableProperty(property)) {
-      const enriched = await fetchCadastralForProperty(property);
-      setProperties((current) =>
-        current.map((item) => (item.id === enriched.id ? enriched : item)),
-      );
-    }
   }
 
   useEffect(() => {

@@ -1,6 +1,10 @@
 import type { MapDealType } from "@/lib/types/property-listing";
 import { formatCadastralCode } from "@/lib/cadastral";
-import { lookupCadastralParcel } from "@/lib/cadastral-lookup";
+import {
+  applyCadastralParcelToPayload,
+  cadastralCodeChanged,
+  fetchCadastralForStorage,
+} from "@/lib/cadastral-persist";
 import { getOwnerNames } from "@/lib/property-normalize";
 
 export type ListingUpdateBody = {
@@ -139,33 +143,38 @@ export async function buildOwnerListingUpdates(
   }
 
   const cadastralCode = String(updates.cadastral_code ?? existing.cadastral_code ?? "");
-  if (cadastralCode && !cadastralCode.startsWith("TEMP-")) {
-    const parcel = await lookupCadastralParcel(cadastralCode);
-    if (parcel) {
-      updates.cadastral_code = parcel.cadastral_code;
-      updates.latitude = parcel.latitude;
-      updates.longitude = parcel.longitude;
-      updates.geojson_polygon = parcel.geojson_polygon;
-      if (parcel.address && !updates.address) {
-        updates.address = parcel.address;
-      }
-      if (isLegacyPropertyRow(existing)) {
-        updates.description = buildLegacyDescription({
-          title: title || undefined,
-          description: description || undefined,
-          cadastral_code: parcel.cadastral_code,
-          address: String(updates.address ?? address),
-        });
-      }
-    } else {
-      if (body.latitude != null) updates.latitude = body.latitude;
-      if (body.longitude != null) updates.longitude = body.longitude;
-      if (body.geojson_polygon != null) updates.geojson_polygon = body.geojson_polygon;
+  const shouldFetchCadastral =
+    cadastralCode &&
+    !cadastralCode.startsWith("TEMP-") &&
+    cadastralCodeChanged(existing, body.cadastral_code);
+
+  if (shouldFetchCadastral) {
+    const parcel = await fetchCadastralForStorage(cadastralCode);
+    applyCadastralParcelToPayload(updates, parcel, {
+      cadastral_code: cadastralCode,
+      latitude: body.latitude ?? existing.latitude,
+      longitude: body.longitude ?? existing.longitude,
+      geojson_polygon: body.geojson_polygon ?? existing.geojson_polygon,
+      address: updates.address ?? address,
+    });
+
+    if (parcel && isLegacyPropertyRow(existing)) {
+      updates.description = buildLegacyDescription({
+        title: title || undefined,
+        description: description || undefined,
+        cadastral_code: parcel.cadastral_code,
+        address: String(updates.address ?? address),
+      });
     }
   } else {
     if (body.latitude != null) updates.latitude = body.latitude;
+    else if (existing.latitude != null) updates.latitude = existing.latitude;
     if (body.longitude != null) updates.longitude = body.longitude;
+    else if (existing.longitude != null) updates.longitude = existing.longitude;
     if (body.geojson_polygon != null) updates.geojson_polygon = body.geojson_polygon;
+    else if (existing.geojson_polygon != null) {
+      updates.geojson_polygon = existing.geojson_polygon;
+    }
   }
 
   if (options?.resetToPending) {

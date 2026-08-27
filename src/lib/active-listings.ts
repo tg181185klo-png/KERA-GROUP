@@ -1,4 +1,3 @@
-import { enrichRowWithCadastral, isLikelyRealParcel } from "@/lib/cadastral-lookup";
 import { geocodeListingRow } from "@/lib/geocode-listing";
 import {
   publicStatusFilter,
@@ -6,8 +5,6 @@ import {
 } from "@/lib/listing-status";
 import { expireStaleMapListings } from "@/lib/listing-expiry";
 import {
-  getCadastralCode,
-  isMappableProperty,
   normalizeToMapProperty,
   resolveMapCoordinates,
   type PropertyRow,
@@ -19,78 +16,32 @@ function rowMissingMapCoords(row: PropertyRow): boolean {
   return lat == null || lng == null;
 }
 
-function rowHasCadastralCode(row: PropertyRow): boolean {
-  const cadastral = getCadastralCode(row);
-  return cadastral !== "—" && !cadastral.startsWith("TEMP-");
-}
-
-async function persistCadastralCoords(
+async function persistGeocodeCoords(
   id: string,
-  enriched: Record<string, unknown>,
-  original: Record<string, unknown>,
+  coords: { lat: number; lng: number },
+  original: PropertyRow,
 ) {
-  const payload: Record<string, unknown> = {};
-
-  if (enriched.latitude != null && enriched.latitude !== original.latitude) {
-    const hadLat =
-      original.latitude != null &&
-      original.latitude !== "" &&
-      !Number.isNaN(Number(original.latitude));
-    if (!hadLat) payload.latitude = enriched.latitude;
-  }
-  if (enriched.longitude != null && enriched.longitude !== original.longitude) {
-    const hadLng =
-      original.longitude != null &&
-      original.longitude !== "" &&
-      !Number.isNaN(Number(original.longitude));
-    if (!hadLng) payload.longitude = enriched.longitude;
-  }
-
-  if (
-    enriched.geojson_polygon &&
-    (isLikelyRealParcel(enriched.geojson_polygon) || !original.geojson_polygon)
-  ) {
-    payload.geojson_polygon = enriched.geojson_polygon;
-  }
-
-  if (
-    typeof enriched.cadastral_code === "string" &&
-    enriched.cadastral_code &&
-    enriched.cadastral_code !== original.cadastral_code &&
-    !String(enriched.cadastral_code).startsWith("TEMP-")
-  ) {
-    payload.cadastral_code = enriched.cadastral_code;
-  }
-
-  if (Object.keys(payload).length === 0) return;
+  const hadLat =
+    original.latitude != null &&
+    original.latitude !== "" &&
+    !Number.isNaN(Number(original.latitude));
+  const hadLng =
+    original.longitude != null &&
+    original.longitude !== "" &&
+    !Number.isNaN(Number(original.longitude));
+  if (hadLat && hadLng) return;
 
   const service = createServiceClient();
-  await service.from("properties").update(payload).eq("id", id);
+  await service
+    .from("properties")
+    .update({
+      latitude: coords.lat,
+      longitude: coords.lng,
+    })
+    .eq("id", id);
 }
 
-async function enrichRowCadastral(row: PropertyRow): Promise<PropertyRow> {
-  if (!rowHasCadastralCode(row)) return row;
-
-  const { lat, lng, geojson } = resolveMapCoordinates(row);
-  const hasPoint = lat != null && lng != null;
-  const hasRealParcel = hasPoint && isLikelyRealParcel(geojson);
-  if (hasRealParcel) return row;
-
-  try {
-    const updated = (await enrichRowWithCadastral(row, getCadastralCode, {
-      force: !hasPoint,
-    })) as PropertyRow;
-
-    if (row.id) {
-      await persistCadastralCoords(String(row.id), updated, row);
-    }
-
-    return updated;
-  } catch {
-    return row;
-  }
-}
-
+/** Legacy backfill only — no NAPR calls; map reads stored DB geometry. */
 async function enrichRowGeocode(row: PropertyRow): Promise<PropertyRow> {
   if (!rowMissingMapCoords(row)) return row;
 
@@ -104,7 +55,7 @@ async function enrichRowGeocode(row: PropertyRow): Promise<PropertyRow> {
   };
 
   if (row.id) {
-    await persistCadastralCoords(String(row.id), updated, row);
+    await persistGeocodeCoords(String(row.id), coords, row);
   }
 
   return updated;
@@ -119,12 +70,7 @@ async function enrichRows(rows: PropertyRow[]) {
     }
     withGeocode.push(await enrichRowGeocode(row));
   }
-
-  const withCadastral = await Promise.all(
-    withGeocode.map((row) => enrichRowCadastral(row)),
-  );
-
-  return withCadastral;
+  return withGeocode;
 }
 
 async function fetchActiveRows() {
@@ -148,26 +94,34 @@ async function fetchActiveRows() {
   ) as PropertyRow[];
 }
 
-export async function fetchActiveMapListings(options?: { enrich?: boolean }) {
-  const enrich = options?.enrich ?? true;
+export async function fetchActiveMapListings(options?: {
+  enrich?: boolean;
+  /** Geocode missing points only — never fetches NAPR polygons. */
+  geocodeMissing?: boolean;
+}) {
+  const geocodeMissing = options?.geocodeMissing ?? false;
   const rows = await fetchActiveRows();
 
-  const enriched = enrich ? await enrichRows(rows) : rows;
+  const enriched =
+    geocodeMissing && (options?.enrich ?? true)
+      ? await enrichRows(rows)
+      : rows;
 
   return enriched
     .map((row) => normalizeToMapProperty(row))
     .filter((row): row is NonNullable<typeof row> => row != null);
 }
 
-/** Map API — active listings with coordinates/polygons (after enrichment). */
+/** Map API — listings with coordinates/polygons already stored in DB. */
 export async function fetchMappableListings() {
-  const listings = await fetchActiveMapListings({ enrich: true });
+  const { isMappableProperty } = await import("@/lib/property-normalize");
+  const listings = await fetchActiveMapListings({ enrich: false });
   return listings.filter(isMappableProperty);
 }
 
-/** Map API — all active listings for client-side refresh (includes pending coords). */
+/** Public map sync — DB cache only (no external cadastral API). */
 export async function fetchMapListingsForSync() {
-  return fetchActiveMapListings({ enrich: true });
+  return fetchActiveMapListings({ enrich: false });
 }
 
 export async function fetchActiveListingById(id: string) {
@@ -184,6 +138,5 @@ export async function fetchActiveListingById(id: string) {
   const row = data as PropertyRow;
   if (!isPubliclyVisibleListing(row)) return null;
 
-  const [enriched] = await enrichRows([row]);
-  return normalizeToMapProperty(enriched);
+  return normalizeToMapProperty(row);
 }
