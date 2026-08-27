@@ -41,6 +41,9 @@ async function mapsFetch<T>(url: string, init?: RequestInit): Promise<T | null> 
       cache: "no-store",
       headers: {
         Accept: "application/json",
+        Referer: "https://maps.gov.ge/",
+        "User-Agent":
+          "KERAGroup/1.0 (https://keragroup.ge; maps.gov.ge cadastral sync)",
         ...(init?.headers ?? {}),
       },
     });

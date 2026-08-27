@@ -1,5 +1,6 @@
 import type { MapProperty } from "@/lib/types/property-listing";
 import { cadastralToUniqCode, formatCadastralCode } from "@/lib/cadastral";
+import { fetchCadastralFromMapsGovClient } from "@/lib/client-maps-gov-enrich";
 import { buildMapPropertyGeocodeQueries } from "@/lib/geocode-listing";
 import { isMappableProperty } from "@/lib/property-normalize";
 
@@ -96,6 +97,27 @@ export async function fetchCadastralForProperty(
 
   if (propertyNeedsCadastralFetch(property)) {
     try {
+      const mapsGov = await fetchCadastralFromMapsGovClient(property.cadastral_code);
+      if (mapsGov) {
+        const enriched: MapProperty = {
+          ...property,
+          latitude: mapsGov.latitude,
+          longitude: mapsGov.longitude,
+          geojson_polygon: mapsGov.geojson_polygon,
+          address: property.address || mapsGov.address || property.address,
+          cadastral_code: mapsGov.cadastral_code,
+        };
+
+        enrichCache.set(property.id, enriched);
+        await persistMapCoords(property, {
+          latitude: enriched.latitude,
+          longitude: enriched.longitude,
+          geojson_polygon: enriched.geojson_polygon,
+          cadastral_code: enriched.cadastral_code,
+        });
+        return enriched;
+      }
+
       const res = await fetch(
         `/api/cadastral/lookup?code=${encodeURIComponent(property.cadastral_code)}`,
         { cache: "no-store" },
