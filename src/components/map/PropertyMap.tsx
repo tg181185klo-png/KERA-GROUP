@@ -153,11 +153,16 @@ export function PropertyMap({
         },
       ).addTo(map);
 
-      L.tileLayer("/api/napr/tiles/{z}/{x}/{y}", {
-        attribution: "© NAPR / reestri.gov.ge",
-        maxZoom: 19,
-        opacity: 0.92,
-      }).addTo(map);
+      const wms = L.tileLayer.wms("https://nv.napr.gov.ge/geoserver/wms", {
+        layers: "LR_PARCELS,NG_REG_LAYER",
+        format: "image/png",
+        transparent: true,
+        version: "1.1.1",
+        attribution: "© NAPR / maps.gov.ge",
+        maxZoom: 21,
+        opacity: 0.88,
+      });
+      wms.addTo(map);
 
       L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",

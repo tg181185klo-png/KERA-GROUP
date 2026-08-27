@@ -90,10 +90,14 @@ export const ADMIN_USERNAME = "admin";
 export const ADMIN_DEFAULT_PASSWORD = "LashaTornike123456!";
 export const ADMIN_SESSION_SECRET_DEFAULT = "kera-admin-session-secret-2026";
 
-/** NAPR public cadastral ArcGIS MapServer (maps.gov.ge data source) */
+/** NAPR cadastral — maps.gov.ge GeoServer (legacy ArcGIS fallback via CADASTRAL_API_URL). */
 export const CADASTRAL_API_BASE =
   process.env.CADASTRAL_API_URL ??
   "http://gisappsn.reestri.gov.ge/ArcGIS/rest/services/CadRepGeo/MapServer";
+
+/** Primary cadastral WMS (same layers as maps.gov.ge). */
+export const CADASTRAL_WMS_URL = "https://nv.napr.gov.ge/geoserver/wms";
+export const CADASTRAL_WMS_LAYERS = "LR_PARCELS,NG_REG_LAYER";
 
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.keragroup.ge";

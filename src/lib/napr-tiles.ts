@@ -17,20 +17,14 @@ export function tileToBBox(
 }
 
 export function getNaprWebCadMapBase(): string {
-  const raw =
-    process.env.CADASTRAL_API_URL ??
-    "http://gisappsn.reestri.gov.ge/ArcGIS/rest/services/CadRepGeo/MapServer";
-
-  if (raw.includes("WebCadMap")) return raw.replace(/\/+$/, "");
-  return raw.replace(/CadRepGeo\/MapServer\/?$/, "WebCadMap/MapServer");
+  return "https://nv.napr.gov.ge/geoserver/wms";
 }
 
 export function getNaprCadastralWmsUrl(): string {
-  const raw =
-    process.env.CADASTRAL_API_URL ??
-    "http://gisappsn.reestri.gov.ge/ArcGIS/rest/services/CadRepGeo/MapServer";
-  return raw.replace(/\/+$/, "") + "/WMSServer";
+  return "https://nv.napr.gov.ge/geoserver/wms";
 }
+
+export const NAPR_CADASTRAL_WMS_LAYERS = "LR_PARCELS,NG_REG_LAYER";
 
 /** Meters per pixel at equator for zoom level (256px tiles). */
 export function metersPerPixel(z: number): number {

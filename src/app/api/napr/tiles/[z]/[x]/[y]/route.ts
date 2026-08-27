@@ -1,11 +1,15 @@
-import { getNaprWebCadMapBase, tileToBBox } from "@/lib/napr-tiles";
+import {
+  getNaprWebCadMapBase,
+  NAPR_CADASTRAL_WMS_LAYERS,
+  tileToBBox,
+} from "@/lib/napr-tiles";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
 type RouteContext = { params: Promise<{ z: string; x: string; y: string }> };
 
-/** Proxy NAPR WebCadMap tiles over HTTPS (browser cannot load HTTP reestri.gov.ge directly). */
+/** Proxy NAPR/maps.gov.ge cadastral WMS tiles over HTTPS for the property map. */
 export async function GET(_request: Request, context: RouteContext) {
   const { z, x, y } = await context.params;
   const zoom = Number(z);
@@ -17,23 +21,29 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   const [xmin, ymin, xmax, ymax] = tileToBBox(tileX, tileY, zoom);
-  const base = getNaprWebCadMapBase();
-  const exportUrl = new URL(`${base}/export`);
-  exportUrl.searchParams.set("bbox", `${xmin},${ymin},${xmax},${ymax}`);
-  exportUrl.searchParams.set("bboxSR", "4326");
-  exportUrl.searchParams.set("imageSR", "3857");
-  exportUrl.searchParams.set("size", "256,256");
-  exportUrl.searchParams.set("format", "png");
-  exportUrl.searchParams.set("transparent", "true");
-  exportUrl.searchParams.set("f", "image");
+  const wmsUrl = new URL(getNaprWebCadMapBase());
+  wmsUrl.searchParams.set("SERVICE", "WMS");
+  wmsUrl.searchParams.set("VERSION", "1.1.1");
+  wmsUrl.searchParams.set("REQUEST", "GetMap");
+  wmsUrl.searchParams.set("LAYERS", NAPR_CADASTRAL_WMS_LAYERS);
+  wmsUrl.searchParams.set("STYLES", "");
+  wmsUrl.searchParams.set("FORMAT", "image/png");
+  wmsUrl.searchParams.set("TRANSPARENT", "true");
+  wmsUrl.searchParams.set("SRS", "EPSG:4326");
+  wmsUrl.searchParams.set("BBOX", `${ymin},${xmin},${ymax},${xmax}`);
+  wmsUrl.searchParams.set("WIDTH", "256");
+  wmsUrl.searchParams.set("HEIGHT", "256");
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const timeout = setTimeout(() => controller.abort(), 8_000);
 
-    const res = await fetch(exportUrl.toString(), {
+    const res = await fetch(wmsUrl.toString(), {
       signal: controller.signal,
       cache: "no-store",
+      headers: {
+        Referer: "https://maps.gov.ge/",
+      },
     });
 
     clearTimeout(timeout);

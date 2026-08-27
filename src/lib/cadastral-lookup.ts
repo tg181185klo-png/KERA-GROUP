@@ -1,6 +1,7 @@
 import type { GeoJSON } from "geojson";
 import { cadastralToUniqCode, extractCadastralCode, formatCadastralCode } from "@/lib/cadastral";
 import { CADASTRAL_API_BASE } from "@/lib/constants";
+import { lookupCadastralFromMapsGov } from "@/lib/maps-gov-ge";
 
 /** Parcel (ნაკვეთი) layer IDs — one per Georgian region in CadRepGeo */
 const PARCEL_LAYER_IDS = [10, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59];
@@ -199,10 +200,38 @@ async function lookupParcelAcrossLayers(
   return results.find((parcel) => parcel != null) ?? null;
 }
 
-/** Fetch real parcel polygon + coordinates from NAPR CadRepGeo service. */
+/** Fetch real parcel polygon + coordinates (maps.gov.ge → NAPR CadRepGeo fallback). */
 export async function lookupCadastralParcel(
   cadastralCode: string,
 ): Promise<CadastralParcel | null> {
+  const formatted = formatCadastralCode(cadastralCode);
+  const mapsCacheKey = `maps:${formatted}`;
+  const mapsCachedAt = cacheTimestamps.get(mapsCacheKey);
+  if (
+    mapsCachedAt &&
+    Date.now() - mapsCachedAt < CACHE_TTL_MS &&
+    cache.has(mapsCacheKey)
+  ) {
+    return cache.get(mapsCacheKey) ?? null;
+  }
+
+  const fromMapsGov = await lookupCadastralFromMapsGov(formatted);
+  if (fromMapsGov) {
+    const parcel: CadastralParcel = {
+      cadastral_code: fromMapsGov.cadastral_code,
+      uniq_code:
+        cadastralToUniqCode(fromMapsGov.cadastral_code) ??
+        fromMapsGov.cadastral_code,
+      address: fromMapsGov.address,
+      latitude: fromMapsGov.latitude,
+      longitude: fromMapsGov.longitude,
+      geojson_polygon: fromMapsGov.geojson_polygon,
+    };
+    cache.set(mapsCacheKey, parcel);
+    cacheTimestamps.set(mapsCacheKey, Date.now());
+    return parcel;
+  }
+
   if (Date.now() < naprUnavailableUntil) return null;
 
   const variants = uniqCodeVariants(cadastralCode);
