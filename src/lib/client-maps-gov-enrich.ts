@@ -5,16 +5,18 @@ import { wktToGeoJsonPolygon, polygonCentroidFromGeoJson } from "@/lib/wkt";
 const MAPS_PORTAL = "https://maps.gov.ge/map/portal";
 const MAPS_API = "https://maps.gov.ge";
 
-/** Browser-side maps.gov.ge lookup (CORS allowed, works when server IP is blocked). */
-export async function fetchCadastralFromMapsGovClient(
-  cadastralCode: string,
-): Promise<{
+export type CadastralLookupResult = {
+  cadastral_code: string;
+  address?: string | null;
   latitude: number;
   longitude: number;
   geojson_polygon: MapProperty["geojson_polygon"];
-  address?: string | null;
-  cadastral_code: string;
-} | null> {
+};
+
+/** Browser-side maps.gov.ge lookup (CORS allowed, works when server IP is blocked). */
+export async function fetchCadastralFromMapsGovClient(
+  cadastralCode: string,
+): Promise<CadastralLookupResult | null> {
   const formatted = formatCadastralCode(cadastralCode);
 
   const searchRes = await fetch(`${MAPS_PORTAL}/search`, {
@@ -67,4 +69,31 @@ export async function fetchCadastralFromMapsGovClient(
     longitude,
     geojson_polygon,
   };
+}
+
+/** maps.gov.ge in browser first, then server API fallback. */
+export async function lookupCadastralWithFallback(
+  cadastralCode: string,
+): Promise<CadastralLookupResult | null> {
+  const fromBrowser = await fetchCadastralFromMapsGovClient(cadastralCode);
+  if (fromBrowser) return fromBrowser;
+
+  try {
+    const res = await fetch(
+      `/api/cadastral/lookup?code=${encodeURIComponent(cadastralCode)}`,
+      { cache: "no-store" },
+    );
+    const data = await res.json();
+    if (!res.ok || data.latitude == null || !data.geojson_polygon) return null;
+
+    return {
+      cadastral_code: formatCadastralCode(data.cadastral_code ?? cadastralCode),
+      address: data.address,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      geojson_polygon: data.geojson_polygon,
+    };
+  } catch {
+    return null;
+  }
 }

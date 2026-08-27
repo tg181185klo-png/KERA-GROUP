@@ -63,7 +63,7 @@ async function mapsFetch<T>(url: string, init?: RequestInit): Promise<T | null> 
 
 async function searchCadastralLabel(
   cadastralCode: string,
-): Promise<{ label: string; name: string; address: string | null } | null> {
+): Promise<{ geometryLink: string; name: string; address: string | null } | null> {
   const search = await mapsFetch<{ status?: boolean; result?: SearchHit[] }>(
     `${MAPS_PORTAL}/search`,
     {
@@ -80,27 +80,20 @@ async function searchCadastralLabel(
   const geometryLink = hit?.details?.geometry_link;
   if (!geometryLink) return null;
 
-  const labelMatch = geometryLink.match(/lbl=([^&]+)/i);
-  if (!labelMatch?.[1]) return null;
-
   return {
-    label: decodeURIComponent(labelMatch[1]),
+    geometryLink,
     name: hit.name ?? cadastralCode,
     address: hit.descript?.trim() || null,
   };
 }
 
-async function fetchParcelShape(label: string): Promise<GeometryHit | null> {
-  const params = new URLSearchParams({
-    lbl: label,
-    res: "shp",
-    fmt: "json",
-    lang: "ka",
-  });
+async function fetchParcelShape(geometryLink: string): Promise<GeometryHit | null> {
+  const path = geometryLink.startsWith("http")
+    ? geometryLink
+    : `${MAPS_API}${geometryLink}`;
+  const url = path.includes("fmt=") ? path : `${path}&fmt=json&lang=ka`;
 
-  const data = await mapsFetch<{ data?: GeometryHit[] }>(
-    `${MAPS_API}/lr/bo/mg/getinfo.alpha?${params.toString()}`,
-  );
+  const data = await mapsFetch<{ data?: GeometryHit[] }>(url);
 
   return data?.data?.[0] ?? null;
 }
@@ -113,7 +106,7 @@ export async function lookupCadastralFromMapsGov(
   const search = await searchCadastralLabel(formatted);
   if (!search) return null;
 
-  const geometry = await fetchParcelShape(search.label);
+  const geometry = await fetchParcelShape(search.geometryLink);
   const wkt = geometry?.shape?.trim();
   if (!wkt) return null;
 

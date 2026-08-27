@@ -6,6 +6,7 @@ import { Loader2, MapPin, Search } from "lucide-react";
 import { PropertyMapClient } from "@/components/map/PropertyMapClient";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { formatCadastralCode, isValidCadastralCode } from "@/lib/cadastral";
+import { lookupCadastralWithFallback } from "@/lib/client-maps-gov-enrich";
 import type { CadastralMapPreview } from "@/lib/types/property-listing";
 
 export function HomeMapSection() {
@@ -37,20 +38,17 @@ export function HomeMapSection() {
 
     const timer = window.setTimeout(async () => {
       try {
-        const res = await fetch(
-          `/api/cadastral/lookup?code=${encodeURIComponent(trimmed)}`,
-        );
-        const data = await res.json();
+        const data = await lookupCadastralWithFallback(trimmed);
 
-        if (!res.ok) {
+        if (!data) {
           setPreview(null);
-          setLookupError(data.error ?? t.map.lookupFailed);
+          setLookupError(t.map.lookupFailed);
           return;
         }
 
         setPreview({
           cadastral_code: formatCadastralCode(data.cadastral_code ?? trimmed),
-          address: data.address,
+          address: data.address ?? undefined,
           latitude: data.latitude,
           longitude: data.longitude,
           geojson_polygon: data.geojson_polygon,

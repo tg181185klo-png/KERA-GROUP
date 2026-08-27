@@ -22,6 +22,7 @@ import {
 } from "@/lib/cadastral";
 import type { PropertyListingFormData, MapDealType } from "@/lib/types/property-listing";
 import { EMPTY_LISTING_FORM, rowToFormData } from "@/lib/listing-form";
+import { lookupCadastralWithFallback } from "@/lib/client-maps-gov-enrich";
 
 const STEPS = ["ძირითადი", "მფლობელი", "მდებარეობა", "ფოტოები", "შეჯამება"];
 
@@ -77,13 +78,10 @@ export function AddPropertyWizard({
 
     setCadastralLoading(true);
     try {
-      const res = await fetch(
-        `/api/cadastral/lookup?code=${encodeURIComponent(form.cadastral_code)}`,
-      );
-      const data = await res.json();
+      const data = await lookupCadastralWithFallback(form.cadastral_code);
 
-      if (!res.ok) {
-        setCadastralError(data.error ?? t.wizard.cadastralLookupFailed);
+      if (!data) {
+        setCadastralError(t.wizard.cadastralLookupFailed);
         return;
       }
 
@@ -115,25 +113,18 @@ export function AddPropertyWizard({
       isValidCadastralCode(form.cadastral_code) &&
       (form.latitude == null || form.geojson_polygon == null)
     ) {
-      try {
-        const lookupRes = await fetch(
-          `/api/cadastral/lookup?code=${encodeURIComponent(form.cadastral_code)}`,
-        );
-        const lookupData = await lookupRes.json();
-        if (lookupRes.ok) {
-          payload = {
-            ...payload,
-            cadastral_code: formatCadastralCode(
-              lookupData.cadastral_code ?? payload.cadastral_code,
-            ),
-            latitude: lookupData.latitude,
-            longitude: lookupData.longitude,
-            geojson_polygon: lookupData.geojson_polygon,
-            address: payload.address || lookupData.address || payload.address,
-          };
-        }
-      } catch {
-        // POST/PATCH also resolves cadastral server-side
+      const lookupData = await lookupCadastralWithFallback(form.cadastral_code);
+      if (lookupData) {
+        payload = {
+          ...payload,
+          cadastral_code: formatCadastralCode(
+            lookupData.cadastral_code ?? payload.cadastral_code,
+          ),
+          latitude: lookupData.latitude,
+          longitude: lookupData.longitude,
+          geojson_polygon: lookupData.geojson_polygon,
+          address: payload.address || lookupData.address || payload.address,
+        };
       }
     }
 
