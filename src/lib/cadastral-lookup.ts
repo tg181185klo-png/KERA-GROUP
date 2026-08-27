@@ -263,14 +263,17 @@ export async function lookupCadastralParcel(
 
 export async function buildMapPersistPayload(
   row: Record<string, unknown>,
-  _getCadastralCode: (row: Record<string, unknown>) => string,
+  getCadastralCode: (row: Record<string, unknown>) => string,
 ): Promise<Record<string, unknown>> {
+  const enriched = await enrichRowWithCadastral(row, getCadastralCode);
   const payload: Record<string, unknown> = { status: "active" };
 
-  if (row.latitude != null) payload.latitude = row.latitude;
-  if (row.longitude != null) payload.longitude = row.longitude;
-  if (row.geojson_polygon) payload.geojson_polygon = row.geojson_polygon;
-  if (row.address && !payload.address) payload.address = row.address;
+  if (enriched.latitude != null) payload.latitude = enriched.latitude;
+  if (enriched.longitude != null) payload.longitude = enriched.longitude;
+  if (enriched.geojson_polygon) payload.geojson_polygon = enriched.geojson_polygon;
+  if (enriched.cadastral_code) payload.cadastral_code = enriched.cadastral_code;
+  const address = String(enriched.address ?? "").trim();
+  if (address) payload.address = address;
 
   return payload;
 }

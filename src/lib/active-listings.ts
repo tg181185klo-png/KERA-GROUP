@@ -1,3 +1,8 @@
+import {
+  fetchCadastralForStorage,
+  rowHasStoredCadastralGeometry,
+} from "@/lib/cadastral-persist";
+import { cadastralCoordsPayload } from "@/lib/cadastral-lookup";
 import { geocodeListingRow } from "@/lib/geocode-listing";
 import {
   publicStatusFilter,
@@ -5,6 +10,7 @@ import {
 } from "@/lib/listing-status";
 import { expireStaleMapListings } from "@/lib/listing-expiry";
 import {
+  getCadastralCode,
   normalizeToMapProperty,
   resolveMapCoordinates,
   type PropertyRow,
@@ -73,6 +79,53 @@ async function enrichRows(rows: PropertyRow[]) {
   return withGeocode;
 }
 
+async function persistCadastralGeometry(
+  id: string,
+  parcel: NonNullable<Awaited<ReturnType<typeof fetchCadastralForStorage>>>,
+) {
+  const service = createServiceClient();
+  await service
+    .from("properties")
+    .update({
+      ...cadastralCoordsPayload(parcel),
+      cadastral_code: parcel.cadastral_code,
+    })
+    .eq("id", id);
+}
+
+/** One-time backfill: fetch parcel from maps.gov.ge when DB has cadastral code only. */
+async function enrichMissingCadastralGeometry(row: PropertyRow): Promise<PropertyRow> {
+  if (rowHasStoredCadastralGeometry(row)) return row;
+
+  const cadastral = getCadastralCode(row);
+  if (cadastral !== "—") {
+    const parcel = await fetchCadastralForStorage(cadastral);
+    if (parcel) {
+      const updated = {
+        ...row,
+        cadastral_code: parcel.cadastral_code,
+        latitude: parcel.latitude,
+        longitude: parcel.longitude,
+        geojson_polygon: parcel.geojson_polygon,
+      };
+      if (row.id) {
+        await persistCadastralGeometry(String(row.id), parcel);
+      }
+      return updated;
+    }
+  }
+
+  return enrichRowGeocode(row);
+}
+
+async function enrichRowsForMap(rows: PropertyRow[]) {
+  const enriched: PropertyRow[] = [];
+  for (const row of rows) {
+    enriched.push(await enrichMissingCadastralGeometry(row));
+  }
+  return enriched;
+}
+
 async function fetchActiveRows() {
   const service = createServiceClient();
 
@@ -119,9 +172,13 @@ export async function fetchMappableListings() {
   return listings.filter(isMappableProperty);
 }
 
-/** Public map sync — DB cache only (no external cadastral API). */
+/** Public map sync — backfills missing cadastral geometry once, then serves from DB. */
 export async function fetchMapListingsForSync() {
-  return fetchActiveMapListings({ enrich: false });
+  const rows = await fetchActiveRows();
+  const enriched = await enrichRowsForMap(rows);
+  return enriched
+    .map((row) => normalizeToMapProperty(row))
+    .filter((row): row is NonNullable<typeof row> => row != null);
 }
 
 export async function fetchActiveListingById(id: string) {
