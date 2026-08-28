@@ -123,10 +123,6 @@ export function getMarkerStyle(property: MapProperty) {
   };
 }
 
-export function getPolygonFillColor(
-  property: MapProperty,
-  selected: boolean,
-): string {
-  if (selected) return "#ef4444";
+export function getPolygonFillColor(property: MapProperty): string {
   return getMarkerStyle(property).background;
 }

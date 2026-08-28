@@ -219,7 +219,7 @@ body {
     justify-content: center;
     border-radius: 9999px;
     border: 3px solid #fff;
-    background: #2563eb;
+    background: #2ecc71;
     box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
     color: #fff;
     font-weight: 800;
@@ -307,17 +307,17 @@ body {
   }
 
   .kera-price-marker.is-selected {
-    background: linear-gradient(180deg, #f87171 0%, #dc2626 100%) !important;
     box-shadow:
       0 0 0 2px #fff,
-      0 0 0 4px rgb(239 68 68 / 45%),
+      0 0 0 4px var(--marker-accent, #34495e),
       0 4px 16px rgb(0 0 0 / 50%) !important;
+    filter: brightness(1.1);
     transform: translate(-50%, -100%) scale(1.06);
     z-index: 1000 !important;
   }
 
   .kera-price-marker.is-selected::after {
-    border-top-color: #dc2626;
+    border-top-color: var(--marker-accent, #34495e);
   }
 
   .kera-cadastral-label {

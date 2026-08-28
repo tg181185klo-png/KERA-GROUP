@@ -21,6 +21,7 @@ import {
   getPropertyBounds,
   getPropertyCenter,
   POLYGON_MIN_ZOOM,
+  shouldShowPolygons,
 } from "@/lib/map-geometry";
 import { addKeraBaseLayers } from "@/lib/map-base-layers";
 import { isMappableProperty } from "@/lib/property-normalize";
@@ -71,9 +72,9 @@ function polygonStyle(
 
   return {
     color: "#ffffff",
-    fillColor: getPolygonFillColor(property, isSelected),
-    fillOpacity: isSelected ? 0.55 : isHovered ? 0.5 : 0.42,
-    weight: isSelected ? 3 : 2,
+    fillColor: getPolygonFillColor(property),
+    fillOpacity: isSelected ? 0.62 : isHovered ? 0.52 : 0.42,
+    weight: isSelected ? 4 : 2,
   };
 }
 
@@ -123,6 +124,7 @@ export function PropertyMap({
     null,
   );
   const [ready, setReady] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(7);
   const initialFitDone = useRef(false);
 
   propertiesRef.current = properties;
@@ -166,6 +168,8 @@ export function PropertyMap({
       polygonLayerRef.current = L.layerGroup().addTo(map);
       previewLayerRef.current = L.layerGroup().addTo(map);
 
+      map.on("zoomend", () => setZoomLevel(map.getZoom()));
+      setZoomLevel(map.getZoom());
       setReady(true);
 
       setTimeout(() => map.invalidateSize(), 150);
@@ -224,6 +228,8 @@ export function PropertyMap({
       polygonLayerRef.current.clearLayers();
       layerByIdRef.current.clear();
 
+      const zoom = mapRef.current.getZoom();
+      const showPolygons = forcePolygons || shouldShowPolygons(zoom);
       const mappable = properties.filter(isMappableProperty);
 
       mappable.forEach((property) => {
@@ -240,7 +246,7 @@ export function PropertyMap({
           property.geojson_polygon?.coordinates?.[0]?.length,
         );
 
-        if (hasPolygon) {
+        if (hasPolygon && showPolygons) {
           const poly = L.polygon(
             property.geojson_polygon!.coordinates[0].map(([lng, lat]) => [
               lat,
@@ -269,30 +275,30 @@ export function PropertyMap({
 
           poly.addTo(polygonLayerRef.current!);
           layerByIdRef.current.set(property.id, poly);
-        } else {
-          const marker = L.marker(center, {
-            icon: L.divIcon(
-              priceMarkerIconOptions(property, selectedId, t.common.perSqm),
-            ),
-          });
-
-          marker.bindPopup(buildMapPopupHtml(property, buildLabels(property)), {
-            maxWidth: 280,
-          });
-          marker.bindTooltip(
-            buildMapHoverTooltipHtml(property, buildLabels(property)),
-            hoverTooltipOptions,
-          );
-          marker.on("click", handleSelect);
-          marker.on("mouseover", () => setHoveredId(property.id));
-          marker.on("mouseout", () =>
-            setHoveredId((current) =>
-              current === property.id ? null : current,
-            ),
-          );
-
-          clusterRef.current!.addLayer(marker);
         }
+
+        const marker = L.marker(center, {
+          icon: L.divIcon(
+            priceMarkerIconOptions(property, selectedId, t.common.perSqm),
+          ),
+        });
+
+        marker.bindPopup(buildMapPopupHtml(property, buildLabels(property)), {
+          maxWidth: 280,
+        });
+        marker.bindTooltip(
+          buildMapHoverTooltipHtml(property, buildLabels(property)),
+          hoverTooltipOptions,
+        );
+        marker.on("click", handleSelect);
+        marker.on("mouseover", () => setHoveredId(property.id));
+        marker.on("mouseout", () =>
+          setHoveredId((current) =>
+            current === property.id ? null : current,
+          ),
+        );
+
+        clusterRef.current!.addLayer(marker);
       });
 
       mapRef.current.invalidateSize();
@@ -310,6 +316,7 @@ export function PropertyMap({
     onSelect,
     showSidebarOnSelect,
     forcePolygons,
+    zoomLevel,
     t,
   ]);
 
