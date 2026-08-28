@@ -3,7 +3,8 @@ import { formatCadastralCode } from "@/lib/cadastral";
 import {
   applyCadastralParcelToPayload,
   cadastralCodeChanged,
-  fetchCadastralForStorage,
+  ensureCadastralGeometryForPayload,
+  hasRealStoredPolygon,
 } from "@/lib/cadastral-persist";
 import { getOwnerNames } from "@/lib/property-normalize";
 
@@ -146,23 +147,25 @@ export async function buildOwnerListingUpdates(
   const shouldFetchCadastral =
     cadastralCode &&
     !cadastralCode.startsWith("TEMP-") &&
-    cadastralCodeChanged(existing, body.cadastral_code);
+    (cadastralCodeChanged(existing, body.cadastral_code) ||
+      !hasRealStoredPolygon(existing) ||
+      !hasRealStoredPolygon({ geojson_polygon: body.geojson_polygon }));
 
   if (shouldFetchCadastral) {
-    const parcel = await fetchCadastralForStorage(cadastralCode);
-    applyCadastralParcelToPayload(updates, parcel, {
+    applyCadastralParcelToPayload(updates, null, {
       cadastral_code: cadastralCode,
       latitude: body.latitude ?? existing.latitude,
       longitude: body.longitude ?? existing.longitude,
       geojson_polygon: body.geojson_polygon ?? existing.geojson_polygon,
       address: updates.address ?? address,
     });
+    await ensureCadastralGeometryForPayload(updates, cadastralCode);
 
-    if (parcel && isLegacyPropertyRow(existing)) {
+    if (isLegacyPropertyRow(existing)) {
       updates.description = buildLegacyDescription({
         title: title || undefined,
         description: description || undefined,
-        cadastral_code: parcel.cadastral_code,
+        cadastral_code: String(updates.cadastral_code ?? cadastralCode),
         address: String(updates.address ?? address),
       });
     }

@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { formatCadastralCode } from "@/lib/cadastral";
 
 import type { MapDealType } from "@/lib/types/property-listing";
@@ -163,7 +163,6 @@ async function insertLegacyListing(
 }
 
 export async function insertPropertyListing(user: User, body: ListingBody) {
-  const supabase = await createClient();
   const service = createServiceClient();
 
   await ensureProfile(user, service, body.phone_number);
@@ -192,7 +191,7 @@ export async function insertPropertyListing(user: User, body: ListingBody) {
     status: "pending",
   };
 
-  const modern = await supabase.from("properties").insert(newRow).select().single();
+  const modern = await service.from("properties").insert(newRow).select().single();
 
   if (!modern.error) {
     return modern;

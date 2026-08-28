@@ -3,7 +3,7 @@ import { canManageListings } from "@/lib/admin-access";
 import { publicStatusFilter } from "@/lib/listing-status";
 import {
   applyCadastralParcelToPayload,
-  fetchCadastralForStorage,
+  ensureCadastralGeometryForPayload,
 } from "@/lib/cadastral-persist";
 import { isValidCadastralCode, formatCadastralCode } from "@/lib/cadastral";
 import { insertPropertyListing } from "@/lib/listings-insert";
@@ -94,14 +94,19 @@ export async function POST(request: Request) {
   const body = await request.json();
 
   if (body.cadastral_code && isValidCadastralCode(body.cadastral_code)) {
-    const parcel = await fetchCadastralForStorage(body.cadastral_code);
-    applyCadastralParcelToPayload(body, parcel, {
-      cadastral_code: formatCadastralCode(body.cadastral_code),
-      latitude: body.latitude,
-      longitude: body.longitude,
-      geojson_polygon: body.geojson_polygon,
-      address: body.address,
-    });
+    const formatted = formatCadastralCode(body.cadastral_code);
+    body.cadastral_code = formatted;
+
+    const hasGeometry = await ensureCadastralGeometryForPayload(body, formatted);
+    if (!hasGeometry) {
+      return NextResponse.json(
+        {
+          error:
+            "საკადასტრო მონაკვეთი ვერ მოიძებნა. შეამოწმეთ კოდი და სცადეთ თავიდან.",
+        },
+        { status: 422 },
+      );
+    }
   }
 
   const { data, error } = await insertPropertyListing(user, body);

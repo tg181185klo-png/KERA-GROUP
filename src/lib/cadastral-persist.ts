@@ -79,3 +79,19 @@ export function cadastralCodeChanged(
 export function hasRealStoredPolygon(row: Record<string, unknown>): boolean {
   return isLikelyRealParcel(parseGeojsonForClient(row.geojson_polygon));
 }
+
+/** Fetch and attach cadastral parcel geometry when code is valid but polygon missing. */
+export async function ensureCadastralGeometryForPayload(
+  payload: Record<string, unknown>,
+  cadastralCode: string,
+): Promise<boolean> {
+  if (hasRealStoredPolygon(payload)) return true;
+
+  const parcel = await fetchCadastralForStorage(cadastralCode);
+  if (parcel) {
+    applyCadastralParcelToPayload(payload, parcel);
+    return true;
+  }
+
+  return hasRealStoredPolygon(payload);
+}

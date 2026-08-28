@@ -29,26 +29,27 @@ export function computePolygonAreaSqm(polygon: GeoJSON.Polygon): number {
 export function getPropertyCenter(
   property: MapProperty,
 ): [number, number] | null {
+  const ring = property.geojson_polygon?.coordinates?.[0];
+  if (ring?.length) {
+    let sumLat = 0;
+    let sumLng = 0;
+    let count = 0;
+
+    for (let i = 0; i < ring.length - 1; i++) {
+      const [lng, lat] = ring[i];
+      sumLng += lng;
+      sumLat += lat;
+      count++;
+    }
+
+    if (count > 0) return [sumLat / count, sumLng / count];
+  }
+
   if (property.latitude != null && property.longitude != null) {
     return [property.latitude, property.longitude];
   }
 
-  const ring = property.geojson_polygon?.coordinates?.[0];
-  if (!ring?.length) return null;
-
-  let sumLat = 0;
-  let sumLng = 0;
-  let count = 0;
-
-  for (let i = 0; i < ring.length - 1; i++) {
-    const [lng, lat] = ring[i];
-    sumLng += lng;
-    sumLat += lat;
-    count++;
-  }
-
-  if (count === 0) return null;
-  return [sumLat / count, sumLng / count];
+  return null;
 }
 
 export function getPropertyBounds(property: MapProperty): [number, number][] {

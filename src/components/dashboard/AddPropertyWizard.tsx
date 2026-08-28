@@ -128,6 +128,15 @@ export function AddPropertyWizard({
       }
     }
 
+    if (
+      isValidCadastralCode(form.cadastral_code) &&
+      payload.geojson_polygon == null
+    ) {
+      setSubmitError(t.wizard.cadastralLookupFailed);
+      setLoading(false);
+      return;
+    }
+
     const url =
       mode === "edit" && listingId ? `/api/listings/${listingId}` : "/api/listings";
     const method = mode === "edit" ? "PATCH" : "POST";

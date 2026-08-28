@@ -225,18 +225,17 @@ function centroidFromGeojson(
 
 export function resolveMapCoordinates(row: PropertyRow) {
   const geojson = parseGeojson(row.geojson_polygon);
-  let lat = toNumber(row.latitude);
-  let lng = toNumber(row.longitude);
+  const cadastral = getCadastralCode(row);
 
-  if ((lat == null || lng == null) && geojson) {
+  if (geojson?.coordinates?.[0]?.length) {
     const centroid = centroidFromGeojson(geojson);
     if (centroid) {
-      lat = lat ?? centroid.lat;
-      lng = lng ?? centroid.lng;
+      return { lat: centroid.lat, lng: centroid.lng, geojson, cadastral };
     }
   }
 
-  const cadastral = getCadastralCode(row);
+  let lat = toNumber(row.latitude);
+  let lng = toNumber(row.longitude);
 
   return { lat, lng, geojson, cadastral };
 }
