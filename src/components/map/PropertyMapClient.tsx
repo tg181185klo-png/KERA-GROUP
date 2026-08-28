@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { enrichListingsCadastralClient } from "@/lib/client-cadastral-enrich";
 import { isMappableProperty } from "@/lib/property-normalize";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import { useT } from "@/i18n/LocaleProvider";
@@ -40,7 +41,8 @@ export function PropertyMapClient({
         throw new Error(data.error ?? t.map.mapLoadFailed);
       }
       const raw = Array.isArray(data) ? data : [];
-      setProperties(raw.filter(isMappableProperty));
+      const enriched = await enrichListingsCadastralClient(raw);
+      setProperties(enriched.filter(isMappableProperty));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.error);

@@ -21,7 +21,6 @@ import {
   getPropertyBounds,
   getPropertyCenter,
   POLYGON_MIN_ZOOM,
-  shouldShowPolygons,
 } from "@/lib/map-geometry";
 import { addKeraBaseLayers } from "@/lib/map-base-layers";
 import { isMappableProperty } from "@/lib/property-normalize";
@@ -228,8 +227,6 @@ export function PropertyMap({
       polygonLayerRef.current.clearLayers();
       layerByIdRef.current.clear();
 
-      const zoom = mapRef.current.getZoom();
-      const showPolygons = forcePolygons || shouldShowPolygons(zoom);
       const mappable = properties.filter(isMappableProperty);
 
       mappable.forEach((property) => {
@@ -246,7 +243,7 @@ export function PropertyMap({
           property.geojson_polygon?.coordinates?.[0]?.length,
         );
 
-        if (hasPolygon && showPolygons) {
+        if (hasPolygon) {
           const poly = L.polygon(
             property.geojson_polygon!.coordinates[0].map(([lng, lat]) => [
               lat,

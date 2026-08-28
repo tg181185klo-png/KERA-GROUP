@@ -88,14 +88,21 @@ async function searchCadastralLabel(
 }
 
 async function fetchParcelShape(geometryLink: string): Promise<GeometryHit | null> {
-  const path = geometryLink.startsWith("http")
-    ? geometryLink
-    : `${MAPS_API}${geometryLink}`;
-  const url = path.includes("fmt=") ? path : `${path}&fmt=json&lang=ka`;
+  const paths = [
+    geometryLink.startsWith("http") ? geometryLink : `${MAPS_API}${geometryLink}`,
+    geometryLink.includes("res=shp")
+      ? `${MAPS_API}${geometryLink.replace(/&res=shp/, "")}`
+      : null,
+  ].filter(Boolean) as string[];
 
-  const data = await mapsFetch<{ data?: GeometryHit[] }>(url);
+  for (const path of paths) {
+    const url = path.includes("fmt=") ? path : `${path}&fmt=json&lang=ka`;
+    const data = await mapsFetch<{ data?: GeometryHit[] }>(url);
+    const hit = data?.data?.[0];
+    if (hit?.shape?.trim()) return hit;
+  }
 
-  return data?.data?.[0] ?? null;
+  return null;
 }
 
 /** Lookup parcel polygon + centroid via maps.gov.ge (same source as NAPR public map). */

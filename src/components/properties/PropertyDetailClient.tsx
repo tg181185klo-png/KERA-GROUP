@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Hash, MapPin, Phone } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
-import { lookupCadastralWithFallback } from "@/lib/client-maps-gov-enrich";
+import { fetchCadastralForProperty } from "@/lib/client-cadastral-enrich";
 import { useT } from "@/i18n/LocaleProvider";
 import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
@@ -32,21 +32,10 @@ export function PropertyDetailClient({
 
   useEffect(() => {
     let cancelled = false;
-    const hasPolygon = Boolean(
-      initialProperty.geojson_polygon?.coordinates?.[0]?.length,
-    );
-    if (hasPolygon || !initialProperty.cadastral_code) return;
 
     async function loadBoundary() {
-      const data = await lookupCadastralWithFallback(initialProperty.cadastral_code);
-      if (cancelled || !data?.geojson_polygon) return;
-
-      setProperty((prev) => ({
-        ...prev,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        geojson_polygon: data.geojson_polygon,
-      }));
+      const enriched = await fetchCadastralForProperty(initialProperty);
+      if (!cancelled) setProperty(enriched);
     }
 
     void loadBoundary();

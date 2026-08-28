@@ -113,6 +113,7 @@ async function enrichMissingCadastralGeometry(row: PropertyRow): Promise<Propert
       }
       return updated;
     }
+    return row;
   }
 
   return enrichRowGeocode(row);

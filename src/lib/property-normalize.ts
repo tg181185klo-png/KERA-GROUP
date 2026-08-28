@@ -281,6 +281,12 @@ export function normalizeToMapProperty(row: PropertyRow): MapProperty | null {
 /** Listings that can be drawn on the map (polygon or point). */
 export function isMappableProperty(property: MapProperty): boolean {
   if (property.geojson_polygon?.coordinates?.[0]?.length) return true;
+
+  const code = property.cadastral_code?.trim();
+  const hasCadastral =
+    Boolean(code) && code !== "—" && !code?.startsWith("TEMP-");
+  if (hasCadastral) return false;
+
   return property.latitude != null && property.longitude != null;
 }
 

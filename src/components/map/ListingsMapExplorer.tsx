@@ -5,6 +5,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
 import { ListingMapCard } from "@/components/map/ListingMapCard";
 import { useLocale } from "@/i18n/LocaleProvider";
+import { enrichListingsCadastralClient } from "@/lib/client-cadastral-enrich";
 import { isMappableProperty } from "@/lib/property-normalize";
 import type { MapProperty } from "@/lib/types/property-listing";
 
@@ -42,7 +43,8 @@ export function ListingsMapExplorer({
       }
 
       const raw = Array.isArray(data) ? data : [];
-      setProperties(raw.filter(isMappableProperty));
+      const enriched = await enrichListingsCadastralClient(raw);
+      setProperties(enriched.filter(isMappableProperty));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.common.error);

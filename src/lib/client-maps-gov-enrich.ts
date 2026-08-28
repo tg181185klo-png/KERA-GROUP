@@ -22,7 +22,11 @@ export async function fetchCadastralFromMapsGovClient(
 
     const searchRes = await fetch(`${MAPS_PORTAL}/search`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Referer: "https://maps.gov.ge/map/",
+      },
       body: JSON.stringify({ keyword: formatted, keyword_description: "" }),
       cache: "no-store",
     });
@@ -42,7 +46,13 @@ export async function fetchCadastralFromMapsGovClient(
 
     const geoRes = await fetch(
       `${MAPS_API}${geometryLink}&fmt=json&lang=ka`,
-      { cache: "no-store", headers: { Accept: "application/json" } },
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          Referer: "https://maps.gov.ge/map/",
+        },
+      },
     );
 
     if (!geoRes.ok) return null;
@@ -75,10 +85,13 @@ export async function fetchCadastralFromMapsGovClient(
   }
 }
 
-/** Same-origin API first; browser maps.gov.ge only if API fails. */
+/** Browser first (user IP); server API fallback when geometry WAF blocks datacenter IPs. */
 export async function lookupCadastralWithFallback(
   cadastralCode: string,
 ): Promise<CadastralLookupResult | null> {
+  const fromBrowser = await fetchCadastralFromMapsGovClient(cadastralCode);
+  if (fromBrowser) return fromBrowser;
+
   try {
     const res = await fetch(
       `/api/cadastral/lookup?code=${encodeURIComponent(cadastralCode)}`,
@@ -95,8 +108,8 @@ export async function lookupCadastralWithFallback(
       };
     }
   } catch {
-    // fall through to browser attempt
+    // ignore
   }
 
-  return fetchCadastralFromMapsGovClient(cadastralCode);
+  return null;
 }
