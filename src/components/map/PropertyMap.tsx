@@ -21,8 +21,8 @@ import {
   getPropertyBounds,
   getPropertyCenter,
   POLYGON_MIN_ZOOM,
-  shouldShowPolygons,
 } from "@/lib/map-geometry";
+import { addKeraBaseLayers } from "@/lib/map-base-layers";
 import { isMappableProperty } from "@/lib/property-normalize";
 import { priceMarkerIconOptions } from "@/lib/map-markers";
 import "leaflet/dist/leaflet.css";
@@ -123,7 +123,6 @@ export function PropertyMap({
     null,
   );
   const [ready, setReady] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(12);
   const initialFitDone = useRef(false);
 
   propertiesRef.current = properties;
@@ -145,32 +144,7 @@ export function PropertyMap({
       );
       mapRef.current = map;
 
-      L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        {
-          attribution: "© Esri · NAPR",
-          maxZoom: 19,
-        },
-      ).addTo(map);
-
-      const wms = L.tileLayer.wms("https://nv.napr.gov.ge/geoserver/wms", {
-        layers: "LR_PARCELS,NG_REG_LAYER",
-        format: "image/png",
-        transparent: true,
-        version: "1.1.1",
-        attribution: "© NAPR / maps.gov.ge",
-        maxZoom: 21,
-        opacity: 0.88,
-      });
-      wms.addTo(map);
-
-      L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-        {
-          maxZoom: 19,
-          opacity: 0.75,
-        },
-      ).addTo(map);
+      addKeraBaseLayers(map, L);
 
       clusterRef.current = L.markerClusterGroup({
         showCoverageOnHover: false,
@@ -192,8 +166,6 @@ export function PropertyMap({
       polygonLayerRef.current = L.layerGroup().addTo(map);
       previewLayerRef.current = L.layerGroup().addTo(map);
 
-      map.on("zoomend", () => setZoomLevel(map.getZoom()));
-      setZoomLevel(map.getZoom());
       setReady(true);
 
       setTimeout(() => map.invalidateSize(), 150);
@@ -248,9 +220,6 @@ export function PropertyMap({
         return;
       }
 
-      const showPolygons =
-        forcePolygons || shouldShowPolygons(mapRef.current.getZoom());
-
       clusterRef.current.clearLayers();
       polygonLayerRef.current.clearLayers();
       layerByIdRef.current.clear();
@@ -267,9 +236,13 @@ export function PropertyMap({
           if (showSidebarOnSelect) setSidebarProperty(property);
         };
 
-        if (showPolygons && property.geojson_polygon?.coordinates?.[0]?.length) {
+        const hasPolygon = Boolean(
+          property.geojson_polygon?.coordinates?.[0]?.length,
+        );
+
+        if (hasPolygon) {
           const poly = L.polygon(
-            property.geojson_polygon.coordinates[0].map(([lng, lat]) => [
+            property.geojson_polygon!.coordinates[0].map(([lng, lat]) => [
               lat,
               lng,
             ]),
@@ -296,31 +269,30 @@ export function PropertyMap({
 
           poly.addTo(polygonLayerRef.current!);
           layerByIdRef.current.set(property.id, poly);
-        } else if (!showPolygons || !property.geojson_polygon) {
-          const marker = L.marker(center, {
-            icon: L.divIcon(
-              priceMarkerIconOptions(property, selectedId, t.common.perSqm),
-            ),
-          });
-
-          marker.bindPopup(buildMapPopupHtml(property, buildLabels(property)), {
-            maxWidth: 280,
-          });
-          marker.bindTooltip(
-            buildMapHoverTooltipHtml(property, buildLabels(property)),
-            hoverTooltipOptions,
-          );
-          marker.on("click", handleSelect);
-          marker.on("mouseover", () => setHoveredId(property.id));
-          marker.on("mouseout", () =>
-            setHoveredId((current) =>
-              current === property.id ? null : current,
-            ),
-          );
-
-          clusterRef.current!.addLayer(marker);
-          layerByIdRef.current.set(property.id, marker);
         }
+
+        const marker = L.marker(center, {
+          icon: L.divIcon(
+            priceMarkerIconOptions(property, selectedId, t.common.perSqm),
+          ),
+        });
+
+        marker.bindPopup(buildMapPopupHtml(property, buildLabels(property)), {
+          maxWidth: 280,
+        });
+        marker.bindTooltip(
+          buildMapHoverTooltipHtml(property, buildLabels(property)),
+          hoverTooltipOptions,
+        );
+        marker.on("click", handleSelect);
+        marker.on("mouseover", () => setHoveredId(property.id));
+        marker.on("mouseout", () =>
+          setHoveredId((current) =>
+            current === property.id ? null : current,
+          ),
+        );
+
+        clusterRef.current!.addLayer(marker);
       });
 
       mapRef.current.invalidateSize();
@@ -338,7 +310,6 @@ export function PropertyMap({
     onSelect,
     showSidebarOnSelect,
     forcePolygons,
-    zoomLevel,
     t,
   ]);
 
@@ -451,17 +422,10 @@ export function PropertyMap({
   }, [selectedId, ready, showSidebarOnSelect]);
 
   const activeSidebar = showSidebarOnSelect ? sidebarProperty : null;
-  const showZoomHint =
-    !forcePolygons && properties.some(isMappableProperty) && zoomLevel < POLYGON_MIN_ZOOM;
 
   return (
     <div className="relative isolate h-full min-h-[320px] w-full overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 z-0" />
-      {showZoomHint && (
-        <div className="pointer-events-none absolute bottom-2 left-1/2 z-10 max-w-[min(calc(100%-10rem),14rem)] -translate-x-1/2 rounded-full border border-white/20 bg-slate-900/70 px-2.5 py-1 text-center text-[10px] leading-snug text-white shadow-md backdrop-blur sm:bottom-3 sm:max-w-[calc(100%-1.5rem)] sm:px-4 sm:py-2 sm:text-xs sm:shadow-lg">
-          {t.map.zoomHint}
-        </div>
-      )}
       {!activeSidebar && <MapLegend />}
       {activeSidebar && (
         <PropertySidebar

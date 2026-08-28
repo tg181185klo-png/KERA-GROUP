@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { GeoJSON } from "geojson";
+import { addKeraBaseLayers } from "@/lib/map-base-layers";
 import "leaflet/dist/leaflet.css";
 
 interface MapPickerProps {
@@ -10,6 +11,13 @@ interface MapPickerProps {
   polygon: GeoJSON.Polygon | null;
   onLocationChange: (lat: number, lng: number) => void;
 }
+
+const PARCEL_STYLE = {
+  color: "#ffffff",
+  fillColor: "#00AEEF",
+  fillOpacity: 0.42,
+  weight: 2,
+};
 
 export function MapPicker({
   latitude,
@@ -38,9 +46,7 @@ export function MapPicker({
       const map = L.map(containerRef.current).setView([lat, lng], 15);
       mapRef.current = map;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
-      }).addTo(map);
+      addKeraBaseLayers(map, L);
 
       const icon = L.icon({
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -59,7 +65,7 @@ export function MapPicker({
       if (polygon) {
         polygonRef.current = L.polygon(
           polygon.coordinates[0].map(([lng, lat]) => [lat, lng]),
-          { color: "#00AEEF", fillColor: "#00AEEF", fillOpacity: 0.2 },
+          PARCEL_STYLE,
         ).addTo(map);
         map.fitBounds(polygonRef.current.getBounds(), { padding: [30, 30] });
       }
@@ -103,7 +109,7 @@ export function MapPicker({
       if (polygon) {
         polygonRef.current = L.polygon(
           polygon.coordinates[0].map(([lng, lat]) => [lat, lng]),
-          { color: "#00AEEF", fillColor: "#00AEEF", fillOpacity: 0.2 },
+          PARCEL_STYLE,
         ).addTo(mapRef.current!);
         mapRef.current!.fitBounds(polygonRef.current.getBounds(), {
           padding: [30, 30],
