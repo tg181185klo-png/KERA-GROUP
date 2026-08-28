@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, Hash, Loader2, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, Hash, MapPin, Phone } from "lucide-react";
 import { PropertyMap } from "@/components/map/PropertyMap";
-import { fetchCadastralForProperty } from "@/lib/client-cadastral-enrich";
+import { lookupCadastralWithFallback } from "@/lib/client-maps-gov-enrich";
 import { useT } from "@/i18n/LocaleProvider";
 import { getListingTypeLabel } from "@/i18n/nav";
 import type { MapProperty } from "@/lib/types/property-listing";
@@ -25,21 +25,31 @@ export function PropertyDetailClient({
   const searchParams = useSearchParams();
   const backHref = searchParams.get("back") ?? "/properties";
   const [property, setProperty] = useState(initialProperty);
-  const [mapLoading, setMapLoading] = useState(true);
+
+  useEffect(() => {
+    setProperty(initialProperty);
+  }, [initialProperty]);
 
   useEffect(() => {
     let cancelled = false;
+    const hasPolygon = Boolean(
+      initialProperty.geojson_polygon?.coordinates?.[0]?.length,
+    );
+    if (hasPolygon || !initialProperty.cadastral_code) return;
 
-    async function loadCadastral() {
-      setMapLoading(true);
-      const enriched = await fetchCadastralForProperty(initialProperty);
-      if (!cancelled) {
-        setProperty(enriched);
-        setMapLoading(false);
-      }
+    async function loadBoundary() {
+      const data = await lookupCadastralWithFallback(initialProperty.cadastral_code);
+      if (cancelled || !data?.geojson_polygon) return;
+
+      setProperty((prev) => ({
+        ...prev,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        geojson_polygon: data.geojson_polygon,
+      }));
     }
 
-    loadCadastral();
+    void loadBoundary();
 
     return () => {
       cancelled = true;
@@ -100,11 +110,6 @@ export function PropertyDetailClient({
             )}
 
             <div className="kera-map-shell relative mt-6 h-[min(50vh,420px)] min-h-[280px]">
-              {mapLoading && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
-                  <Loader2 className="h-6 w-6 animate-spin text-kera-primary" />
-                </div>
-              )}
               <PropertyMap
                 properties={[property]}
                 selectedId={property.id}

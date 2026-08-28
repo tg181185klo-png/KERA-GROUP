@@ -1,6 +1,6 @@
 import {
   fetchCadastralForStorage,
-  rowHasStoredCadastralGeometry,
+  hasRealStoredPolygon,
 } from "@/lib/cadastral-persist";
 import { cadastralCoordsPayload } from "@/lib/cadastral-lookup";
 import { geocodeListingRow } from "@/lib/geocode-listing";
@@ -93,9 +93,9 @@ async function persistCadastralGeometry(
     .eq("id", id);
 }
 
-/** One-time backfill: fetch parcel from maps.gov.ge when DB has cadastral code only. */
+/** Backfill parcel polygon when DB has cadastral code but no stored boundary. */
 async function enrichMissingCadastralGeometry(row: PropertyRow): Promise<PropertyRow> {
-  if (rowHasStoredCadastralGeometry(row)) return row;
+  if (hasRealStoredPolygon(row as Record<string, unknown>)) return row;
 
   const cadastral = getCadastralCode(row);
   if (cadastral !== "—") {
@@ -195,5 +195,6 @@ export async function fetchActiveListingById(id: string) {
   const row = data as PropertyRow;
   if (!isPubliclyVisibleListing(row)) return null;
 
-  return normalizeToMapProperty(row);
+  const enriched = await enrichMissingCadastralGeometry(row);
+  return normalizeToMapProperty(enriched);
 }

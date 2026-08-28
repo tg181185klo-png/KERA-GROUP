@@ -269,30 +269,30 @@ export function PropertyMap({
 
           poly.addTo(polygonLayerRef.current!);
           layerByIdRef.current.set(property.id, poly);
+        } else {
+          const marker = L.marker(center, {
+            icon: L.divIcon(
+              priceMarkerIconOptions(property, selectedId, t.common.perSqm),
+            ),
+          });
+
+          marker.bindPopup(buildMapPopupHtml(property, buildLabels(property)), {
+            maxWidth: 280,
+          });
+          marker.bindTooltip(
+            buildMapHoverTooltipHtml(property, buildLabels(property)),
+            hoverTooltipOptions,
+          );
+          marker.on("click", handleSelect);
+          marker.on("mouseover", () => setHoveredId(property.id));
+          marker.on("mouseout", () =>
+            setHoveredId((current) =>
+              current === property.id ? null : current,
+            ),
+          );
+
+          clusterRef.current!.addLayer(marker);
         }
-
-        const marker = L.marker(center, {
-          icon: L.divIcon(
-            priceMarkerIconOptions(property, selectedId, t.common.perSqm),
-          ),
-        });
-
-        marker.bindPopup(buildMapPopupHtml(property, buildLabels(property)), {
-          maxWidth: 280,
-        });
-        marker.bindTooltip(
-          buildMapHoverTooltipHtml(property, buildLabels(property)),
-          hoverTooltipOptions,
-        );
-        marker.on("click", handleSelect);
-        marker.on("mouseover", () => setHoveredId(property.id));
-        marker.on("mouseout", () =>
-          setHoveredId((current) =>
-            current === property.id ? null : current,
-          ),
-        );
-
-        clusterRef.current!.addLayer(marker);
       });
 
       mapRef.current.invalidateSize();
@@ -387,10 +387,13 @@ export function PropertyMap({
 
     const bounds = collectBounds(properties, preview);
     if (bounds.length === 1) {
-      mapRef.current.setView(bounds[0], forcePolygons ? 17 : 14);
+      mapRef.current.setView(bounds[0], forcePolygons ? 17 : 15);
       initialFitDone.current = true;
     } else if (bounds.length > 1) {
-      mapRef.current.fitBounds(bounds, { padding: [48, 48], maxZoom: 14 });
+      mapRef.current.fitBounds(bounds, {
+        padding: [48, 48],
+        maxZoom: forcePolygons ? 18 : 16,
+      });
       initialFitDone.current = true;
     } else if (fitOnLoad && !initialFitDone.current && properties.length === 0 && !preview) {
       mapRef.current.setView([41.7151, 44.8271], 7);
