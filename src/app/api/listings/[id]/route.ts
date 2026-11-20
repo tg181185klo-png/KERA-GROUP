@@ -76,7 +76,7 @@ async function updateAdaptive(
     delete current[column];
   }
 
-  for (let attempt = 0; attempt < 12; attempt++) {
+  for (let attempt = 0; attempt < 25; attempt++) {
     if (Object.keys(current).length === 0) break;
 
     const { data, error } = await service
@@ -140,16 +140,9 @@ async function updateAdaptive(
       ) {
         coercedDealType = true;
         current.deal_type = deal === "pledge" ? "sale" : "rent";
-        if (canWrite(dropped, "listing_type")) {
-          current.listing_type = saleRentListing(current);
-        }
         continue;
       }
-      if (canWrite(dropped, "listing_type")) {
-        current.listing_type = saleRentListing(current);
-      }
-      drop("deal_type");
-      continue;
+      return { data: null, error };
     }
 
     return { data: null, error };
@@ -159,11 +152,11 @@ async function updateAdaptive(
 }
 
 function revalidateListingSurfaces(id: string) {
-  revalidatePath("/");
-  revalidatePath("/properties");
+  revalidatePath("/", "layout");
+  revalidatePath("/properties", "layout");
   revalidatePath(`/properties/${id}`);
   revalidatePath("/map");
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
 }
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -229,6 +222,14 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   const body = await request.json();
+  const wantedDeal = body.deal_type != null ? resolveDealType(body) : null;
+
+  if (wantedDeal) {
+    const dealWrite = await updateAdaptive(service, id, { deal_type: wantedDeal });
+    if (dealWrite.error) {
+      return NextResponse.json({ error: dealWrite.error.message }, { status: 400 });
+    }
+  }
 
   let updates: Record<string, unknown>;
 

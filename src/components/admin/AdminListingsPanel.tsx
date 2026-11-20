@@ -52,7 +52,7 @@ export function AdminListingsPanel({
   async function loadData(options?: { silent?: boolean }) {
     if (!options?.silent) setLoading(true);
     const [listingsRes, usersRes] = await Promise.all([
-      fetch("/api/listings?admin=true"),
+      fetch("/api/listings?admin=true", { cache: "no-store" }),
       fetch("/api/admin/users"),
     ]);
 
@@ -114,7 +114,26 @@ export function AdminListingsPanel({
       return;
     }
 
-    await loadData({ silent: true });
+    const saved = await res.json().catch(() => ({}));
+    const savedDeal =
+      saved?.deal_type === "rent" ||
+      saved?.deal_type === "daily_rent" ||
+      saved?.deal_type === "pledge" ||
+      saved?.deal_type === "sale"
+        ? saved.deal_type
+        : dealType;
+    setListings((rows) =>
+      rows.map((row) =>
+        row.id === id
+          ? {
+              ...row,
+              deal_type: savedDeal,
+              listing_type:
+                savedDeal === "rent" || savedDeal === "daily_rent" ? "rent" : "sale",
+            }
+          : row,
+      ),
+    );
   }
 
   async function updateStatus(id: string, status: ListingStatus) {

@@ -45,7 +45,11 @@ export function createServiceClient() {
     throw new Error("Missing Supabase environment variables.");
   }
 
-  return createSupabaseClient(url, key);
+  return createSupabaseClient(url, key, {
+    global: {
+      fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+    },
+  });
 }
 
 /** @deprecated Use createClient() instead */

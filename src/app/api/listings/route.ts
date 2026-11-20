@@ -12,6 +12,9 @@ import { fetchUserDashboardListings } from "@/lib/user-listings";
 import { getProfile } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
@@ -48,6 +51,7 @@ export async function GET(request: Request) {
         ...normalizeToAdminListingFull(row),
         user_email: emailByUserId.get(String(row.user_id)) ?? "",
       })),
+      { headers: { "Cache-Control": "no-store" } },
     );
   }
 

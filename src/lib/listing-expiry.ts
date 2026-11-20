@@ -55,7 +55,7 @@ export function shouldRequireModerationOnEdit(row: Record<string, unknown>): boo
   if (status === "blocked" || status === "archived") return false;
 
   if (isActiveListingStatus(status)) {
-    return !isListingMapPeriodActive(row);
+    return false;
   }
 
   return true;

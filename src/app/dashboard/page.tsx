@@ -5,6 +5,8 @@ import { DashboardPageContent } from "@/components/dashboard/DashboardPageConten
 import { type PropertyRow } from "@/lib/property-normalize";
 import { fetchUserDashboardListings } from "@/lib/user-listings";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage({
   searchParams,
 }: {
