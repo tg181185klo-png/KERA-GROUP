@@ -16,7 +16,7 @@ import { NextResponse } from "next/server";
 export const maxDuration = 60;
 
 function parseMissingColumn(message: string): string | null {
-  const match = message.match(/Could not find the '([^']+)' column/i);
+  const match = message.match(/Could not find the ['‘’"]([^'‘’"]+)['‘’"] column/i);
   return match?.[1] ?? null;
 }
 
@@ -54,6 +54,10 @@ function saleRentListing(payload: Record<string, unknown>): "sale" | "rent" {
     : "sale";
 }
 
+function canWrite(dropped: Set<string>, column: string): boolean {
+  return !dropped.has(column);
+}
+
 async function updateAdaptive(
   service: ReturnType<typeof createServiceClient>,
   id: string,
@@ -61,11 +65,19 @@ async function updateAdaptive(
 ) {
   let current = { ...payload };
   let lastError: { message: string } | null = null;
+  const dropped = new Set<string>();
   let triedSellerListing = false;
   let triedSaleRentListing = false;
   let coercedDealType = false;
 
+  function drop(column: string) {
+    dropped.add(column);
+    delete current[column];
+  }
+
   for (let attempt = 0; attempt < 12; attempt++) {
+    if (Object.keys(current).length === 0) break;
+
     const { data, error } = await service
       .from("properties")
       .update(current)
@@ -78,21 +90,19 @@ async function updateAdaptive(
     }
 
     lastError = error;
-    const missing = parseMissingColumn(error.message);
+    const message = `${error.message ?? ""}`;
+    const missing = parseMissingColumn(message);
     if (missing) {
-      if (missing === "deal_type") {
-        current.listing_type = saleRentListing(current);
-      }
-      delete current[missing];
-      if (Object.keys(current).length === 0) break;
+      drop(missing);
       continue;
     }
 
-    const constraintColumn = parseConstraintColumn(error.message);
-    if (constraintColumn === "listing_type" && isSchemaMismatch(error.message)) {
+    const constraintColumn = parseConstraintColumn(message);
+    if (constraintColumn === "listing_type" && isSchemaMismatch(message)) {
       const value = String(current.listing_type ?? "");
       if (
         (value === "sale" || value === "rent") &&
+        canWrite(dropped, "deal_type") &&
         "deal_type" in current &&
         !triedSellerListing
       ) {
@@ -102,18 +112,18 @@ async function updateAdaptive(
       }
       if (
         (value === "seller" || value === "developer") &&
-        !triedSaleRentListing
+        !triedSaleRentListing &&
+        canWrite(dropped, "listing_type")
       ) {
         triedSaleRentListing = true;
         current.listing_type = saleRentListing(current);
         continue;
       }
-      delete current.listing_type;
-      if (Object.keys(current).length === 0) break;
+      drop("listing_type");
       continue;
     }
 
-    if (constraintColumn === "deal_type" && isSchemaMismatch(error.message)) {
+    if (constraintColumn === "deal_type" && isSchemaMismatch(message)) {
       const deal = String(current.deal_type ?? "");
       if (
         !coercedDealType &&
@@ -121,12 +131,15 @@ async function updateAdaptive(
       ) {
         coercedDealType = true;
         current.deal_type = deal === "pledge" ? "sale" : "rent";
-        current.listing_type = saleRentListing(current);
+        if (canWrite(dropped, "listing_type")) {
+          current.listing_type = saleRentListing(current);
+        }
         continue;
       }
-      current.listing_type = saleRentListing(current);
-      delete current.deal_type;
-      if (Object.keys(current).length === 0) break;
+      if (canWrite(dropped, "listing_type")) {
+        current.listing_type = saleRentListing(current);
+      }
+      drop("deal_type");
       continue;
     }
 
@@ -248,8 +261,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (saved !== wanted) {
       const corrected = await updateAdaptive(service, id, {
         deal_type: wanted,
-        listing_type:
-          wanted === "rent" || wanted === "daily_rent" ? "rent" : "sale",
       });
       if (!corrected.error && corrected.data) {
         data = corrected.data;

@@ -88,7 +88,7 @@ function buildLegacyDescription(body: ListingBody) {
 }
 
 function parseMissingColumn(message: string): string | null {
-  const match = message.match(/Could not find the '([^']+)' column/i);
+  const match = message.match(/Could not find the ['‘’"]([^'‘’"]+)['‘’"] column/i);
   return match?.[1] ?? null;
 }
 
@@ -105,6 +105,7 @@ async function insertAdaptive(
 ) {
   let current = { ...payload };
   let lastError: { message: string } | null = null;
+  const dropped = new Set<string>();
   let triedSellerListing = false;
 
   for (let attempt = 0; attempt < 15; attempt++) {
@@ -121,11 +122,7 @@ async function insertAdaptive(
     lastError = error;
     const missing = parseMissingColumn(error.message);
     if (missing && isSchemaMismatch(error.message)) {
-      if (missing === "deal_type") {
-        const deal = String(current.deal_type ?? "");
-        current.listing_type =
-          deal === "rent" || deal === "daily_rent" ? "rent" : "sale";
-      }
+      dropped.add(missing);
       delete current[missing];
       if (Object.keys(current).length === 0) break;
       continue;
@@ -137,6 +134,7 @@ async function insertAdaptive(
       if (
         (value === "sale" || value === "rent") &&
         "deal_type" in current &&
+        !dropped.has("deal_type") &&
         !triedSellerListing
       ) {
         triedSellerListing = true;
@@ -149,12 +147,16 @@ async function insertAdaptive(
       const deal = String(current.deal_type ?? "");
       if (deal === "daily_rent" || deal === "pledge" || deal === "daily") {
         current.deal_type = deal === "pledge" ? "sale" : "rent";
-        current.listing_type =
-          current.deal_type === "rent" ? "rent" : String(current.listing_type ?? "sale");
+        if (!dropped.has("listing_type")) {
+          current.listing_type = current.deal_type === "rent" ? "rent" : "sale";
+        }
         continue;
       }
-      current.listing_type =
-        deal === "rent" || deal === "daily_rent" ? "rent" : "sale";
+      if (!dropped.has("listing_type")) {
+        current.listing_type =
+          deal === "rent" || deal === "daily_rent" ? "rent" : "sale";
+      }
+      dropped.add("deal_type");
       delete current.deal_type;
       continue;
     }

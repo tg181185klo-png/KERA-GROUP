@@ -2,6 +2,7 @@
 -- Run in Supabase SQL Editor. App deploys do not apply this file automatically.
 
 alter table public.properties add column if not exists deal_type text;
+alter table public.properties add column if not exists listing_type text;
 
 do $$
 declare
