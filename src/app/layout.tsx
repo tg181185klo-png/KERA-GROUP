@@ -6,6 +6,7 @@ import { LocaleProvider } from "@/i18n/LocaleProvider";
 import { getMessages } from "@/i18n/messages";
 import { getLocale } from "@/i18n/server";
 import { LOGO_MARK } from "@/lib/brand";
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,9 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = getMessages(locale);
 
   return {
-    metadataBase: new URL(
-      process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.keragroup.ge",
-    ),
+    metadataBase: new URL(getSiteUrl()),
     title: `${t.brand.name} | ${t.meta.title}`,
     description: t.meta.description,
     icons: {

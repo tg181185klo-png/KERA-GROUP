@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Check, Link2, Share2 } from "lucide-react";
 import { useT } from "@/i18n/LocaleProvider";
-import { getClientSiteUrl } from "@/lib/site-url";
+import { getSiteUrl } from "@/lib/site-url";
 
 interface ListingShareProps {
   id: string;
@@ -12,7 +12,7 @@ interface ListingShareProps {
 }
 
 function listingUrl(id: string): string {
-  return `${getClientSiteUrl()}/properties/${id}`;
+  return `${getSiteUrl()}/properties/${id}`;
 }
 
 export function ListingShare({ id, title, compact = false }: ListingShareProps) {

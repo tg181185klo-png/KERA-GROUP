@@ -99,8 +99,7 @@ export const CADASTRAL_API_BASE =
 export const CADASTRAL_WMS_URL = "https://nv.napr.gov.ge/geoserver/wms";
 export const CADASTRAL_WMS_LAYERS = "LR_PARCELS,NG_REG_LAYER";
 
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.keragroup.ge";
+export const SITE_URL = "https://www.keragroup.ge";
 
 export const PROPERTY_FEATURES = [
   { value: "balcony", label: "აივანი" },

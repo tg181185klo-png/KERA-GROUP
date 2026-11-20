@@ -1,16 +1,33 @@
-/** Canonical public site origin (no trailing slash). */
-export function getSiteUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (fromEnv) return fromEnv.replace(/\/$/, "");
-  return "https://www.keragroup.ge";
+const PUBLIC_SITE = "https://www.keragroup.ge";
+
+function withoutSlash(value: string): string {
+  return value.replace(/\/$/, "");
 }
 
-/** Client-side origin for auth redirects — prefers env to match Supabase allow list. */
-export function getClientSiteUrl(): string {
-  if (typeof window === "undefined") return getSiteUrl();
+function isVercelHost(value: string): boolean {
+  try {
+    return new URL(value).hostname.endsWith(".vercel.app");
+  } catch {
+    return value.includes("vercel.app");
+  }
+}
+
+/** Canonical public site origin. Never a Vercel deployment host. */
+export function getSiteUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (fromEnv) return fromEnv.replace(/\/$/, "");
-  return window.location.origin.replace(/\/$/, "");
+  if (fromEnv && !isVercelHost(fromEnv)) return withoutSlash(fromEnv);
+  return PUBLIC_SITE;
+}
+
+/** Client-side origin for auth redirects — localhost stays local; public links use keragroup.ge. */
+export function getClientSiteUrl(): string {
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return withoutSlash(window.location.origin);
+    }
+  }
+  return getSiteUrl();
 }
 
 export function safeRedirectPath(next: string | null | undefined): string {
