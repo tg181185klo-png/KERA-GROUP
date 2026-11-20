@@ -224,7 +224,13 @@ export async function PATCH(request: Request, context: RouteContext) {
       Object.assign(updates, buildApprovalTimestamps());
     }
   } else if (admin) {
-    updates = body;
+    updates = { ...body };
+    if (body.deal_type != null) {
+      const deal = resolveDealType(body);
+      updates.deal_type = deal;
+      updates.listing_type =
+        deal === "rent" || deal === "daily_rent" ? "rent" : "sale";
+    }
   } else {
     updates = await buildOwnerListingUpdates(body, existing, {
       resetToPending: shouldRequireModerationOnEdit(existing),

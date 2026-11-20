@@ -49,8 +49,8 @@ export function AdminListingsPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function loadData() {
-    setLoading(true);
+  async function loadData(options?: { silent?: boolean }) {
+    if (!options?.silent) setLoading(true);
     const [listingsRes, usersRes] = await Promise.all([
       fetch("/api/listings?admin=true"),
       fetch("/api/admin/users"),
@@ -77,6 +77,44 @@ export function AdminListingsPanel({
     }
 
     setLoading(false);
+  }
+
+  function currentDeal(item: ListingRow): MapDealType {
+    const raw = String(item.deal_type ?? item.listing_type ?? "sale");
+    if (raw === "rent" || raw === "daily_rent" || raw === "pledge" || raw === "sale") {
+      return raw;
+    }
+    return item.listing_type === "rent" ? "rent" : "sale";
+  }
+
+  async function updateDealType(id: string, dealType: MapDealType) {
+    const previous = listings;
+    setListings((rows) =>
+      rows.map((row) =>
+        row.id === id
+          ? {
+              ...row,
+              deal_type: dealType,
+              listing_type: dealType === "rent" || dealType === "daily_rent" ? "rent" : "sale",
+            }
+          : row,
+      ),
+    );
+
+    const res = await fetch(`/api/listings/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ deal_type: dealType }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setListings(previous);
+      alert(data.error ?? "გარიგების ტიპის განახლება ვერ მოხერხდა");
+      return;
+    }
+
+    await loadData({ silent: true });
   }
 
   async function updateStatus(id: string, status: ListingStatus) {
@@ -346,9 +384,20 @@ export function AdminListingsPanel({
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {DEAL_TYPE_LABELS[
-                      (item.deal_type ?? item.listing_type) as MapDealType
-                    ] ?? item.listing_type}
+                    <select
+                      value={currentDeal(item)}
+                      onChange={(e) =>
+                        updateDealType(item.id, e.target.value as MapDealType)
+                      }
+                      aria-label="გარიგების ტიპი"
+                      className="kera-input min-w-[8.5rem] py-1.5 text-xs"
+                    >
+                      {(Object.keys(DEAL_TYPE_LABELS) as MapDealType[]).map((value) => (
+                        <option key={value} value={value}>
+                          {DEAL_TYPE_LABELS[value]}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                   <td className="px-4 py-3">
                     <Badge
