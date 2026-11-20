@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Hash, MapPin, Phone } from "lucide-react";
@@ -14,6 +13,7 @@ import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { getPricePerSqm, resolveAreaSqm } from "@/lib/price-display";
 import { Badge } from "@/components/ui/Badge";
 import { ListingShare } from "@/components/properties/ListingShare";
+import { PhotoGallery } from "@/components/properties/PhotoGallery";
 
 interface PropertyDetailClientProps {
   property: MapProperty;
@@ -69,35 +69,11 @@ export function PropertyDetailClient({
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
           <div>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100">
-              <Image
-                src={images[0]}
-                alt={property.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                priority
-              />
-            </div>
-
-            {images.length > 1 && (
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                {images.slice(1, 5).map((src, index) => (
-                  <div
-                    key={src}
-                    className="relative aspect-square overflow-hidden rounded-lg bg-slate-100"
-                  >
-                    <Image
-                      src={src}
-                      alt={`${property.title} ${index + 2}`}
-                      fill
-                      className="object-cover"
-                      sizes="120px"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <PhotoGallery
+              images={images}
+              title={property.title}
+              closeLabel={t.common.close}
+            />
 
             <div className="kera-map-shell relative mt-6 h-[min(50vh,420px)] min-h-[280px]">
               <PropertyMap

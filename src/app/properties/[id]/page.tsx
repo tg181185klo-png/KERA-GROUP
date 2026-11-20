@@ -8,12 +8,6 @@ import { getSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
-function absoluteImageUrl(src: string): string {
-  if (src.startsWith("https://") || src.startsWith("http://")) return src;
-  const path = src.startsWith("/") ? src : `/${src}`;
-  return `${getSiteUrl()}${path}`;
-}
-
 interface PropertyPageProps {
   params: Promise<{ id: string }>;
 }
@@ -35,11 +29,11 @@ export async function generateMetadata({
       : formatPrice(property.total_price);
   const description = `${priceSummary} · ${property.address} · ${property.cadastral_code}`;
   const pageUrl = `${getSiteUrl()}/properties/${id}`;
-  const mainImage = property.images.find((src) => src.trim().length > 0);
-  const imageUrl = mainImage ? absoluteImageUrl(mainImage) : undefined;
+  const hasPhoto = property.images.some((src) => src.trim().length > 0);
+  const imageUrl = hasPhoto ? `${getSiteUrl()}/api/listings/${id}/cover` : undefined;
 
   return {
-    title: `${property.title} | კერა ჯგუფი`,
+    title: `${property.title} | keragroup.ge`,
     description,
     alternates: { canonical: pageUrl },
     openGraph: {
@@ -47,8 +41,10 @@ export async function generateMetadata({
       description,
       url: pageUrl,
       type: "website",
-      siteName: "კერა ჯგუფი",
-      images: imageUrl ? [{ url: imageUrl, alt: property.title }] : [],
+      siteName: "keragroup.ge",
+      images: imageUrl
+        ? [{ url: imageUrl, width: 1200, height: 630, alt: property.title, type: "image/jpeg" }]
+        : [],
     },
     twitter: {
       card: "summary_large_image",

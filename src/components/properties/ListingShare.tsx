@@ -20,7 +20,7 @@ export function ListingShare({ id, title, compact = false }: ListingShareProps) 
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
   const url = listingUrl(id);
-  const text = `${title} — ${url}`;
+  const text = `${title}\nkeragroup.ge\n${url}`;
 
   useEffect(() => {
     setCanNativeShare(typeof navigator.share === "function");
