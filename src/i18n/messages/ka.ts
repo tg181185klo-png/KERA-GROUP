@@ -398,6 +398,13 @@ export const ka = {
     contact: "დაუკავშირდით",
     viewOnMap: "რუკაზე ნახვა",
     notFound: "განცხადება ვერ მოიძებნა",
+    share: "გაზიარება",
+    shareCopy: "ბმულის კოპირება",
+    shareCopied: "ბმული დაკოპირდა",
+    shareFacebook: "Facebook",
+    shareWhatsapp: "WhatsApp",
+    shareTelegram: "Telegram",
+    shareViber: "Viber",
   },
   searchResults: {
     title: "ძებნის შედეგები",

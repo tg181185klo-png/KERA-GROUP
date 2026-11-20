@@ -8,6 +8,8 @@ import { fetchActiveMapListings } from "@/lib/active-listings";
 import { isSupabaseConfigured } from "@/utils/supabase";
 import type { MapProperty } from "@/lib/types/property-listing";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   let properties: MapProperty[] = [];
 

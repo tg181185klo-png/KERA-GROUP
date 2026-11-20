@@ -31,10 +31,6 @@ function listingTypeFromDeal(dealType: MapDealType): "sale" | "rent" {
   return dealType === "rent" || dealType === "daily_rent" ? "rent" : "sale";
 }
 
-function legacyDealType(dealType: MapDealType): "sale" | "rent" {
-  return dealType === "rent" || dealType === "daily_rent" ? "rent" : "sale";
-}
-
 export function resolveDealType(body: ListingUpdateBody): MapDealType {
   const raw = String(body.deal_type ?? body.listing_type ?? "sale")
     .toLowerCase()
@@ -124,9 +120,6 @@ export async function buildOwnerListingUpdates(
   }
 
   if (isLegacyPropertyRow(existing)) {
-    updates.deal_type = legacyDealType(dealType);
-    updates.listing_type =
-      existing.listing_type === "developer" ? "developer" : "seller";
     updates.description = buildLegacyDescription({
       title: title || undefined,
       description: description || undefined,

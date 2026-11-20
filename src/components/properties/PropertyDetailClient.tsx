@@ -13,6 +13,7 @@ import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { getPricePerSqm, resolveAreaSqm } from "@/lib/price-display";
 import { Badge } from "@/components/ui/Badge";
+import { ListingShare } from "@/components/properties/ListingShare";
 
 interface PropertyDetailClientProps {
   property: MapProperty;
@@ -156,6 +157,10 @@ export function PropertyDetailClient({
               >
                 {t.properties.viewOnMap}
               </Link>
+            </div>
+
+            <div className="mt-6">
+              <ListingShare id={property.id} title={property.title} />
             </div>
           </div>
         </div>

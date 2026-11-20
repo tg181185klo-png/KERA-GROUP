@@ -4,6 +4,8 @@ import { parsePropertySearchParams } from "@/lib/property-search";
 import { isSupabaseConfigured } from "@/utils/supabase";
 import type { MapProperty } from "@/lib/types/property-listing";
 
+export const dynamic = "force-dynamic";
+
 interface PropertiesPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }

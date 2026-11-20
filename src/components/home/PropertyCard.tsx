@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MapPin, Maximize2 } from "lucide-react";
 import { useT } from "@/i18n/LocaleProvider";
 import { getListingTypeLabel } from "@/i18n/nav";
+import { ListingShare } from "@/components/properties/ListingShare";
 import type { MapProperty } from "@/lib/types/property-listing";
 import {
   formatListingPrice,
@@ -34,10 +35,12 @@ export function PropertyCard({
   const areaSqm = resolveAreaSqm(property);
 
   return (
-    <Link
-      href={`/properties/${property.id}`}
-      className="kera-card group block overflow-hidden transition hover:border-slate-300"
-    >
+    <article className="kera-card group relative overflow-hidden transition hover:border-slate-300">
+      <Link
+        href={`/properties/${property.id}`}
+        aria-label={property.title}
+        className="absolute inset-0 z-10"
+      />
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
         <Image
           src={imageUrl}
@@ -80,8 +83,11 @@ export function PropertyCard({
         <p className="mt-3 line-clamp-2 text-sm font-medium text-slate-700">
           {property.title}
         </p>
+        <div className="relative z-20 mt-4">
+          <ListingShare id={property.id} title={property.title} compact />
+        </div>
       </div>
-    </Link>
+    </article>
   );
 }
 

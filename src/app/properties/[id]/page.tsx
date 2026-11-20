@@ -4,6 +4,15 @@ import { fetchActiveListingById } from "@/lib/active-listings";
 import { PropertyDetailClient } from "@/components/properties/PropertyDetailClient";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { getPricePerSqm } from "@/lib/price-display";
+import { getSiteUrl } from "@/lib/site-url";
+
+export const dynamic = "force-dynamic";
+
+function absoluteImageUrl(src: string): string {
+  if (src.startsWith("https://") || src.startsWith("http://")) return src;
+  const path = src.startsWith("/") ? src : `/${src}`;
+  return `${getSiteUrl()}${path}`;
+}
 
 interface PropertyPageProps {
   params: Promise<{ id: string }>;
@@ -24,10 +33,29 @@ export async function generateMetadata({
     pricePerSqm != null
       ? `${formatPrice(property.total_price)} · ${formatPricePerSqm(pricePerSqm)}`
       : formatPrice(property.total_price);
+  const description = `${priceSummary} · ${property.address} · ${property.cadastral_code}`;
+  const pageUrl = `${getSiteUrl()}/properties/${id}`;
+  const mainImage = property.images.find((src) => src.trim().length > 0);
+  const imageUrl = mainImage ? absoluteImageUrl(mainImage) : undefined;
 
   return {
     title: `${property.title} | კერა ჯგუფი`,
-    description: `${priceSummary} · ${property.address} · ${property.cadastral_code}`,
+    description,
+    alternates: { canonical: pageUrl },
+    openGraph: {
+      title: property.title,
+      description,
+      url: pageUrl,
+      type: "website",
+      siteName: "კერა ჯგუფი",
+      images: imageUrl ? [{ url: imageUrl, alt: property.title }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: property.title,
+      description,
+      images: imageUrl ? [imageUrl] : [],
+    },
   };
 }
 

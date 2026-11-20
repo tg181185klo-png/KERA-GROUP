@@ -74,6 +74,13 @@ export function ImageUpload({ images, onChange }: ImageUploadProps) {
     onChange(images.filter((_, i) => i !== index));
   }
 
+  function makeMain(index: number) {
+    if (index <= 0) return;
+    const next = [...images];
+    const [selected] = next.splice(index, 1);
+    onChange([selected, ...next]);
+  }
+
   return (
     <div className="space-y-4">
       <div
@@ -132,6 +139,19 @@ export function ImageUpload({ images, onChange }: ImageUploadProps) {
                 className="object-cover"
                 sizes="200px"
               />
+              {i === 0 ? (
+                <span className="absolute left-2 top-2 rounded-full bg-kera-primary px-2 py-0.5 text-[10px] font-bold text-white">
+                  მთავარი
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => makeMain(i)}
+                  className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white"
+                >
+                  მთავარი
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => removeImage(i)}

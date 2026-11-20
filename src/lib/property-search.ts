@@ -52,8 +52,12 @@ export function filterProperties(
   context?: PropertyFilterContext,
 ): MapProperty[] {
   return properties.filter((p) => {
-    const dealType = p.listing_type === "rent" ? "rent" : "sale";
-    if (params.deal_type === "pledge") return false;
+    const dealType =
+      p.deal_type === "rent" || p.deal_type === "daily_rent" || p.listing_type === "rent"
+        ? "rent"
+        : p.deal_type === "pledge"
+          ? "pledge"
+          : "sale";
     if (params.deal_type && dealType !== params.deal_type) return false;
 
     if (params.property_type && p.property_type && p.property_type !== params.property_type) {

@@ -92,12 +92,20 @@ function parseMissingColumn(message: string): string | null {
   return match?.[1] ?? null;
 }
 
+function parseConstraintColumn(message: string): string | null {
+  const checkMatch = message.match(/check constraint "([^"]+)"/i);
+  if (checkMatch?.[1]?.includes("listing_type")) return "listing_type";
+  if (checkMatch?.[1]?.includes("deal_type")) return "deal_type";
+  return null;
+}
+
 async function insertAdaptive(
   service: SupabaseClient,
   payload: Record<string, unknown>,
 ) {
   let current = { ...payload };
   let lastError: { message: string } | null = null;
+  let triedSellerListing = false;
 
   for (let attempt = 0; attempt < 15; attempt++) {
     const { data, error } = await service
@@ -112,14 +120,46 @@ async function insertAdaptive(
 
     lastError = error;
     const missing = parseMissingColumn(error.message);
-    if (!missing || !isSchemaMismatch(error.message)) {
-      return { data: null, error };
+    if (missing && isSchemaMismatch(error.message)) {
+      if (missing === "deal_type") {
+        const deal = String(current.deal_type ?? "");
+        current.listing_type =
+          deal === "rent" || deal === "daily_rent" ? "rent" : "sale";
+      }
+      delete current[missing];
+      if (Object.keys(current).length === 0) break;
+      continue;
     }
 
-    delete current[missing];
-    if (Object.keys(current).length === 0) {
-      break;
+    const constraintColumn = parseConstraintColumn(error.message);
+    if (constraintColumn === "listing_type" && isSchemaMismatch(error.message)) {
+      const value = String(current.listing_type ?? "");
+      if (
+        (value === "sale" || value === "rent") &&
+        "deal_type" in current &&
+        !triedSellerListing
+      ) {
+        triedSellerListing = true;
+        current.listing_type = "seller";
+        continue;
+      }
     }
+
+    if (constraintColumn === "deal_type" && isSchemaMismatch(error.message)) {
+      const deal = String(current.deal_type ?? "");
+      if (deal === "daily_rent" || deal === "pledge" || deal === "daily") {
+        current.deal_type = deal === "pledge" ? "sale" : "rent";
+        current.listing_type =
+          current.deal_type === "rent" ? "rent" : String(current.listing_type ?? "sale");
+        continue;
+      }
+      current.listing_type =
+        deal === "rent" || deal === "daily_rent" ? "rent" : "sale";
+      delete current.deal_type;
+      continue;
+    }
+
+    return { data: null, error };
   }
 
   return { data: null, error: lastError };
@@ -149,7 +189,7 @@ async function insertLegacyListing(
     description: buildLegacyDescription(body),
     images: body.images ?? [],
     status: "pending",
-    listing_type: "seller",
+    listing_type: listingTypeFromDeal(dealType),
   };
 
   if (body.area_sqm && body.area_sqm > 0) {

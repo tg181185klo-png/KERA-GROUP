@@ -6,10 +6,11 @@ import {
   buildApprovalTimestamps,
   shouldRequireModerationOnEdit,
 } from "@/lib/listing-expiry";
-import { buildOwnerListingUpdates } from "@/lib/listing-update";
+import { buildOwnerListingUpdates, resolveDealType } from "@/lib/listing-update";
 import { getCadastralCode } from "@/lib/property-normalize";
 import { isListingOwnedByUser } from "@/lib/user-listings";
 import { getProfile } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export const maxDuration = 60;
@@ -42,6 +43,17 @@ function parseConstraintColumn(message: string): string | null {
   return null;
 }
 
+function isRentLike(value: unknown): boolean {
+  const raw = String(value ?? "").toLowerCase().trim();
+  return raw === "rent" || raw === "daily_rent" || raw === "daily";
+}
+
+function saleRentListing(payload: Record<string, unknown>): "sale" | "rent" {
+  return isRentLike(payload.deal_type) || isRentLike(payload.listing_type)
+    ? "rent"
+    : "sale";
+}
+
 async function updateAdaptive(
   service: ReturnType<typeof createServiceClient>,
   id: string,
@@ -49,6 +61,9 @@ async function updateAdaptive(
 ) {
   let current = { ...payload };
   let lastError: { message: string } | null = null;
+  let triedSellerListing = false;
+  let triedSaleRentListing = false;
+  let coercedDealType = false;
 
   for (let attempt = 0; attempt < 12; attempt++) {
     const { data, error } = await service
@@ -65,14 +80,52 @@ async function updateAdaptive(
     lastError = error;
     const missing = parseMissingColumn(error.message);
     if (missing) {
+      if (missing === "deal_type") {
+        current.listing_type = saleRentListing(current);
+      }
       delete current[missing];
       if (Object.keys(current).length === 0) break;
       continue;
     }
 
     const constraintColumn = parseConstraintColumn(error.message);
-    if (constraintColumn && isSchemaMismatch(error.message)) {
-      delete current[constraintColumn];
+    if (constraintColumn === "listing_type" && isSchemaMismatch(error.message)) {
+      const value = String(current.listing_type ?? "");
+      if (
+        (value === "sale" || value === "rent") &&
+        "deal_type" in current &&
+        !triedSellerListing
+      ) {
+        triedSellerListing = true;
+        current.listing_type = "seller";
+        continue;
+      }
+      if (
+        (value === "seller" || value === "developer") &&
+        !triedSaleRentListing
+      ) {
+        triedSaleRentListing = true;
+        current.listing_type = saleRentListing(current);
+        continue;
+      }
+      delete current.listing_type;
+      if (Object.keys(current).length === 0) break;
+      continue;
+    }
+
+    if (constraintColumn === "deal_type" && isSchemaMismatch(error.message)) {
+      const deal = String(current.deal_type ?? "");
+      if (
+        !coercedDealType &&
+        (deal === "daily_rent" || deal === "daily" || deal === "pledge")
+      ) {
+        coercedDealType = true;
+        current.deal_type = deal === "pledge" ? "sale" : "rent";
+        current.listing_type = saleRentListing(current);
+        continue;
+      }
+      current.listing_type = saleRentListing(current);
+      delete current.deal_type;
       if (Object.keys(current).length === 0) break;
       continue;
     }
@@ -81,6 +134,14 @@ async function updateAdaptive(
   }
 
   return { data: null, error: lastError };
+}
+
+function revalidateListingSurfaces(id: string) {
+  revalidatePath("/");
+  revalidatePath("/properties");
+  revalidatePath(`/properties/${id}`);
+  revalidatePath("/map");
+  revalidatePath("/dashboard");
 }
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -170,11 +231,31 @@ export async function PATCH(request: Request, context: RouteContext) {
     });
   }
 
-  const { data, error } = await updateAdaptive(service, id, updates);
+  let { data, error } = await updateAdaptive(service, id, updates);
+
+  if (!error && data && body.deal_type != null) {
+    const wanted = resolveDealType(body);
+    const saved = resolveDealType({
+      deal_type: data.deal_type,
+      listing_type: data.listing_type,
+    });
+    if (saved !== wanted) {
+      const corrected = await updateAdaptive(service, id, {
+        deal_type: wanted,
+        listing_type:
+          wanted === "rent" || wanted === "daily_rent" ? "rent" : "sale",
+      });
+      if (!corrected.error && corrected.data) {
+        data = corrected.data;
+      }
+    }
+  }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
+
+  revalidateListingSurfaces(id);
 
   return NextResponse.json(data);
 }

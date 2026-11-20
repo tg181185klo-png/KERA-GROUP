@@ -397,6 +397,13 @@ export const en = {
     contact: "Contact",
     viewOnMap: "View on map",
     notFound: "Listing not found",
+    share: "Share",
+    shareCopy: "Copy link",
+    shareCopied: "Link copied",
+    shareFacebook: "Facebook",
+    shareWhatsapp: "WhatsApp",
+    shareTelegram: "Telegram",
+    shareViber: "Viber",
   },
   searchResults: {
     title: "Search results",

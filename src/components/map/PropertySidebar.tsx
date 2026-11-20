@@ -8,6 +8,7 @@ import type { MapProperty } from "@/lib/types/property-listing";
 import { formatPrice, formatPricePerSqm } from "@/lib/cadastral";
 import { getPricePerSqm, resolveAreaSqm } from "@/lib/price-display";
 import { Badge } from "@/components/ui/Badge";
+import { ListingShare } from "@/components/properties/ListingShare";
 
 interface PropertySidebarProps {
   property: MapProperty;
@@ -90,6 +91,8 @@ export function PropertySidebar({ property, onClose }: PropertySidebarProps) {
             >
               {t.properties.fullPage}
             </Link>
+
+            <ListingShare id={property.id} title={property.title} compact />
           </div>
         </div>
       </div>

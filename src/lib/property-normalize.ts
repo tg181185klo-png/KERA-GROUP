@@ -168,15 +168,23 @@ export function getListingType(row: PropertyRow): ListingType {
   return deal === "rent" || deal === "daily_rent" ? "rent" : "sale";
 }
 
-export function getMapDealTypeFromRow(row: PropertyRow): MapProperty["deal_type"] {
-  const raw = String(row.deal_type ?? row.listing_type ?? "sale")
-    .toLowerCase()
-    .trim();
-
+function parseStoredDealType(value: unknown): MapProperty["deal_type"] | null {
+  const raw = String(value ?? "").toLowerCase().trim();
+  if (!raw || raw === "seller" || raw === "developer") return null;
   if (raw === "rent") return "rent";
   if (raw === "daily_rent" || raw === "daily") return "daily_rent";
-  if (raw === "pledge") return "pledge";
-  return "sale";
+  if (raw === "pledge" || raw === "gira") return "pledge";
+  if (raw === "sale" || raw === "buy") return "sale";
+  return null;
+}
+
+export function getMapDealTypeFromRow(row: PropertyRow): MapProperty["deal_type"] {
+  const fromDeal = parseStoredDealType(row.deal_type);
+  const fromListing = parseStoredDealType(row.listing_type);
+
+  if (fromDeal === "daily_rent" || fromDeal === "pledge") return fromDeal;
+  if (fromListing === "rent" || fromListing === "sale") return fromListing;
+  return fromDeal ?? fromListing ?? "sale";
 }
 
 export function normalizeListingStatus(status: unknown): ListingStatus {
