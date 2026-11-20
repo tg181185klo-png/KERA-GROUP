@@ -179,12 +179,7 @@ function parseStoredDealType(value: unknown): MapProperty["deal_type"] | null {
 }
 
 export function getMapDealTypeFromRow(row: PropertyRow): MapProperty["deal_type"] {
-  const fromDeal = parseStoredDealType(row.deal_type);
-  const fromListing = parseStoredDealType(row.listing_type);
-
-  if (fromDeal === "daily_rent" || fromDeal === "pledge") return fromDeal;
-  if (fromListing === "rent" || fromListing === "sale") return fromListing;
-  return fromDeal ?? fromListing ?? "sale";
+  return parseStoredDealType(row.deal_type) ?? parseStoredDealType(row.listing_type) ?? "sale";
 }
 
 export function normalizeListingStatus(status: unknown): ListingStatus {

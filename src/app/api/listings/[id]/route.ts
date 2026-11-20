@@ -64,6 +64,7 @@ async function updateAdaptive(
   payload: Record<string, unknown>,
 ) {
   let current = { ...payload };
+  if ("deal_type" in current) delete current.listing_type;
   let lastError: { message: string } | null = null;
   const dropped = new Set<string>();
   let triedSellerListing = false;
@@ -90,10 +91,18 @@ async function updateAdaptive(
     }
 
     lastError = error;
-    const message = `${error.message ?? ""}`;
+    const extra = error as { details?: string; hint?: string };
+    const message = [error.message, extra.details, extra.hint].filter(Boolean).join(" ");
+    if (/listing_type/i.test(message) && /schema cache|could not find|does not exist/i.test(message)) {
+      drop("listing_type");
+      continue;
+    }
     const missing = parseMissingColumn(message);
     if (missing) {
       drop(missing);
+      if (missing === "deal_type" && !("listing_type" in current)) {
+        current.listing_type = saleRentListing(payload);
+      }
       continue;
     }
 
@@ -239,10 +248,8 @@ export async function PATCH(request: Request, context: RouteContext) {
   } else if (admin) {
     updates = { ...body };
     if (body.deal_type != null) {
-      const deal = resolveDealType(body);
-      updates.deal_type = deal;
-      updates.listing_type =
-        deal === "rent" || deal === "daily_rent" ? "rent" : "sale";
+      updates.deal_type = resolveDealType(body);
+      delete updates.listing_type;
     }
   } else {
     updates = await buildOwnerListingUpdates(body, existing, {

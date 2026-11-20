@@ -27,10 +27,6 @@ export type ListingUpdateBody = {
   status?: string;
 };
 
-function listingTypeFromDeal(dealType: MapDealType): "sale" | "rent" {
-  return dealType === "rent" || dealType === "daily_rent" ? "rent" : "sale";
-}
-
 export function resolveDealType(body: ListingUpdateBody): MapDealType {
   const raw = String(body.deal_type ?? body.listing_type ?? "sale")
     .toLowerCase()
@@ -110,7 +106,6 @@ export async function buildOwnerListingUpdates(
     price: totalPrice,
     area_sqm: areaSqm,
     deal_type: dealType,
-    listing_type: listingTypeFromDeal(dealType),
     owner_name: [ownerFirst, ownerLast].filter(Boolean).join(" ").trim() || String(existing.owner_name ?? ""),
     images,
   };
